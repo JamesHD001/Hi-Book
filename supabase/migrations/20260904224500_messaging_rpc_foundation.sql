@@ -45,6 +45,7 @@ begin
   if p_message_type='TEXT' and char_length(p_content)>4000 then raise exception 'Message exceeds 4000 characters'; end if;
   if p_message_type='POST_SHARE' and p_shared_post_id is null then raise exception 'Post share requires a post'; end if;
   if p_message_type<>'POST_SHARE' and p_shared_post_id is not null then raise exception 'Invalid shared post reference'; end if;
+  if jsonb_typeof(p_media) <> 'array' then raise exception 'Media must be a JSON array'; end if;
   if p_message_type='IMAGE' and jsonb_array_length(p_media) < 1 then raise exception 'Image message requires media'; end if;
   if p_message_type<>'IMAGE' and jsonb_array_length(p_media) > 0 then raise exception 'Media is only supported for IMAGE messages in MVP'; end if;
   if jsonb_array_length(p_media)>10 then raise exception 'A message may contain at most 10 images'; end if;
@@ -91,7 +92,7 @@ begin
 end;
 $$;
 
-revoke all on function public.send_message(uuid,message_type,text,text,uuid,jsonb) from public;
-grant execute on function public.send_message(uuid,message_type,text,text,uuid,jsonb) to authenticated;
+revoke all on function public.send_message(uuid,message_type,text,uuid,uuid,jsonb) from public;
+grant execute on function public.send_message(uuid,message_type,text,uuid,uuid,jsonb) to authenticated;
 
 commit;
