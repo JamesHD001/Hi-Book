@@ -169,23 +169,23 @@ alter table public.analytics_events enable row level security;
 alter table public.telemetry_events enable row level security;
 alter table public.analytics_daily_metrics enable row level security;
 alter table public.analytics_daily_dimension_metrics enable row level security;
-alter table public.currency enable row level security;
-alter table public.payment_provider enable row level security;
-alter table public.payment_method enable row level security;
-alter table public.monetization_product enable row level security;
-alter table public.product_price enable row level security;
-alter table public.purchase enable row level security;
-alter table public.payment enable row level security;
-alter table public.payment_attempt enable row level security;
-alter table public.coin_wallet enable row level security;
-alter table public.coin_transaction enable row level security;
-alter table public.coin_transaction_entry enable row level security;
-alter table public.financial_account enable row level security;
-alter table public.financial_ledger_entry enable row level security;
-alter table public.virtual_gift enable row level security;
-alter table public.gift_transaction enable row level security;
-alter table public.refund enable row level security;
-alter table public.payment_reconciliation enable row level security;
+alter table public.currencies enable row level security;
+alter table public.payment_providers enable row level security;
+alter table public.payment_methods enable row level security;
+alter table public.monetization_products enable row level security;
+alter table public.product_prices enable row level security;
+alter table public.purchases enable row level security;
+alter table public.payments enable row level security;
+alter table public.payment_attempts enable row level security;
+alter table public.coin_wallets enable row level security;
+alter table public.coin_transactions enable row level security;
+alter table public.coin_transaction_entries enable row level security;
+alter table public.financial_accounts enable row level security;
+alter table public.financial_ledger_entries enable row level security;
+alter table public.virtual_gifts enable row level security;
+alter table public.gift_transactions enable row level security;
+alter table public.refunds enable row level security;
+alter table public.payment_reconciliations enable row level security;
 
 -- ============================================================
 -- ACCOUNT / IDENTITY
@@ -411,27 +411,27 @@ create policy analytics_daily_dimension_metrics_admin on public.analytics_daily_
 -- FINANCE / MONETIZATION
 -- ============================================================
 
-create policy currency_public_select on public.currency for select using (is_active = true);
-create policy payment_provider_public_select on public.payment_provider for select using (is_active = true);
-create policy payment_method_public_select on public.payment_method for select using (is_active = true);
-create policy monetization_product_public_select on public.monetization_product for select using (is_active = true);
-create policy product_price_public_select on public.product_price for select using (is_active = true and (effective_to is null or effective_to > now()));
+create policy currencies_public_select on public.currencies for select using (is_active = true);
+create policy payment_providers_public_select on public.payment_providers for select using (is_active = true);
+create policy payment_methods_public_select on public.payment_methods for select using (is_active = true);
+create policy monetization_products_public_select on public.monetization_products for select using (is_active = true);
+create policy product_prices_public_select on public.product_prices for select using (is_active = true and effective_from <= now() and (effective_to is null or effective_to > now()));
 
-create policy purchase_self_select on public.purchase for select using (user_id = auth.uid() or public.is_admin_permission('payments.view'));
-create policy payment_self_select on public.payment for select using (user_id = auth.uid() or public.is_admin_permission('payments.view'));
-create policy payment_attempt_self_select on public.payment_attempt for select using (exists (select 1 from public.payment p where p.id = payment_id and (p.user_id = auth.uid() or public.is_admin_permission('payments.view'))));
+create policy purchases_self_select on public.purchases for select using (user_id = auth.uid() or public.is_admin_permission('payments.view'));
+create policy payments_self_select on public.payments for select using (user_id = auth.uid() or public.is_admin_permission('payments.view'));
+create policy payment_attempts_self_select on public.payment_attempts for select using (exists (select 1 from public.payments p where p.id = payment_id and (p.user_id = auth.uid() or public.is_admin_permission('payments.view'))));
 
-create policy coin_wallet_self_select on public.coin_wallet for select using (user_id = auth.uid() or public.is_admin_permission('coins.view'));
-create policy coin_transaction_self_select on public.coin_transaction for select using (exists (select 1 from public.coin_wallet w where w.id = wallet_id and (w.user_id = auth.uid() or public.is_admin_permission('coins.view'))));
-create policy coin_transaction_entry_self_select on public.coin_transaction_entry for select using (exists (select 1 from public.coin_transaction ct join public.coin_wallet w on w.id = ct.wallet_id where ct.id = coin_transaction_id and (w.user_id = auth.uid() or public.is_admin_permission('coins.view'))));
+create policy coin_wallets_self_select on public.coin_wallets for select using (user_id = auth.uid() or public.is_admin_permission('coins.view'));
+create policy coin_transactions_self_select on public.coin_transactions for select using (exists (select 1 from public.coin_wallets w where w.id = wallet_id and (w.user_id = auth.uid() or public.is_admin_permission('coins.view'))));
+create policy coin_transaction_entries_self_select on public.coin_transaction_entries for select using (exists (select 1 from public.coin_transactions ct join public.coin_wallets w on w.id = ct.wallet_id where ct.id = coin_transaction_id and (w.user_id = auth.uid() or public.is_admin_permission('coins.view'))));
 
-create policy virtual_gift_public_select on public.virtual_gift for select using (is_active = true);
-create policy gift_transaction_select on public.gift_transaction for select using (sender_id = auth.uid() or recipient_id = auth.uid() or public.is_admin_permission('coins.view'));
+create policy virtual_gifts_public_select on public.virtual_gifts for select using (is_active = true);
+create policy gift_transactions_select on public.gift_transactions for select using (sender_id = auth.uid() or recipient_id = auth.uid() or public.is_admin_permission('coins.view'));
 
-create policy refund_self_select on public.refund for select using (exists (select 1 from public.purchase p where p.id = purchase_id and (p.user_id = auth.uid() or public.is_admin_permission('payments.view'))));
-create policy reconciliation_admin_select on public.payment_reconciliation for select using (public.is_admin_permission('payments.reconcile'));
-create policy financial_account_admin_select on public.financial_account for select using (public.is_admin_permission('financial_reports.view'));
-create policy financial_ledger_admin_select on public.financial_ledger_entry for select using (public.is_admin_permission('financial_reports.view'));
+create policy refunds_self_select on public.refunds for select using (exists (select 1 from public.purchases p where p.id = purchase_id and (p.user_id = auth.uid() or public.is_admin_permission('payments.view'))));
+create policy reconciliation_admin_select on public.payment_reconciliations for select using (public.is_admin_permission('payments.reconcile'));
+create policy financial_accounts_admin_select on public.financial_accounts for select using (public.is_admin_permission('financial_reports.view'));
+create policy financial_ledger_entries_admin_select on public.financial_ledger_entries for select using (public.is_admin_permission('financial_reports.view'));
 
 -- No direct client INSERT/UPDATE/DELETE policies exist for payment, wallet, coin,
 -- ledger, refund or reconciliation state. Trusted server functions/workers only.
