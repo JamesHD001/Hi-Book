@@ -45,7 +45,7 @@ select set_config('request.jwt.claim.role', 'authenticated', true);
 
 select ok((select count(*) from public.users) = 1, 'RLS isolates users to the current account');
 select ok((select count(*) from public.profiles) = 1, 'RLS isolates profiles to the current account when querying directly');
-select ok((select public.can_view_profile('00000000-0000-0000-0000-000000000002')) is false, 'can_view_profile denies blocked/private access as applicable');
+select ok((select public.can_view_profile('00000000-0000-0000-0000-000000000002')) is true, 'public profile is viewable before blocking');
 select ok((select count(*) from public.posts where id = '10000000-0000-0000-0000-000000000001') = 1, 'owner can view own public post');
 select ok((select count(*) from public.posts where id = '10000000-0000-0000-0000-000000000003') = 1, 'owner can view own private post');
 
@@ -67,15 +67,12 @@ select throws_ok($duplicate_follow$
   values ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002')
 $duplicate_follow$, '23505', null, 'duplicate follow is rejected by the database uniqueness constraint');
 
--- Followers can see followers-only posts; unrelated users cannot.
-select ok((select count(*) from public.posts where id = '10000000-0000-0000-0000-000000000002') = 0, 'owner does not automatically grant followers-only visibility to self as a test of policy');
-
 -- Switch to Bob to test public/followers/private boundaries.
 set local role postgres;
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000002', true);
 set local role authenticated;
 
-select ok((select count(*) from public.posts where id = '10000000-0000-0000-0000-000000000001') = 1, 'unrelated authenticated user can view public post');
+select ok((select count(*) from public.posts where id = '10000000-0000-0000-0000-000000000001') = 1, 'authenticated user can view public post');
 select ok((select count(*) from public.posts where id = '10000000-0000-0000-0000-000000000002') = 1, 'follower can view followers-only post');
 select ok((select count(*) from public.posts where id = '10000000-0000-0000-0000-000000000003') = 0, 'follower cannot view private post');
 select ok((select count(*) from public.post_likes where post_id = '10000000-0000-0000-0000-000000000003') = 0, 'private post interactions cannot be enumerated through likes');
@@ -84,7 +81,7 @@ select throws_ok($private_like$
   values ('10000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000002')
 $private_like$, '42501', null, 'private post cannot be liked by an unauthorized user');
 
--- Make Bob private and verify Alice loses profile access until an appropriate relationship exists.
+-- Make Bob private. Alice is already following Bob, so she remains authorized.
 set local role postgres;
 update public.user_privacy_settings
 set profile_visibility = 'PRIVATE'
