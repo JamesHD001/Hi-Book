@@ -1,0 +1,15 @@
+# Hi!Book 2.0 local Supabase configuration
+# Production credentials and secrets must never be committed here.
+project_id = "hibook-local"
+
+[db]
+major_version = 17
+
+[studio]
+enabled = false
+
+[inbucket]
+enabled = false
+
+[analytics]
+enabled = false
