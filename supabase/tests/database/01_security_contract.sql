@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap;
 
-select plan(30);
+select plan(29);
 
 -- RLS must be enabled on every client-facing or sensitive table.
 select ok((select c.relrowsecurity from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname='users'), 'users has RLS enabled');
