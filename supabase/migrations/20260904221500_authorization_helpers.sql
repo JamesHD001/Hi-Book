@@ -1,5 +1,7 @@
 -- Hi!Book 2.0 — canonical authorization helpers
--- These helpers are intentionally small and reusable across RLS and RPCs.
+-- These helpers intentionally preserve the existing function signatures from
+-- the RLS foundation migration. PostgreSQL CREATE OR REPLACE FUNCTION cannot
+-- rename input parameters.
 
 begin;
 
@@ -18,7 +20,7 @@ as $$
   );
 $$;
 
-create or replace function public.is_admin_permission(p_permission_key text)
+create or replace function public.is_admin_permission(required_permission text)
 returns boolean
 language sql
 stable
@@ -28,17 +30,18 @@ as $$
   select exists (
     select 1
     from public.admin_user_roles aur
-    join public.admin_role_permissions arp on arp.role_id = aur.role_id
+    join public.admin_roles ar on ar.id = aur.role_id
+    join public.admin_role_permissions arp on arp.role_id = ar.id
     join public.admin_permissions ap on ap.id = arp.permission_id
     join public.users u on u.id = aur.user_id
     where aur.user_id = auth.uid()
       and aur.revoked_at is null
       and u.account_status = 'ACTIVE'
-      and ap.permission_key = p_permission_key
+      and ap.permission_key = required_permission
   );
 $$;
 
-create or replace function public.can_message_user(p_target_user_id uuid)
+create or replace function public.can_message_user(other_user_id uuid)
 returns boolean
 language sql
 stable
@@ -46,33 +49,24 @@ security definer
 set search_path = pg_catalog, public
 as $$
   select
-    p_target_user_id is not null
-    and auth.uid() is not null
-    and auth.uid() <> p_target_user_id
-    and not public.is_blocked_between(p_target_user_id)
+    auth.uid() is not null
+    and auth.uid() <> other_user_id
+    and not public.is_blocked_between(other_user_id)
     and exists (
-      select 1 from public.users u
-      where u.id = p_target_user_id
+      select 1
+      from public.users u
+      join public.user_privacy_settings ps on ps.user_id = u.id
+      where u.id = other_user_id
         and u.account_status = 'ACTIVE'
-    )
-    and (
-      exists (
-        select 1 from public.user_privacy_settings ups
-        where ups.user_id = p_target_user_id
-          and ups.message_permission = 'EVERYONE'
-      )
-      or (
-        exists (
-          select 1 from public.user_privacy_settings ups
-          where ups.user_id = p_target_user_id
-            and ups.message_permission = 'FOLLOWERS'
+        and (
+          ps.message_permission = 'EVERYONE'
+          or (ps.message_permission = 'FOLLOWERS' and exists (
+            select 1
+            from public.follows f
+            where f.follower_id = other_user_id
+              and f.following_id = auth.uid()
+          ))
         )
-        and exists (
-          select 1 from public.follows f
-          where f.follower_id = auth.uid()
-            and f.following_id = p_target_user_id
-        )
-      )
     );
 $$;
 
