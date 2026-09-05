@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap;
 
-select plan(42);
+select plan(43);
 
 -- Core schema objects
 select has_table('public', 'users', 'users table exists');
