@@ -3,7 +3,7 @@
 
 begin;
 
-create or replace function public.is_blocked_between(p_other_user_id uuid)
+create or replace function public.is_blocked_between(other_user_id uuid)
 returns boolean
 language sql
 stable
@@ -13,8 +13,8 @@ as $$
   select exists (
     select 1
     from public.blocks b
-    where (b.blocker_id = auth.uid() and b.blocked_id = p_other_user_id)
-       or (b.blocker_id = p_other_user_id and b.blocked_id = auth.uid())
+    where (b.blocker_id = auth.uid() and b.blocked_id = other_user_id)
+       or (b.blocker_id = other_user_id and b.blocked_id = auth.uid())
   );
 $$;
 
