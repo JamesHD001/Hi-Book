@@ -2,24 +2,17 @@ begin;
 create extension if not exists pgtap;
 select plan(23);
 
--- Deterministic deletion fixtures.
-insert into auth.users (id,aud,role,email,encrypted_password,email_confirmed_at,created_at,updated_at) values
-('50000000-0000-0000-0000-000000000011','authenticated','authenticated','delete-alice@example.test','test-hash',now(),now(),now()),
-('50000000-0000-0000-0000-000000000012','authenticated','authenticated','delete-bob@example.test','test-hash',now(),now(),now());
-insert into public.users(id,first_name,last_name,date_of_birth,gender,country_code,account_status) values
-('50000000-0000-0000-0000-000000000011','Delete','Alice','1990-01-01','FEMALE','NG','ACTIVE'),
-('50000000-0000-0000-0000-000000000012','Delete','Bob','1990-01-02','MALE','US','ACTIVE');
-insert into public.profiles(user_id,username,username_normalized,display_name) values
-('50000000-0000-0000-0000-000000000011','delete_alice','delete_alice','Alice'),
-('50000000-0000-0000-0000-000000000012','delete_bob','delete_bob','Bob');
-insert into public.user_privacy_settings(user_id,profile_visibility,country_visibility,message_permission) values
-('50000000-0000-0000-0000-000000000011','PUBLIC','PUBLIC','EVERYONE'),
-('50000000-0000-0000-0000-000000000012','PUBLIC','PUBLIC','EVERYONE');
+-- Deterministic deletion fixtures. Registration creates the identity/profile/privacy
+-- rows; trusted setup promotes these test accounts to ACTIVE.
+insert into auth.users (id,aud,role,email,encrypted_password,raw_user_meta_data,email_confirmed_at,created_at,updated_at) values
+('50000000-0000-0000-0000-000000000011','authenticated','authenticated','delete-alice@example.test','test-hash','{"first_name":"Delete","last_name":"Alice","date_of_birth":"1990-01-01","gender":"FEMALE","country_code":"NG"}'::jsonb,now(),now(),now()),
+('50000000-0000-0000-0000-000000000012','authenticated','authenticated','delete-bob@example.test','test-hash','{"first_name":"Delete","last_name":"Bob","date_of_birth":"1990-01-02","gender":"MALE","country_code":"US"}'::jsonb,now(),now(),now());
+set local role postgres;
+update public.users set account_status='ACTIVE' where id in ('50000000-0000-0000-0000-000000000011','50000000-0000-0000-0000-000000000012');
+update public.user_privacy_settings set message_permission='EVERYONE' where user_id in ('50000000-0000-0000-0000-000000000011','50000000-0000-0000-0000-000000000012');
+set local role authenticated;
 
 -- 1-6: direct lifecycle mutation is blocked for authenticated clients.
--- RLS denies these direct writes, so PostgreSQL may report zero affected rows
--- rather than an exception. The important security property is that state does
--- not change and deletion requests cannot be inserted directly.
 set local role authenticated;
 select set_config('request.jwt.claim.sub','50000000-0000-0000-0000-000000000011',true);
 select set_config('request.jwt.claim.role','authenticated',true);
