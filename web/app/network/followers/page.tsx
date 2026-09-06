@@ -25,17 +25,21 @@ export default async function FollowersPage() {
     ids.flatMap((id) => {
       const profile = profileMap.get(id);
       if (!profile) return [];
+
+      const base = {
+        userId: profile.user_id,
+        username: profile.username,
+        displayName: profile.display_name,
+        bio: profile.bio,
+      };
+
       return [
-        supabase.storage
-          .from("avatars")
-          .createSignedUrl(profile.avatar_path ?? "", 600)
-          .then(({ data }) => ({
-            userId: profile.user_id,
-            username: profile.username,
-            displayName: profile.display_name,
-            bio: profile.bio,
-            avatarUrl: data?.signedUrl ?? null,
-          })),
+        profile.avatar_path
+          ? supabase.storage.from("avatars").createSignedUrl(profile.avatar_path, 600).then(({ data }) => ({
+              ...base,
+              avatarUrl: data?.signedUrl ?? null,
+            }))
+          : Promise.resolve({ ...base, avatarUrl: null }),
       ];
     }),
   );
