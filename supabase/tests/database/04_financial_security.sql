@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap;
-select plan(43);
+select plan(44);
 
 -- Deterministic financial fixtures.
 insert into auth.users (id,aud,role,email,encrypted_password,email_confirmed_at,created_at,updated_at) values
@@ -47,11 +47,13 @@ insert into public.payments(id,purchase_id,user_id,provider_id,currency_id,amoun
 set local role authenticated;
 select set_config('request.jwt.claim.sub','40000000-0000-0000-0000-000000000011',true);
 select set_config('request.jwt.claim.role','authenticated',true);
-select throws_ok($a$ select available_balance from public.coin_wallets where id='42000000-0000-0000-0000-000000000012' $a$,'42501',null,'authenticated users cannot read another wallet');
-select throws_ok($b$ update public.coin_wallets set available_balance=999999 where id='42000000-0000-0000-0000-000000000011' $b$,'42501',null,'authenticated users cannot modify wallet balances');
-select throws_ok($c$ insert into public.financial_ledger_entries(transaction_group_id,account_id,currency_id,direction,amount,occurred_at) values(gen_random_uuid(),'48000000-0000-0000-0000-000000000001','41000000-0000-0000-0000-000000000002','DEBIT',100,now()) $c$,'42501',null,'authenticated users cannot write financial ledger entries');
+select is((select count(*) from public.coin_wallets where id='42000000-0000-0000-0000-000000000012'),0::bigint,'authenticated users cannot read another wallet');
+select is((select available_balance from public.coin_wallets where id='42000000-0000-0000-0000-000000000011'),0::bigint,'authenticated users initially see own wallet balance');
+update public.coin_wallets set available_balance=999999 where id='42000000-0000-0000-0000-000000000011';
+select is((select available_balance from public.coin_wallets where id='42000000-0000-0000-0000-000000000011'),0::bigint,'authenticated users cannot modify wallet balances');
+select throws_ok($c$ insert into public.financial_ledger_entries(transaction_group_id,account_id,currency_id,direction,amount,occurred_at) values(gen_random_uuid(),'48000000-0000-0000-0000-000000000001','41000000-0000-0000-0000-000000000002','DEBIT',100,now()) $c$,'P0001',null,'authenticated users cannot write financial ledger entries');
 select throws_ok($d$ insert into public.gift_transactions(gift_id,sender_id,recipient_id,quantity,unit_price_hbc,total_hbc,status) values('43000000-0000-0000-0000-000000000001','40000000-0000-0000-0000-000000000011','40000000-0000-0000-0000-000000000012',1,1,1,'COMPLETED') $d$,'42501',null,'authenticated users cannot inject gift economics');
-select throws_ok($e$ insert into public.refunds(payment_id,purchase_id,amount,currency_id,status) values('4a000000-0000-0000-0000-000000000001','49000000-0000-0000-0000-000000000001',1,'41000000-0000-0000-0000-000000000002','REQUESTED') $e$,'42501',null,'authenticated users cannot create refunds directly');
+select throws_ok($e$ insert into public.refunds(payment_id,purchase_id,amount,currency_id,status) values('4a000000-0000-0000-0000-000000000001','49000000-0000-0000-0000-000000000001',1,'41000000-0000-0000-0000-000000000002','REQUESTED') $e$,'P0001',null,'authenticated users cannot create refunds directly');
 select throws_ok($f$ insert into public.admin_user_roles(user_id,role_id) values('40000000-0000-0000-0000-000000000011',gen_random_uuid()) $f$,'42501',null,'authenticated users cannot escalate through admin roles');
 
 -- 7-14: atomic wallet operations.
