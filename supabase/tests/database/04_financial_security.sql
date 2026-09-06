@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap;
-select plan(43);
+select plan(44);
 
 -- Deterministic financial fixtures.
 insert into auth.users (id,aud,role,email,encrypted_password,email_confirmed_at,created_at,updated_at) values
