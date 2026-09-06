@@ -4,8 +4,6 @@ create extension if not exists pgtap;
 
 select plan(26);
 
--- Deterministic identities used only inside this rolled-back test transaction.
--- auth.users is seeded first because public.users references Supabase Auth.
 select lives_ok($seed$
   insert into auth.users (id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at)
   values
@@ -38,7 +36,6 @@ values
   ('10000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'Alice followers post', 'FOLLOWERS', 'PUBLISHED', now()),
   ('10000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'Alice private post', 'PRIVATE', 'PUBLISHED', now());
 
--- Act as Alice.
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001', true);
 select set_config('request.jwt.claim.role', 'authenticated', true);
@@ -49,7 +46,6 @@ select ok((select public.can_view_profile('00000000-0000-0000-0000-000000000002'
 select ok((select count(*) from public.posts where id = '10000000-0000-0000-0000-000000000001') = 1, 'owner can view own public post');
 select ok((select count(*) from public.posts where id = '10000000-0000-0000-0000-000000000003') = 1, 'owner can view own private post');
 
--- Alice can follow Bob, but cannot follow herself or forge Bob as follower.
 select lives_ok($follow$
   insert into public.follows (follower_id, following_id)
   values ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002')
@@ -67,10 +63,12 @@ select throws_ok($duplicate_follow$
   values ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002')
 $duplicate_follow$, '23505', null, 'duplicate follow is rejected by the database uniqueness constraint');
 
--- Switch to Bob to test public/followers/private boundaries.
+-- Bob follows Alice so Bob is genuinely a follower of the author of the followers-only post.
 set local role postgres;
-select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000002', true);
+insert into public.follows (follower_id, following_id)
+values ('00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001');
 set local role authenticated;
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000002', true);
 
 select ok((select count(*) from public.posts where id = '10000000-0000-0000-0000-000000000001') = 1, 'authenticated user can view public post');
 select ok((select count(*) from public.posts where id = '10000000-0000-0000-0000-000000000002') = 1, 'follower can view followers-only post');
@@ -81,7 +79,6 @@ select throws_ok($private_like$
   values ('10000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000002')
 $private_like$, '42501', null, 'private post cannot be liked by an unauthorized user');
 
--- Make Bob private. Alice is already following Bob, so she remains authorized.
 set local role postgres;
 update public.user_privacy_settings
 set profile_visibility = 'PRIVATE'
@@ -90,7 +87,6 @@ set local role authenticated;
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001', true);
 select ok((select public.can_view_profile('00000000-0000-0000-0000-000000000002')) is true, 'current follower can view a private profile');
 
--- Block Bob. The block is a universal barrier and removes the conflicting follow.
 select lives_ok($block$
   insert into public.blocks (blocker_id, blocked_id)
   values ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002')
