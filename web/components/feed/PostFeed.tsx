@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import PostComments from "@/components/feed/PostComments";
+import PostShareButton from "@/components/feed/PostShareButton";
 
 type FeedMedia = { id: string; url: string; width: number | null; height: number | null; alt_text: string | null };
 type FeedPost = { post_id: string; username: string; display_name: string; avatar_url: string | null; content: string | null; visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE"; created_at: string; media: FeedMedia[] };
@@ -29,7 +30,7 @@ export default function PostFeed() {
       <header className="flex items-center gap-3 p-5"><div className="h-11 w-11 shrink-0 overflow-hidden rounded-full bg-slate-100">{post.avatar_url ? <img src={post.avatar_url} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center font-bold text-slate-500">{post.display_name.charAt(0).toUpperCase()}</div>}</div><div className="min-w-0"><Link href={`/u/${post.username}`} className="font-semibold text-slate-950 hover:underline">{post.display_name}</Link><p className="truncate text-sm text-slate-500">@{post.username} · {timeAgo(post.created_at)}</p></div></header>
       {post.content && <p className="whitespace-pre-wrap px-5 pb-5 text-[15px] leading-7 text-slate-800">{post.content}</p>}
       {post.media.length > 0 && <div className={`grid gap-1 ${post.media.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}>{post.media.map((media) => <img key={media.id} src={media.url} alt={media.alt_text ?? "Post image"} width={media.width ?? undefined} height={media.height ?? undefined} className="max-h-[640px] w-full bg-slate-100 object-cover" loading="lazy" />)}</div>}
-      <footer className="flex items-center gap-2 border-t border-slate-100 px-5 py-3"><button type="button" onClick={() => void toggleLike(post.post_id)} disabled={likeBusy[post.post_id]} aria-pressed={like.liked} className={`rounded-xl px-3 py-2 text-sm font-semibold transition ${like.liked ? "bg-red-50 text-red-700" : "text-slate-600 hover:bg-slate-100"}`}>{like.liked ? "♥ Liked" : "♡ Like"} <span className="ml-1">{like.like_count}</span></button></footer>
+      <footer className="flex flex-wrap items-center gap-2 border-t border-slate-100 px-5 py-3"><button type="button" onClick={() => void toggleLike(post.post_id)} disabled={likeBusy[post.post_id]} aria-pressed={like.liked} className={`rounded-xl px-3 py-2 text-sm font-semibold transition ${like.liked ? "bg-red-50 text-red-700" : "text-slate-600 hover:bg-slate-100"}`}>{like.liked ? "♥ Liked" : "♡ Like"} <span className="ml-1">{like.like_count}</span></button><PostShareButton postId={post.post_id} /></footer>
       <PostComments postId={post.post_id} />
     </article>; })}
     {!loading && cursor && <button type="button" onClick={() => void load(scope, cursor, true)} disabled={loadingMore} className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold hover:bg-slate-50 disabled:opacity-50">{loadingMore ? "Loading more…" : "Load more"}</button>}
