@@ -49,7 +49,6 @@ export default async function PublicProfilePage({ params }: PageProps) {
   ]);
 
   const followStats = Array.isArray(stats) ? stats[0] : stats;
-
   if (!followStats) notFound();
 
   return (
@@ -78,10 +77,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
               </div>
 
               <div className="flex flex-wrap gap-2">
-                <FollowButton
-                  targetUserId={profile.user_id}
-                  initialFollowing={Boolean(followStats.is_following)}
-                />
+                <FollowButton targetUserId={profile.user_id} initialFollowing={Boolean(followStats.is_following)} />
                 <BlockButton targetUserId={profile.user_id} />
                 <ReportDialog targetId={profile.user_id} />
               </div>
@@ -90,12 +86,8 @@ export default async function PublicProfilePage({ params }: PageProps) {
             {profile.bio && <p className="mt-6 max-w-2xl whitespace-pre-wrap leading-7 text-slate-700">{profile.bio}</p>}
 
             <div className="mt-7 flex flex-wrap gap-6 border-t border-slate-100 pt-5 text-sm">
-              <Link href={`/u/${profile.username}/followers`} className="hover:text-blue-600">
-                <strong className="text-slate-950">{followStats.followers_count}</strong> followers
-              </Link>
-              <Link href={`/u/${profile.username}/following`} className="hover:text-blue-600">
-                <strong className="text-slate-950">{followStats.following_count}</strong> following
-              </Link>
+              <span><strong className="text-slate-950">{followStats.followers_count}</strong> followers</span>
+              <span><strong className="text-slate-950">{followStats.following_count}</strong> following</span>
             </div>
           </div>
         </div>
