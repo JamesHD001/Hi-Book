@@ -2,7 +2,6 @@ begin;
 create extension if not exists pgtap;
 select plan(43);
 
--- Deterministic financial fixtures.
 insert into auth.users (id,aud,role,email,encrypted_password,email_confirmed_at,created_at,updated_at) values
 ('40000000-0000-0000-0000-000000000011','authenticated','authenticated','finance-alice@example.test','test-hash',now(),now(),now()),
 ('40000000-0000-0000-0000-000000000012','authenticated','authenticated','finance-bob@example.test','test-hash',now(),now(),now()),
@@ -43,18 +42,16 @@ insert into public.purchases(id,user_id,product_id,product_price_id,quantity,cur
 insert into public.payments(id,purchase_id,user_id,provider_id,currency_id,amount,provider_reference,status) values
 ('4a000000-0000-0000-0000-000000000001','49000000-0000-0000-0000-000000000001','40000000-0000-0000-0000-000000000012','44000000-0000-0000-0000-000000000001','41000000-0000-0000-0000-000000000002',1000,'finance-provider-ref-1','INITIATED');
 
--- 1-6: ordinary clients cannot access or mutate financial state.
 set local role authenticated;
 select set_config('request.jwt.claim.sub','40000000-0000-0000-0000-000000000011',true);
 select set_config('request.jwt.claim.role','authenticated',true);
-select throws_ok($a$ select available_balance from public.coin_wallets where id='42000000-0000-0000-0000-000000000012' $a$,'42501',null,'authenticated users cannot read another wallet');
+select is((select count(*) from public.coin_wallets where id='42000000-0000-0000-0000-000000000012'),0::bigint,'authenticated users cannot read another wallet');
 select throws_ok($b$ update public.coin_wallets set available_balance=999999 where id='42000000-0000-0000-0000-000000000011' $b$,'42501',null,'authenticated users cannot modify wallet balances');
 select throws_ok($c$ insert into public.financial_ledger_entries(transaction_group_id,account_id,currency_id,direction,amount,occurred_at) values(gen_random_uuid(),'48000000-0000-0000-0000-000000000001','41000000-0000-0000-0000-000000000002','DEBIT',100,now()) $c$,'42501',null,'authenticated users cannot write financial ledger entries');
 select throws_ok($d$ insert into public.gift_transactions(gift_id,sender_id,recipient_id,quantity,unit_price_hbc,total_hbc,status) values('43000000-0000-0000-0000-000000000001','40000000-0000-0000-0000-000000000011','40000000-0000-0000-0000-000000000012',1,1,1,'COMPLETED') $d$,'42501',null,'authenticated users cannot inject gift economics');
 select throws_ok($e$ insert into public.refunds(payment_id,purchase_id,amount,currency_id,status) values('4a000000-0000-0000-0000-000000000001','49000000-0000-0000-0000-000000000001',1,'41000000-0000-0000-0000-000000000002','REQUESTED') $e$,'42501',null,'authenticated users cannot create refunds directly');
 select throws_ok($f$ insert into public.admin_user_roles(user_id,role_id) values('40000000-0000-0000-0000-000000000011',gen_random_uuid()) $f$,'42501',null,'authenticated users cannot escalate through admin roles');
 
--- 7-14: atomic wallet operations.
 set local role service_role;
 select set_config('request.jwt.claim.role','service_role',true);
 select lives_ok($g$ select public.credit_coin_wallet('40000000-0000-0000-0000-000000000011','41000000-0000-0000-0000-000000000001',1000,'finance-credit-1','TEST','4c000000-0000-0000-0000-000000000001','Initial credit') $g$,'trusted server can credit wallet');
@@ -68,7 +65,6 @@ select throws_ok($i$ select public.debit_coin_wallet('40000000-0000-0000-0000-00
 update public.coin_wallets set status='ACTIVE' where id='42000000-0000-0000-0000-000000000011';
 select ok((select count(*) from public.coin_transaction_entries cte join public.coin_transactions ct on ct.id=cte.coin_transaction_id where ct.idempotency_key='finance-credit-1')=2,'wallet movement has balanced user/platform entries');
 
--- 15-20: gifts use authoritative price, block barrier, and no recipient HBC.
 select lives_ok($j$ select public.send_virtual_gift('40000000-0000-0000-0000-000000000011','40000000-0000-0000-0000-000000000012','43000000-0000-0000-0000-000000000001',2,'finance-gift-1','Hello') $j$,'gift transaction succeeds server-side');
 select is((select available_balance from public.coin_wallets where id='42000000-0000-0000-0000-000000000011'),800::bigint,'gift debits authoritative 200 HBC');
 select is((select available_balance from public.coin_wallets where id='42000000-0000-0000-0000-000000000012'),0::bigint,'gift recipient receives no spendable HBC');
@@ -78,7 +74,6 @@ insert into public.blocks(blocker_id,blocked_id) values('40000000-0000-0000-0000
 select throws_ok($k$ select public.send_virtual_gift('40000000-0000-0000-0000-000000000011','40000000-0000-0000-0000-000000000012','43000000-0000-0000-0000-000000000001',1,'finance-gift-blocked') $k$,'P0001',null,'gift cannot cross a block barrier');
 delete from public.blocks where blocker_id='40000000-0000-0000-0000-000000000012' and blocked_id='40000000-0000-0000-0000-000000000011';
 
--- 21-27: double-entry ledger and immutability.
 select lives_ok($l$ select public.post_financial_transaction('41000000-0000-0000-0000-000000000002',jsonb_build_array(jsonb_build_object('account_id','48000000-0000-0000-0000-000000000001','direction','DEBIT','amount',1000),jsonb_build_object('account_id','48000000-0000-0000-0000-000000000002','direction','CREDIT','amount',1000)),'TEST','4d000000-0000-0000-0000-000000000001',now(),'Balanced test') $l$,'balanced ledger transaction can be posted');
 select ok((select sum(case when direction='DEBIT' then amount else 0 end)=sum(case when direction='CREDIT' then amount else 0 end) from public.financial_ledger_entries where reference_type='TEST' and reference_id='4d000000-0000-0000-0000-000000000001'),'ledger debits equal credits');
 select throws_ok($m$ select public.post_financial_transaction('41000000-0000-0000-0000-000000000002',jsonb_build_array(jsonb_build_object('account_id','48000000-0000-0000-0000-000000000001','direction','DEBIT','amount',1000),jsonb_build_object('account_id','48000000-0000-0000-0000-000000000002','direction','CREDIT','amount',999))) $m$,'P0001',null,'unbalanced transaction is rejected');
@@ -87,7 +82,6 @@ select lives_ok($n$ select public.reverse_financial_transaction((select transact
 select ok((select count(*) from public.financial_ledger_entries where reference_type='LEDGER_REVERSAL' and reference_id in(select id from public.financial_ledger_entries where reference_type='TEST' and reference_id='4d000000-0000-0000-0000-000000000001'))=2,'reversal creates opposite entries for every original entry');
 select throws_ok($o$ update public.financial_ledger_entries set amount=2000 where reference_type='TEST' and reference_id='4d000000-0000-0000-0000-000000000001' $o$,'P0001',null,'posted ledger entries are immutable');
 
--- 28-34: payment verification and webhook idempotency.
 select throws_ok($p$ select public.record_verified_payment('4a000000-0000-0000-0000-000000000001','finance-provider-ref-1',999,'41000000-0000-0000-0000-000000000002','SUCCEEDED') $p$,'P0001',null,'payment amount mismatch is rejected');
 select lives_ok($q$ select public.record_verified_payment('4a000000-0000-0000-0000-000000000001','finance-provider-ref-1',1000,'41000000-0000-0000-0000-000000000002','SUCCEEDED') $q$,'matching verified payment succeeds');
 select is((select status::text from public.payments where id='4a000000-0000-0000-0000-000000000001'),'SUCCEEDED','verified payment becomes succeeded');
@@ -96,7 +90,6 @@ select lives_ok($r$ select public.record_verified_payment('4a000000-0000-0000-00
 select is((select public.record_payment_webhook_event('44000000-0000-0000-0000-000000000001','finance-event-1','charge.succeeded','finance-provider-ref-1','{"test":true}'::jsonb)),(select public.record_payment_webhook_event('44000000-0000-0000-0000-000000000001','finance-event-1','charge.succeeded','finance-provider-ref-1','{"test":false}'::jsonb)),'duplicate webhook event IDs are idempotent');
 select is((select count(*) from public.payment_webhook_events where provider_id='44000000-0000-0000-0000-000000000001' and provider_event_id='finance-event-1'),1::bigint,'duplicate webhook creates one stored event');
 
--- 35-43: HBC fulfillment and refund recovery.
 select lives_ok($s$ select public.fulfill_hbc_purchase('49000000-0000-0000-0000-000000000001','finance-fulfillment-1') $s$,'paid HBC purchase fulfills server-side');
 select is((select available_balance from public.coin_wallets where id='42000000-0000-0000-0000-000000000012'),1000::bigint,'fulfillment credits exact configured HBC quantity');
 select is((select status from public.purchases where id='49000000-0000-0000-0000-000000000001'),'FULFILLED'::purchase_status,'fulfillment moves purchase to fulfilled');
