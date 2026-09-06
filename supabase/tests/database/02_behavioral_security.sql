@@ -7,30 +7,21 @@ select plan(22);
 -- Deterministic identities used only inside this rolled-back test transaction.
 -- auth.users is seeded first because public.users references Supabase Auth.
 select lives_ok($seed$
-  insert into auth.users (id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at)
+  insert into auth.users (id, aud, role, email, encrypted_password, raw_user_meta_data, email_confirmed_at, created_at, updated_at)
   values
-    ('00000000-0000-0000-0000-000000000001', 'authenticated', 'authenticated', 'behavior-a@example.test', 'test-hash', now(), now(), now()),
-    ('00000000-0000-0000-0000-000000000002', 'authenticated', 'authenticated', 'behavior-b@example.test', 'test-hash', now(), now(), now()),
-    ('00000000-0000-0000-0000-000000000003', 'authenticated', 'authenticated', 'behavior-c@example.test', 'test-hash', now(), now(), now())
+    ('00000000-0000-0000-0000-000000000001', 'authenticated', 'authenticated', 'behavior-a@example.test', 'test-hash', '{"first_name":"Behavior","last_name":"Alice","date_of_birth":"1990-01-01","gender":"FEMALE","country_code":"NG"}'::jsonb, now(), now(), now()),
+    ('00000000-0000-0000-0000-000000000002', 'authenticated', 'authenticated', 'behavior-b@example.test', 'test-hash', '{"first_name":"Behavior","last_name":"Bob","date_of_birth":"1990-01-02","gender":"MALE","country_code":"US"}'::jsonb, now(), now(), now()),
+    ('00000000-0000-0000-0000-000000000003', 'authenticated', 'authenticated', 'behavior-c@example.test', 'test-hash', '{"first_name":"Behavior","last_name":"Cara","date_of_birth":"1990-01-03","gender":"UNDISCLOSED","country_code":"GB"}'::jsonb, now(), now(), now())
 $seed$, 'test auth identities can be seeded');
 
-insert into public.users (id, first_name, last_name, date_of_birth, gender, country_code, account_status)
-values
-  ('00000000-0000-0000-0000-000000000001', 'Behavior', 'Alice', '1990-01-01', 'FEMALE', 'NG', 'ACTIVE'),
-  ('00000000-0000-0000-0000-000000000002', 'Behavior', 'Bob', '1990-01-02', 'MALE', 'US', 'ACTIVE'),
-  ('00000000-0000-0000-0000-000000000003', 'Behavior', 'Cara', '1990-01-03', 'UNDISCLOSED', 'GB', 'ACTIVE');
-
-insert into public.profiles (user_id, username, username_normalized, display_name)
-values
-  ('00000000-0000-0000-0000-000000000001', 'behavior_alice', 'behavior_alice', 'Alice'),
-  ('00000000-0000-0000-0000-000000000002', 'behavior_bob', 'behavior_bob', 'Bob'),
-  ('00000000-0000-0000-0000-000000000003', 'behavior_cara', 'behavior_cara', 'Cara');
-
-insert into public.user_privacy_settings (user_id, profile_visibility, country_visibility, message_permission)
-values
-  ('00000000-0000-0000-0000-000000000001', 'PUBLIC', 'PUBLIC', 'FOLLOWERS'),
-  ('00000000-0000-0000-0000-000000000002', 'PUBLIC', 'PUBLIC', 'FOLLOWERS'),
-  ('00000000-0000-0000-0000-000000000003', 'PUBLIC', 'PUBLIC', 'FOLLOWERS');
+-- Registration trigger creates the authoritative identity/profile/privacy rows.
+set local role postgres;
+update public.users set account_status='ACTIVE' where id in (
+  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0000-000000000002',
+  '00000000-0000-0000-0000-000000000003'
+);
+set local role authenticated;
 
 insert into public.posts (id, user_id, content, visibility, status, published_at)
 values
@@ -65,7 +56,6 @@ select throws_ok($duplicate_follow$
   values ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002')
 $duplicate_follow$, '23505', null, 'duplicate follow is rejected by the database uniqueness constraint');
 
--- Bob follows Alice so Bob is genuinely a follower of the author of the followers-only post.
 set local role postgres;
 insert into public.follows (follower_id, following_id)
 values ('00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001');
