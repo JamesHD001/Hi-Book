@@ -17,9 +17,9 @@ set local role authenticated;
 select set_config('request.jwt.claim.sub','50000000-0000-0000-0000-000000000011',true);
 select set_config('request.jwt.claim.role','authenticated',true);
 
-select lives_ok($a$ update public.users set account_status='DEACTIVATED' where id='50000000-0000-0000-0000-000000000011' $a$,'direct account status mutation is safely denied');
+select throws_ok($a$ update public.users set account_status='DEACTIVATED' where id='50000000-0000-0000-0000-000000000011' $a$,'42501',null,'direct account status mutation is safely denied');
 select is((select account_status from public.users where id='50000000-0000-0000-0000-000000000011'),'ACTIVE'::account_status,'direct account status mutation has no effect');
-select lives_ok($b$ update public.users set deleted_at=now() where id='50000000-0000-0000-0000-000000000011' $b$,'direct deletion timestamp mutation is safely denied');
+select throws_ok($b$ update public.users set deleted_at=now() where id='50000000-0000-0000-0000-000000000011' $b$,'42501',null,'direct deletion timestamp mutation is safely denied');
 select is((select deleted_at from public.users where id='50000000-0000-0000-0000-000000000011'),null::timestamptz,'direct deletion timestamp mutation has no effect');
 select throws_ok($c$ insert into public.account_deletion_request(user_id,status,scheduled_for) values('50000000-0000-0000-0000-000000000011','SCHEDULED',now()+interval '30 days') $c$,'42501',null,'clients cannot directly create deletion requests');
 select is((select count(*) from public.account_deletion_request where user_id='50000000-0000-0000-0000-000000000011'),0::bigint,'blocked direct writes leave no deletion request');
