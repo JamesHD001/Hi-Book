@@ -12,7 +12,8 @@ insert into auth.users (id,aud,role,email,encrypted_password,raw_user_meta_data,
 set local role postgres;
 update public.users set account_status='ACTIVE' where id in ('40000000-0000-0000-0000-000000000011','40000000-0000-0000-0000-000000000012','40000000-0000-0000-0000-000000000013');
 update public.user_privacy_settings set message_permission='EVERYONE' where user_id in ('40000000-0000-0000-0000-000000000011','40000000-0000-0000-0000-000000000012','40000000-0000-0000-0000-000000000013');
-set local role authenticated;
+
+-- All financial fixture rows are trusted system data; only the assertions below run as authenticated.
 insert into public.currencies(id,code,name,currency_type,decimal_places,is_active) values
 ('41000000-0000-0000-0000-000000000001','HBC','Hi!Book Coin','VIRTUAL',0,true),
 ('41000000-0000-0000-0000-000000000002','NGN','Nigerian Naira','FIAT',2,true);
