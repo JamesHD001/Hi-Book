@@ -33,6 +33,7 @@ as $$
   from public.users u
   where u.id = target_user_id
     and u.account_status = 'ACTIVE'
+    and public.can_view_profile(target_user_id)
     and not exists (
       select 1
       from public.blocks b
