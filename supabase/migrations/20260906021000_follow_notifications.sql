@@ -16,7 +16,7 @@ begin
 
   if exists (
     select 1
-    from public.user_notification_preferences p
+    from public.notification_preferences p
     where p.user_id = new.following_id
       and p.follows_enabled = false
   ) then
@@ -50,8 +50,7 @@ begin
     from public.users u
     where u.id = new.follower_id
       and u.account_status = 'ACTIVE'
-  )
-  on conflict do nothing;
+  );
 
   return new;
 end;
