@@ -7,6 +7,7 @@ import LogoutButton from "@/components/auth/LogoutButton";
 const links = [
   { href: "/community", label: "Home" },
   { href: "/discover", label: "Discover" },
+  { href: "/network/followers", label: "Network" },
   { href: "/messages", label: "Messages" },
   { href: "/notifications", label: "Notifications" },
   { href: "/profile", label: "Profile" },
