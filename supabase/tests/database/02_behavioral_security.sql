@@ -21,15 +21,14 @@ update public.users set account_status='ACTIVE' where id in (
   '00000000-0000-0000-0000-000000000002',
   '00000000-0000-0000-0000-000000000003'
 );
-set local role authenticated;
-select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001', true);
-select set_config('request.jwt.claim.role', 'authenticated', true);
-
 insert into public.posts (id, user_id, content, visibility, status, published_at)
 values
   ('10000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'Alice public post', 'PUBLIC', 'PUBLISHED', now()),
   ('10000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'Alice followers post', 'FOLLOWERS', 'PUBLISHED', now()),
   ('10000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'Alice private post', 'PRIVATE', 'PUBLISHED', now());
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001', true);
+select set_config('request.jwt.claim.role', 'authenticated', true);
 
 select ok((select count(*) from public.users) = 1, 'RLS isolates users to the current account');
 select ok((select count(*) from public.profiles) = 1, 'RLS isolates profiles to the current account when querying directly');
