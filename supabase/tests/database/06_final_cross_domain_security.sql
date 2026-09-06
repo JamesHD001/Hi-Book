@@ -1,6 +1,6 @@
 begin;
 
-select plan(24);
+select plan(26);
 
 -- ============================================================
 -- FINAL CROSS-DOMAIN SECURITY CONTRACT
@@ -52,99 +52,29 @@ select is(
 );
 
 -- Required cross-domain validation triggers.
-select ok(
-  exists (select 1 from pg_trigger where tgname = 'trg_validate_hbc_recovery_cross_domain'),
-  'HBC recovery cross-domain trigger exists'
-);
-
-select ok(
-  exists (select 1 from pg_trigger where tgname = 'trg_hbc_recovery_obligations_updated_at'),
-  'HBC recovery updated_at trigger exists'
-);
-
-select ok(
-  exists (select 1 from pg_trigger where tgname = 'trg_validate_payment_purchase_identity'),
-  'payment purchase identity trigger exists'
-);
-
-select ok(
-  exists (select 1 from pg_trigger where tgname = 'trg_validate_payment_attempt_consistency'),
-  'payment attempt consistency trigger exists'
-);
-
-select ok(
-  exists (select 1 from pg_trigger where tgname = 'trg_validate_fulfillment_user_consistency'),
-  'fulfillment identity trigger exists'
-);
-
-select ok(
-  exists (select 1 from pg_trigger where tgname = 'trg_validate_payment_webhook_event'),
-  'payment webhook validation trigger exists'
-);
+select ok(exists (select 1 from pg_trigger where tgname = 'trg_validate_hbc_recovery_cross_domain'), 'HBC recovery cross-domain trigger exists');
+select ok(exists (select 1 from pg_trigger where tgname = 'trg_hbc_recovery_obligations_updated_at'), 'HBC recovery updated_at trigger exists');
+select ok(exists (select 1 from pg_trigger where tgname = 'trg_validate_payment_purchase_identity'), 'payment purchase identity trigger exists');
+select ok(exists (select 1 from pg_trigger where tgname = 'trg_validate_payment_attempt_consistency'), 'payment attempt consistency trigger exists');
+select ok(exists (select 1 from pg_trigger where tgname = 'trg_validate_fulfillment_user_consistency'), 'fulfillment identity trigger exists');
+select ok(exists (select 1 from pg_trigger where tgname = 'trg_validate_payment_webhook_event'), 'payment webhook validation trigger exists');
 
 -- Trigger functions must use a controlled search_path.
-select ok(
-  (select proconfig @> array['search_path=pg_catalog, public'] from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'validate_hbc_recovery_cross_domain'),
-  'HBC recovery validator has controlled search_path'
-);
+select ok((select proconfig @> array['search_path=pg_catalog, public'] from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'validate_hbc_recovery_cross_domain'), 'HBC recovery validator has controlled search_path');
+select ok((select proconfig @> array['search_path=pg_catalog, public'] from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'validate_payment_purchase_identity'), 'payment identity validator has controlled search_path');
+select ok((select proconfig @> array['search_path=pg_catalog, public'] from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'validate_payment_attempt_consistency'), 'payment attempt validator has controlled search_path');
+select ok((select proconfig @> array['search_path=pg_catalog, public'] from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'validate_fulfillment_user_consistency'), 'fulfillment validator has controlled search_path');
+select ok((select proconfig @> array['search_path=pg_catalog, public'] from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'validate_payment_webhook_event'), 'webhook validator has controlled search_path');
 
-select ok(
-  (select proconfig @> array['search_path=pg_catalog, public'] from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'validate_payment_purchase_identity'),
-  'payment identity validator has controlled search_path'
-);
+-- Validator functions run only through controlled trigger execution.
+select ok((select prosecdef from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'validate_hbc_recovery_cross_domain'), 'HBC recovery validator is SECURITY DEFINER');
+select ok((select prosecdef from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'validate_payment_purchase_identity'), 'payment identity validator is SECURITY DEFINER');
+select ok((select prosecdef from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'validate_payment_attempt_consistency'), 'payment attempt validator is SECURITY DEFINER');
+select ok((select prosecdef from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'validate_fulfillment_user_consistency'), 'fulfillment validator is SECURITY DEFINER');
+select ok((select prosecdef from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'validate_payment_webhook_event'), 'webhook validator is SECURITY DEFINER');
 
-select ok(
-  (select proconfig @> array['search_path=pg_catalog, public'] from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'validate_payment_attempt_consistency'),
-  'payment attempt validator has controlled search_path'
-);
-
-select ok(
-  (select proconfig @> array['search_path=pg_catalog, public'] from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'validate_fulfillment_user_consistency'),
-  'fulfillment validator has controlled search_path'
-);
-
-select ok(
-  (select proconfig @> array['search_path=pg_catalog, public'] from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'validate_payment_webhook_event'),
-  'webhook validator has controlled search_path'
-);
-
--- Validate function security posture and prevent accidental public execution.
-select ok(
-  (select prosecdef from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'validate_hbc_recovery_cross_domain'),
-  'HBC recovery validator is SECURITY DEFINER'
-);
-
-select ok(
-  (select prosecdef from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'validate_payment_purchase_identity'),
-  'payment identity validator is SECURITY DEFINER'
-);
-
-select ok(
-  (select prosecdef from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'validate_payment_attempt_consistency'),
-  'payment attempt validator is SECURITY DEFINER'
-);
-
-select ok(
-  (select prosecdef from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'validate_fulfillment_user_consistency'),
-  'fulfillment validator is SECURITY DEFINER'
-);
-
-select ok(
-  (select prosecdef from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'validate_payment_webhook_event'),
-  'webhook validator is SECURITY DEFINER'
-);
-
-select is(
-  (select has_function_privilege('public', p.oid, 'EXECUTE') from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'validate_payment_webhook_event' limit 1),
-  false,
-  'webhook validator is not executable by PUBLIC'
-);
-
-select is(
-  (select has_function_privilege('public', p.oid, 'EXECUTE') from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'validate_hbc_recovery_cross_domain' limit 1),
-  false,
-  'HBC recovery validator is not executable by PUBLIC'
-);
+select is((select has_function_privilege('public', p.oid, 'EXECUTE') from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'validate_payment_webhook_event' limit 1), false, 'webhook validator is not executable by PUBLIC');
+select is((select has_function_privilege('public', p.oid, 'EXECUTE') from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'validate_hbc_recovery_cross_domain' limit 1), false, 'HBC recovery validator is not executable by PUBLIC');
 
 select * from finish();
 rollback;
