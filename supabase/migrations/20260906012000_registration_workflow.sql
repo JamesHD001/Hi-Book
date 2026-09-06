@@ -51,34 +51,16 @@ begin
   v_base_username := left(v_base_username, 21);
   v_username := left(v_base_username || '_' || replace(new.id::text, '-', ''), 30);
 
-  insert into public.users (
-    id, first_name, middle_name, last_name, date_of_birth,
-    gender, country_code, account_status
-  ) values (
-    new.id, v_first_name, v_middle_name, v_last_name, v_date_of_birth,
-    v_gender, v_country_code, 'PENDING_VERIFICATION'
-  );
+  insert into public.users (id, first_name, middle_name, last_name, date_of_birth, gender, country_code, account_status)
+  values (new.id, v_first_name, v_middle_name, v_last_name, v_date_of_birth, v_gender, v_country_code, 'PENDING_VERIFICATION');
 
-  insert into public.profiles (
-    user_id, username, username_normalized, display_name
-  ) values (
-    new.id,
-    v_username,
-    lower(v_username),
-    trim(v_first_name || ' ' || v_last_name)
-  );
+  insert into public.profiles (user_id, username, username_normalized, display_name)
+  values (new.id, v_username, lower(v_username), trim(v_first_name || ' ' || v_last_name));
 
-  insert into public.user_privacy_settings (user_id)
-  values (new.id);
-
-  insert into public.user_preferences (user_id, language_code)
-  values (new.id, 'en');
-
-  insert into public.notification_preferences (user_id)
-  values (new.id);
-
-  insert into public.discovery_preferences (user_id)
-  values (new.id);
+  insert into public.user_privacy_settings (user_id) values (new.id);
+  insert into public.user_preferences (user_id, language_code) values (new.id, 'en');
+  insert into public.notification_preferences (user_id) values (new.id);
+  insert into public.discovery_preferences (user_id) values (new.id);
 
   return new;
 exception
@@ -88,12 +70,11 @@ end;
 $$;
 
 drop trigger if exists on_auth_user_created on auth.users;
-create trigger on_auth_user_created
-after insert on auth.users
+create trigger on_auth_user_created after insert on auth.users
 for each row execute function public.handle_auth_user_created();
 
 revoke all on function public.handle_auth_user_created() from public, anon, authenticated;
-
+revoke update on public.users from authenticated;
 grant update (country_code) on public.users to authenticated;
 
 -- Users may edit country through the normal RLS path, but account status,
@@ -115,54 +96,36 @@ declare
   v_email_confirmed timestamptz;
   v_phone_confirmed timestamptz;
 begin
-  if v_user_id is null then
-    raise exception 'Authentication required';
-  end if;
+  if v_user_id is null then raise exception 'Authentication required'; end if;
 
   select au.email_confirmed_at, au.phone_confirmed_at
     into v_email_confirmed, v_phone_confirmed
-  from auth.users au
-  where au.id = v_user_id;
+  from auth.users au where au.id = v_user_id;
 
   if v_email_confirmed is null and v_phone_confirmed is null then
     raise exception 'A verified email address or phone number is required';
   end if;
 
-  select ld.id into v_terms_id
-  from public.legal_document ld
-  where ld.document_type = 'TERMS_OF_USE'
-    and ld.published_at is not null
-    and ld.published_at <= now()
-  order by ld.effective_at desc, ld.created_at desc
-  limit 1;
+  select ld.id into v_terms_id from public.legal_document ld
+  where ld.document_type = 'TERMS_OF_USE' and ld.published_at is not null and ld.published_at <= now()
+  order by ld.effective_at desc, ld.created_at desc limit 1;
 
-  select ld.id into v_privacy_id
-  from public.legal_document ld
-  where ld.document_type = 'PRIVACY_POLICY'
-    and ld.published_at is not null
-    and ld.published_at <= now()
-  order by ld.effective_at desc, ld.created_at desc
-  limit 1;
+  select ld.id into v_privacy_id from public.legal_document ld
+  where ld.document_type = 'PRIVACY_POLICY' and ld.published_at is not null and ld.published_at <= now()
+  order by ld.effective_at desc, ld.created_at desc limit 1;
 
   if v_terms_id is null or v_privacy_id is null then
     raise exception 'Current legal documents are not configured';
   end if;
 
-  if not exists (
-    select 1 from public.users u
-    where u.id = v_user_id
-      and u.account_status = 'PENDING_VERIFICATION'
-  ) then
+  if not exists (select 1 from public.users u where u.id = v_user_id and u.account_status = 'PENDING_VERIFICATION') then
     return exists (select 1 from public.users u where u.id = v_user_id and u.account_status = 'ACTIVE');
   end if;
 
   insert into public.user_legal_acceptance (user_id, legal_document_id)
   values (v_user_id, v_terms_id), (v_user_id, v_privacy_id);
 
-  update public.users
-  set account_status = 'ACTIVE', updated_at = now()
-  where id = v_user_id;
-
+  update public.users set account_status = 'ACTIVE', updated_at = now() where id = v_user_id;
   return true;
 end;
 $$;
