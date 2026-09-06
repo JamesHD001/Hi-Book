@@ -12,7 +12,9 @@ security definer
 set search_path = pg_catalog, public
 as $$
 begin
-  if auth.uid() is not null and auth.role() = 'authenticated' then
+  if auth.uid() is not null
+     and auth.role() = 'authenticated'
+     and coalesce(current_setting('hibook.system_operation', true), 'false') <> 'true' then
     if new.account_status is distinct from old.account_status then
       raise exception 'Account status is server-controlled';
     end if;
@@ -31,6 +33,7 @@ for each row execute function public.prevent_client_account_status_mutation();
 
 -- Direct client writes to deletion requests are disabled. The application
 -- must use these SECURITY DEFINER RPCs after performing reauthentication.
+drop policy if exists deletion_self_select on public.account_deletion_request;
 drop policy if exists deletion_self_insert on public.account_deletion_request;
 drop policy if exists deletion_self_update on public.account_deletion_request;
 
@@ -71,6 +74,7 @@ begin
   )
   returning * into v_request;
 
+  perform set_config('hibook.system_operation', 'true', true);
   update public.users
      set account_status = 'DEACTIVATED',
          updated_at = now()
@@ -112,6 +116,7 @@ begin
    where id = v_request.id
   returning * into v_request;
 
+  perform set_config('hibook.system_operation', 'true', true);
   update public.users
      set account_status = 'ACTIVE',
          deleted_at = null,
@@ -130,7 +135,7 @@ revoke all on function public.cancel_account_deletion() from public;
 grant execute on function public.cancel_account_deletion() to authenticated;
 
 -- The request row remains private/read-only to its owner. Server/worker code
--- owns creation, scheduling, cancellation and completion transitions.
+-- owns creation, scheduling and completion transitions.
 create policy deletion_self_select on public.account_deletion_request
 for select using (user_id = auth.uid());
 
