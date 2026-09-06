@@ -4,6 +4,28 @@ import { requireActiveUser } from "@/lib/auth/require-active-user";
 export const dynamic = "force-dynamic";
 const SCOPES = new Set(["HOME", "FOLLOWING", "EXPLORE"]);
 
+type FeedMediaRow = {
+  id: string;
+  storage_path: string;
+  width: number | null;
+  height: number | null;
+  display_order: number;
+  alt_text: string | null;
+};
+
+type FeedRow = {
+  post_id: string;
+  author_id: string;
+  username: string;
+  display_name: string;
+  avatar_path: string | null;
+  content: string | null;
+  visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
+  created_at: string;
+  published_at: string;
+  media: FeedMediaRow[] | null;
+};
+
 export async function GET(request: NextRequest) {
   try {
     const { supabase } = await requireActiveUser();
@@ -13,7 +35,7 @@ export async function GET(request: NextRequest) {
     const beforePostId = request.nextUrl.searchParams.get("before_post_id");
     const { data, error } = await supabase.rpc("get_post_feed", { feed_scope: scope, page_limit: 21, before_created_at: beforeCreatedAt || null, before_post_id: beforePostId || null });
     if (error) throw error;
-    const rows = data ?? [];
+    const rows = (data ?? []) as FeedRow[];
     const page = rows.slice(0, 20);
     const posts = await Promise.all(page.map(async (post) => {
       let avatarUrl: string | null = null;
@@ -21,7 +43,7 @@ export async function GET(request: NextRequest) {
         const { data: signed } = await supabase.storage.from("avatars").createSignedUrl(post.avatar_path, 600);
         avatarUrl = signed?.signedUrl ?? null;
       }
-      const media = await Promise.all((Array.isArray(post.media) ? post.media : []).map(async (item: { id: string; storage_path: string; width: number | null; height: number | null; display_order: number; alt_text: string | null }) => {
+      const media = await Promise.all((Array.isArray(post.media) ? post.media : []).map(async (item) => {
         const { data: signed } = await supabase.storage.from("posts").createSignedUrl(item.storage_path, 600);
         return { id: item.id, url: signed?.signedUrl ?? "", width: item.width, height: item.height, display_order: item.display_order, alt_text: item.alt_text };
       }));
