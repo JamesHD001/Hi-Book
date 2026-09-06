@@ -23,13 +23,12 @@ update public.users set account_status='ACTIVE' where id in (
   '00000000-0000-0000-0000-000000000013'
 );
 set local role authenticated;
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000011', true);
+select set_config('request.jwt.claim.role', 'authenticated', true);
 
--- Alice follows Bob, making Alice an authorized sender when Bob allows followers.
 insert into public.follows (follower_id, following_id)
 values ('00000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000012');
 
--- Seed the direct conversation and a second conversation for cross-conversation
--- reply tests as the trusted database role.
 set local role postgres;
 insert into public.conversations (id, type, created_at, updated_at)
 values
@@ -49,34 +48,21 @@ select set_config('request.jwt.claim.role', 'authenticated', true);
 
 select lives_ok($send$
   select public.send_message(
-    '20000000-0000-0000-0000-000000000011',
-    'TEXT',
-    'Hello Bob',
-    null,
-    null,
-    '[]'::jsonb
+    '20000000-0000-0000-0000-000000000011', 'TEXT', 'Hello Bob', null, null, '[]'::jsonb
   )
 $send$, 'conversation participant can send a text message');
 
-select ok(
-  (select count(*) from public.messages where conversation_id='20000000-0000-0000-0000-000000000011' and sender_id='00000000-0000-0000-0000-000000000011' and content='Hello Bob') = 1,
-  'message sender is derived from the authenticated identity'
-);
+select ok((select count(*) from public.messages where conversation_id='20000000-0000-0000-0000-000000000011' and sender_id='00000000-0000-0000-0000-000000000011' and content='Hello Bob') = 1, 'message sender is derived from the authenticated identity');
 
 select throws_ok($spoof$
   insert into public.messages (conversation_id, sender_id, message_type, content, status)
   values ('20000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000012', 'TEXT', 'Spoofed sender', 'SENT')
 $spoof$, '42501', null, 'client cannot insert a message while spoofing another sender');
 
-select ok(
-  (select count(*) from public.conversations where id='20000000-0000-0000-0000-000000000011') = 1,
-  'conversation exists for its participants'
-);
+select ok((select count(*) from public.conversations where id='20000000-0000-0000-0000-000000000011') = 1, 'conversation exists for its participants');
 
 set local role postgres;
-update public.user_privacy_settings
-set message_permission = 'EVERYONE'
-where user_id = '00000000-0000-0000-0000-000000000013';
+update public.user_privacy_settings set message_permission = 'EVERYONE' where user_id = '00000000-0000-0000-0000-000000000013';
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000013', true);
 
@@ -91,24 +77,13 @@ select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000011
 
 select lives_ok($reply$
   select public.send_message(
-    '20000000-0000-0000-0000-000000000011',
-    'TEXT',
-    'Replying to you',
-    null,
-    (select id from public.messages where conversation_id='20000000-0000-0000-0000-000000000011' order by created_at asc limit 1),
-    '[]'::jsonb
+    '20000000-0000-0000-0000-000000000011', 'TEXT', 'Replying to you', null,
+    (select id from public.messages where conversation_id='20000000-0000-0000-0000-000000000011' order by created_at asc limit 1), '[]'::jsonb
   )
 $reply$, 'reply target in the same conversation is allowed');
 
 select throws_ok($cross_reply$
-  select public.send_message(
-    '20000000-0000-0000-0000-000000000011',
-    'TEXT',
-    'Cross conversation reply',
-    null,
-    '30000000-0000-0000-0000-000000000012',
-    '[]'::jsonb
-  )
+  select public.send_message('20000000-0000-0000-0000-000000000011','TEXT','Cross conversation reply',null,'30000000-0000-0000-0000-000000000012','[]'::jsonb)
 $cross_reply$, 'P0001', null, 'reply target from another conversation is rejected');
 
 select throws_ok($empty_text$
@@ -120,9 +95,7 @@ select throws_ok($oversize_text$
 $oversize_text$, 'P0001', null, 'messages over 4000 characters are rejected');
 
 set local role postgres;
-update public.user_privacy_settings
-set message_permission = 'NO_ONE'
-where user_id = '00000000-0000-0000-0000-000000000012';
+update public.user_privacy_settings set message_permission = 'NO_ONE' where user_id = '00000000-0000-0000-0000-000000000012';
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000011', true);
 
@@ -132,9 +105,7 @@ $no_one$, 'P0001', null, 'NO_ONE message permission blocks new messages');
 select ok((select count(*) from public.conversations where id='20000000-0000-0000-0000-000000000011') = 1, 'changing message permission does not delete an existing conversation');
 
 set local role postgres;
-update public.user_privacy_settings
-set message_permission = 'EVERYONE'
-where user_id = '00000000-0000-0000-0000-000000000012';
+update public.user_privacy_settings set message_permission = 'EVERYONE' where user_id = '00000000-0000-0000-0000-000000000012';
 set local role authenticated;
 select lives_ok($everyone$
   select public.send_message('20000000-0000-0000-0000-000000000011','TEXT','Permission restored',null,null,'[]'::jsonb)
@@ -153,9 +124,7 @@ $blocked_send$, 'P0001', null, 'block overrides message permission and prevents 
 set local role postgres;
 insert into public.posts (id, user_id, content, visibility, status, published_at)
 values ('10000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000012', 'Bob private post', 'PRIVATE', 'PUBLISHED', now());
-delete from public.blocks
-where blocker_id='00000000-0000-0000-0000-000000000012'
-  and blocked_id='00000000-0000-0000-0000-000000000011';
+delete from public.blocks where blocker_id='00000000-0000-0000-0000-000000000012' and blocked_id='00000000-0000-0000-0000-000000000011';
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000011', true);
 
@@ -164,5 +133,4 @@ select throws_ok($private_share$
 $private_share$, 'P0001', null, 'sharing an inaccessible private post through messaging is rejected');
 
 select * from finish();
-
 rollback;
