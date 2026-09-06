@@ -1,6 +1,6 @@
 begin;
 
-select plan(12);
+select plan(13);
 
 select ok(exists (select 1 from pg_trigger where tgname = 'on_auth_user_created'), 'auth user registration trigger exists');
 select ok((select prosecdef from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'handle_auth_user_created'), 'registration trigger function is SECURITY DEFINER');
