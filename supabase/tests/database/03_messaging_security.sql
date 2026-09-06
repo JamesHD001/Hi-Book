@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap;
 
-select plan(18);
+select plan(17);
 
 -- Deterministic test identities. auth.users is seeded first because public.users
 -- references Supabase Auth.
