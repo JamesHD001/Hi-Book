@@ -2,8 +2,10 @@ begin;
 
 create extension if not exists pgtap;
 
-select plan(26);
+select plan(22);
 
+-- Deterministic identities used only inside this rolled-back test transaction.
+-- auth.users is seeded first because public.users references Supabase Auth.
 select lives_ok($seed$
   insert into auth.users (id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at)
   values
