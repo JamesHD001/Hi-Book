@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap;
-select plan(24);
+select plan(23);
 
 -- Deterministic deletion fixtures.
 insert into auth.users (id,aud,role,email,encrypted_password,email_confirmed_at,created_at,updated_at) values
@@ -16,7 +16,7 @@ insert into public.user_privacy_settings(user_id,profile_visibility,country_visi
 ('50000000-0000-0000-0000-000000000011','PUBLIC','PUBLIC','EVERYONE'),
 ('50000000-0000-0000-0000-000000000012','PUBLIC','PUBLIC','EVERYONE');
 
--- 1-7: direct lifecycle mutation is blocked for authenticated clients.
+-- 1-5: direct lifecycle mutation is blocked for authenticated clients.
 set local role authenticated;
 select set_config('request.jwt.claim.sub','50000000-0000-0000-0000-000000000011',true);
 select set_config('request.jwt.claim.role','authenticated',true);
@@ -27,7 +27,7 @@ select throws_ok($c$ insert into public.account_deletion_request(user_id,status,
 select throws_ok($d$ update public.account_deletion_request set status='COMPLETED' where user_id='50000000-0000-0000-0000-000000000011' $d$,'42501',null,'clients cannot directly complete deletion requests');
 select is((select count(*) from public.account_deletion_request where user_id='50000000-0000-0000-0000-000000000011'),0::bigint,'blocked direct writes leave no deletion request');
 
--- 8-15: request workflow creates a 30-day schedule and restricts account access.
+-- 6-13: request workflow creates a 30-day schedule and restricts account access.
 select lives_ok($e$ select public.request_account_deletion() $e$,'authenticated owner can request deletion through RPC');
 select is((select status from public.account_deletion_request where user_id='50000000-0000-0000-0000-000000000011' order by requested_at desc limit 1),'SCHEDULED'::deletion_status,'request is scheduled rather than immediately destroyed');
 select ok((select scheduled_for between requested_at + interval '29 days' and requested_at + interval '31 days' from public.account_deletion_request where user_id='50000000-0000-0000-0000-000000000011' order by requested_at desc limit 1),'deletion grace period is approximately 30 days');
@@ -37,14 +37,14 @@ select is((select count(*) from public.account_deletion_request where user_id='5
 select ok((select public.can_view_profile('50000000-0000-0000-0000-000000000011')) = false,'deactivated account is not publicly viewable');
 select is((select count(*) from public.account_deletion_request where user_id='50000000-0000-0000-0000-000000000011'),1::bigint,'deletion history remains auditable during grace period');
 
--- 16-20: cancellation is controlled, auditable and restores only the account.
+-- 14-18: cancellation is controlled, auditable and restores only the account.
 select lives_ok($g$ select public.cancel_account_deletion() $g$,'owner can cancel a scheduled deletion through RPC');
 select is((select status from public.account_deletion_request where user_id='50000000-0000-0000-0000-000000000011' order by requested_at desc limit 1),'CANCELLED'::deletion_status,'cancel changes request to cancelled');
 select ok((select cancelled_at is not null from public.account_deletion_request where user_id='50000000-0000-0000-0000-000000000011' order by requested_at desc limit 1),'cancellation timestamp is recorded');
 select is((select account_status from public.users where id='50000000-0000-0000-0000-000000000011'),'ACTIVE'::account_status,'cancellation restores account status');
 select throws_ok($h$ update public.account_deletion_request set status='SCHEDULED' where user_id='50000000-0000-0000-0000-000000000011' and status='CANCELLED' $h$,'42501',null,'clients cannot reopen a cancelled request directly');
 
--- 21-24: a cancelled request may be followed by one new controlled request.
+-- 19-23: a cancelled request may be followed by one new controlled request.
 select lives_ok($i$ select public.request_account_deletion() $i$,'a new deletion request can be made after cancellation');
 select is((select count(*) from public.account_deletion_request where user_id='50000000-0000-0000-0000-000000000011'),2::bigint,'cancelled history is retained and new request is separate');
 select is((select count(*) from public.account_deletion_request where user_id='50000000-0000-0000-0000-000000000011' and status='SCHEDULED'),1::bigint,'only one active deletion schedule exists');
