@@ -51,7 +51,7 @@ as $$
       select 1 from public.comment_likes cl
       where cl.comment_id = target_comment_id and cl.user_id = auth.uid()
     ),
-    (select count(*) from public.comment_likes cl)
+    (select count(*) from public.comment_likes cl where cl.comment_id = target_comment_id)
   where exists (
     select 1
     from public.comments c
