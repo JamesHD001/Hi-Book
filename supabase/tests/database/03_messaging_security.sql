@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap;
 
-select plan(20);
+select plan(18);
 
 -- Deterministic test identities. auth.users is seeded first because public.users
 -- references Supabase Auth.
@@ -167,7 +167,6 @@ $blocked_send$, 'P0001', null, 'block overrides message permission and prevents 
 set local role postgres;
 insert into public.posts (id, user_id, content, visibility, status, published_at)
 values ('10000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000012', 'Bob private post', 'PRIVATE', 'PUBLISHED', now());
--- Remove the block for the source-post test; the post itself remains private.
 delete from public.blocks
 where blocker_id='00000000-0000-0000-0000-000000000012'
   and blocked_id='00000000-0000-0000-0000-000000000011';
