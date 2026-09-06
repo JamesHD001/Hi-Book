@@ -22,6 +22,13 @@ export default function FollowButton({
     setPending(true);
     setError(null);
 
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError || !authData.user) {
+      setError("Your session has expired. Please sign in again.");
+      setPending(false);
+      return;
+    }
+
     const previous = following;
     setFollowing(!previous);
 
@@ -29,10 +36,10 @@ export default function FollowButton({
       ? await supabase
           .from("follows")
           .delete()
-          .eq("follower_id", (await supabase.auth.getUser()).data.user?.id ?? "")
+          .eq("follower_id", authData.user.id)
           .eq("following_id", targetUserId)
       : await supabase.from("follows").insert({
-          follower_id: (await supabase.auth.getUser()).data.user?.id,
+          follower_id: authData.user.id,
           following_id: targetUserId,
         });
 
