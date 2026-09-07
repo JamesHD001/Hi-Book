@@ -4,12 +4,11 @@ import { requireActiveUser } from "@/lib/auth/require-active-user";
 import FollowButton from "@/components/social/FollowButton";
 import BlockButton from "@/components/social/BlockButton";
 import ReportDialog from "@/components/social/ReportDialog";
+import StartConversationButton from "@/components/messaging/StartConversationButton";
 
 export const dynamic = "force-dynamic";
 
-type PageProps = {
-  params: Promise<{ username: string }>;
-};
+type PageProps = { params: Promise<{ username: string }> };
 
 export default async function PublicProfilePage({ params }: PageProps) {
   const { supabase, user } = await requireActiveUser();
@@ -30,9 +29,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
             <div className="rounded-3xl border border-slate-200 bg-white p-8">
               <p className="text-sm text-slate-500">This is your profile.</p>
               <h1 className="mt-2 text-3xl font-bold">{profile.display_name}</h1>
-              <Link href="/profile" className="mt-5 inline-block text-sm font-semibold text-blue-600">
-                Edit profile →
-              </Link>
+              <Link href="/profile" className="mt-5 inline-block text-sm font-semibold text-blue-600">Edit profile →</Link>
             </div>
           </section>
         </main>
@@ -60,11 +57,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
             <div className="-mt-12 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
               <div className="flex items-end gap-4">
                 {avatarData?.signedUrl ? (
-                  <img
-                    src={avatarData.signedUrl}
-                    alt={`${profile.display_name} profile picture`}
-                    className="h-24 w-24 rounded-full border-4 border-white object-cover"
-                  />
+                  <img src={avatarData.signedUrl} alt={`${profile.display_name} profile picture`} className="h-24 w-24 rounded-full border-4 border-white object-cover" />
                 ) : (
                   <div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-white bg-slate-200 text-2xl font-bold text-slate-600">
                     {profile.display_name?.charAt(0).toUpperCase() ?? "?"}
@@ -78,6 +71,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
 
               <div className="flex flex-wrap gap-2">
                 <FollowButton targetUserId={profile.user_id} initialFollowing={Boolean(followStats.is_following)} />
+                <StartConversationButton targetUserId={profile.user_id} />
                 <BlockButton targetUserId={profile.user_id} />
                 <ReportDialog targetId={profile.user_id} />
               </div>
