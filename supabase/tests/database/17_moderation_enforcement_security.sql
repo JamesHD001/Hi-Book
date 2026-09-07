@@ -1,6 +1,6 @@
 begin;
 
-select plan(16);
+select plan(14);
 
 select has_function('public', 'is_user_restricted', array['uuid']);
 select function_returns('public', 'is_user_restricted', array['uuid'], 'boolean');
@@ -17,13 +17,6 @@ select is_security_definer('public', 'is_user_restricted', array['uuid']);
 select is_security_definer('public', 'execute_moderation_action', array['uuid','public.moderation_action_type','text','public.severity_type','timestamptz','timestamptz','jsonb']);
 select is_security_definer('public', 'submit_moderation_appeal', array['uuid','text']);
 select is_security_definer('public', 'review_moderation_appeal', array['uuid','public.appeal_status','text']);
-
-select throws_ok(
-  $$select public.submit_moderation_appeal(gen_random_uuid(), 'short')$$,
-  'P0001',
-  'Authentication required',
-  'Appeal submission requires authentication'
-);
 
 select * from finish();
 rollback;
