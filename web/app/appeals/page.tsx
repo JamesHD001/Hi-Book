@@ -1,6 +1,6 @@
 import AppealForm from "@/components/moderation/AppealForm";
-import { requireActiveUser } from "@/lib/auth/require-active-user";
 import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -15,8 +15,13 @@ type ActiveAction = {
 };
 
 export default async function AppealsPage() {
-  const { user } = await requireActiveUser();
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) redirect("/login");
+
   const { data, error } = await supabase.rpc("get_active_moderation_actions", {
     target_user_id: user.id,
   });
