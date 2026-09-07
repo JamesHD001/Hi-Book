@@ -18,7 +18,7 @@ export default async function MessagesPage() {
   const { data: conversationData } = ids.length ? await supabase.from("conversations").select("id, type, updated_at").in("id", ids).eq("type", "DIRECT").order("updated_at", { ascending: false }) : { data: [] };
   const conversations = (conversationData ?? []) as Conversation[];
   const conversationIds = conversations.map((conversation) => conversation.id);
-  const { data: allParticipants } = conversationIds.length ? await supabase.from("conversation_participants").select("conversation_id, user_id").in("id", conversationIds) : { data: [] };
+  const { data: allParticipants } = conversationIds.length ? await supabase.from("conversation_participants").select("conversation_id, user_id").in("conversation_id", conversationIds) : { data: [] };
   const rows = (allParticipants ?? []) as { conversation_id: string; user_id: string }[];
   const otherUserIds = rows.filter((row) => row.user_id !== user.id).map((row) => row.user_id);
   const { data: profileData } = otherUserIds.length ? await supabase.from("profiles").select("user_id, username, display_name, avatar_path").in("user_id", otherUserIds) : { data: [] };
@@ -32,8 +32,7 @@ export default async function MessagesPage() {
   const items = await Promise.all(conversations.map(async (conversation) => {
     const otherUserId = otherByConversation.get(conversation.id); const profile = otherUserId ? profiles.get(otherUserId) : undefined;
     const avatar = profile?.avatar_path ? (await supabase.storage.from("avatars").createSignedUrl(profile.avatar_path, 600)).data?.signedUrl ?? null : null;
-    const last = latest.get(conversation.id); const lastRead = readByConversation.get(conversation.id);
-    const unread = Boolean(last && last.sender_id !== user.id && (!lastRead || new Date(last.created_at) > new Date(lastRead)));
+    const last = latest.get(conversation.id); const lastRead = readByConversation.get(conversation.id); const unread = Boolean(last && last.sender_id !== user.id && (!lastRead || new Date(last.created_at) > new Date(lastRead)));
     const preview = last ? last.message_type === "POST_SHARE" ? "Shared a post" : last.content?.trim() || "Message" : "No messages yet";
     return { conversation, profile, avatar, unread, preview, last };
   }));
