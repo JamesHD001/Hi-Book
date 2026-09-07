@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { ModerationCaseView } from "@/components/moderation/ModerationCaseView";
+import ModerationCaseView from "@/components/moderation/ModerationCaseView";
 import { requireActiveUser } from "@/lib/auth/require-active-user";
 import { createClient } from "@/lib/supabase/server";
 
