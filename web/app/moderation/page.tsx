@@ -1,4 +1,4 @@
-import { ModerationQueue } from "@/components/moderation/ModerationQueue";
+import ModerationQueue from "@/components/moderation/ModerationQueue";
 import { requireActiveUser } from "@/lib/auth/require-active-user";
 import { createClient } from "@/lib/supabase/server";
 
