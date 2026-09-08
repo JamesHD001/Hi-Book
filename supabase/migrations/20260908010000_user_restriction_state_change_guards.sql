@@ -1,5 +1,29 @@
 begin;
 
+-- Keep the restriction decision itself under the repository-wide SECURITY
+-- DEFINER empty-search-path contract.
+create or replace function public.is_user_restricted(target_user_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1
+    from public.moderation_actions ma
+    where ma.target_type = 'USER'
+      and ma.target_id = target_user_id
+      and ma.action_type = 'USER_RESTRICTED'
+      and ma.revoked_at is null
+      and ma.starts_at <= now()
+      and (ma.expires_at is null or ma.expires_at > now())
+  );
+$$;
+
+revoke all on function public.is_user_restricted(uuid) from public, anon;
+grant execute on function public.is_user_restricted(uuid) to authenticated;
+
 -- USER_RESTRICTED is an authorization state, not a UI-only flag. Enforce it
 -- at the database boundary for ordinary user-generated social/content writes.
 -- Safety operations such as block/report remain available so a restricted user
