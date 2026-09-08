@@ -1,6 +1,6 @@
 # Hi!Book 2.0 — Current TODO
 
-Updated: 2026-09-07
+Updated: 2026-09-08
 
 ## Completed
 
@@ -23,21 +23,20 @@ Updated: 2026-09-07
 - [x] Server-side moderation action enforcement
 - [x] Temporary USER_RESTRICTED authorization state
 - [x] User-facing moderation appeal submission
-- [x] Moderator appeal review RPC
+- [x] Moderator appeal review UI and RPC
 - [x] Moderation audit entries and user moderation notifications
+- [x] Cross-domain restricted-user write guards
 
 ## Current gate
 
-- [ ] Supabase migration reset and full pgTAP suite passes for the latest moderation enforcement migrations
-- [ ] Web lint/build passes after the appeals UI changes
+- [ ] Supabase migration reset and full pgTAP suite passes for the latest moderation/restriction migrations
+- [ ] Web lint/build passes after the latest moderation UI changes
 - [ ] Resolve any CI regressions before advancing the domain
 
 ## Next implementation
 
-- [ ] Finish moderation appeal review UI
 - [ ] Add explicit moderation status/banner UX for restricted/suspended accounts
-- [ ] Expand USER_RESTRICTED enforcement beyond messaging to every state-changing social/content workflow
-- [ ] Add cross-domain moderation regression tests for posts, comments, follows, likes, shares, and discovery
+- [ ] Expand moderation regression coverage for posts, comments, follows, likes, shares, and messages
 - [ ] Complete deletion/retention CI gate
 - [ ] Run final cross-domain security audit
 
