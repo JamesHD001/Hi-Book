@@ -4,14 +4,28 @@ import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
+type AppealQueueRow = {
+  appeal_id: string;
+  case_id: string;
+  case_number: string | null;
+  action_id: string;
+  appellant_id: string;
+  target_type: string;
+  target_id: string;
+  action_type: string;
+  action_reason: string;
+  appeal_reason: string;
+  status: string;
+  created_at: string;
+};
+
 export default async function ModerationAppealsPage() {
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) redirect("/login");
 
-  const { data, error } = await supabase.rpc("get_moderation_appeal_queue", {
-    page_limit: 50,
-  });
+  const { data, error } = await supabase.rpc("get_moderation_appeal_queue", { page_limit: 50 });
+  const appeals = (data ?? []) as AppealQueueRow[];
 
   if (error) {
     return (
@@ -33,20 +47,20 @@ export default async function ModerationAppealsPage() {
       </div>
 
       <section className="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        {(data ?? []).length === 0 ? (
+        {appeals.length === 0 ? (
           <div className="p-8 text-sm text-slate-500">There are no pending appeals.</div>
         ) : (
           <div className="divide-y divide-slate-200">
-            {(data ?? []).map((appeal: any) => (
+            {appeals.map((appeal) => (
               <Link key={appeal.appeal_id} href={`/moderation/appeals/${appeal.appeal_id}`} className="block p-5 hover:bg-slate-50">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <p className="font-mono text-xs font-semibold text-slate-500">{appeal.case_number ?? appeal.appeal_id}</p>
-                    <h2 className="mt-1 text-base font-semibold text-slate-950">{String(appeal.status).replaceAll("_", " ")}</h2>
-                    <p className="mt-1 line-clamp-2 text-sm text-slate-600">{appeal.reason}</p>
+                    <h2 className="mt-1 text-base font-semibold text-slate-950">{appeal.status.replaceAll("_", " ")}</h2>
+                    <p className="mt-1 line-clamp-2 text-sm text-slate-600">{appeal.appeal_reason}</p>
                   </div>
                   <div className="flex gap-2 text-xs font-semibold">
-                    <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">{String(appeal.target_type ?? "CASE").replaceAll("_", " ")}</span>
+                    <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">{appeal.target_type.replaceAll("_", " ")}</span>
                     <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">{new Date(appeal.created_at).toLocaleString()}</span>
                   </div>
                 </div>
