@@ -13,7 +13,9 @@ create unique index if not exists conversations_direct_pair_uq
 create index if not exists conversations_updated_idx
   on public.conversations (updated_at desc);
 
-create or replace function public.get_or_create_direct_conversation(target_user_id uuid)
+-- Preserve the original parameter name so CREATE OR REPLACE is compatible
+-- with the existing function signature.
+create or replace function public.get_or_create_direct_conversation(p_other_user_id uuid)
 returns uuid
 language plpgsql
 security definer
@@ -28,7 +30,7 @@ begin
     raise exception 'Authentication required';
   end if;
 
-  if v_user_id = target_user_id then
+  if v_user_id = p_other_user_id then
     raise exception 'Cannot start a conversation with yourself';
   end if;
 
@@ -41,17 +43,17 @@ begin
 
   if not exists (
     select 1 from public.users
-    where id = target_user_id and account_status = 'ACTIVE'
+    where id = p_other_user_id and account_status = 'ACTIVE'
   ) then
     raise exception 'User is unavailable';
   end if;
 
-  if not public.can_message_user(target_user_id) then
+  if not public.can_message_user(p_other_user_id) then
     raise exception 'Messaging is not permitted';
   end if;
 
-  v_pair_key := least(v_user_id::text, target_user_id::text)
-    || ':' || greatest(v_user_id::text, target_user_id::text);
+  v_pair_key := least(v_user_id::text, p_other_user_id::text)
+    || ':' || greatest(v_user_id::text, p_other_user_id::text);
 
   perform pg_catalog.pg_advisory_xact_lock(
     pg_catalog.hashtextextended(v_pair_key, 0)
@@ -64,7 +66,6 @@ begin
   limit 1;
 
   if v_conversation_id is null then
-    -- Also recognize older DIRECT conversations that predate direct_pair_key.
     select c.id into v_conversation_id
     from public.conversations c
     where c.type = 'DIRECT'
@@ -74,7 +75,7 @@ begin
       )
       and exists (
         select 1 from public.conversation_participants cp
-        where cp.conversation_id = c.id and cp.user_id = target_user_id
+        where cp.conversation_id = c.id and cp.user_id = p_other_user_id
       )
       and 2 = (
         select count(*) from public.conversation_participants cp
@@ -102,7 +103,7 @@ begin
     (conversation_id, user_id, joined_at, last_read_at, updated_at)
   values
     (v_conversation_id, v_user_id, now(), now(), now()),
-    (v_conversation_id, target_user_id, now(), null, now());
+    (v_conversation_id, p_other_user_id, now(), null, now());
 
   return v_conversation_id;
 exception
