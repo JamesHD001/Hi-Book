@@ -20,16 +20,20 @@ type Appeal = {
   created_at: string;
 };
 
+const OPEN_APPEAL_STATUSES = new Set(["SUBMITTED", "IN_REVIEW"]);
+
 export default function AppealReview({ initialAppeal }: { initialAppeal: Appeal }) {
   const supabase = createClient();
   const router = useRouter();
   const [appeal, setAppeal] = useState(initialAppeal);
-  const [decision, setDecision] = useState<"UPHELD" | "REVERSED" | "PARTIALLY_REVERSED">("UPHELD");
+  const [decision, setDecision] = useState<"UPHELD" | "REVERSED" | "PARTIALLY_REVERSED" | "CLOSED">("UPHELD");
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const canReview = OPEN_APPEAL_STATUSES.has(appeal.status);
 
   async function review() {
+    if (!canReview) return;
     if (reason.trim().length < 10) {
       setError("A decision reason of at least 10 characters is required.");
       return;
@@ -80,11 +84,20 @@ export default function AppealReview({ initialAppeal }: { initialAppeal: Appeal 
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-slate-950">Decision</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <label className="text-sm font-medium text-slate-700">Outcome<select value={decision} onChange={(e) => setDecision(e.target.value as typeof decision)} disabled={appeal.status !== "PENDING" || busy} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"><option value="UPHELD">Uphold action</option><option value="REVERSED">Reverse action</option><option value="PARTIALLY_REVERSED">Partially reverse</option></select></label>
+          <label className="text-sm font-medium text-slate-700">Outcome
+            <select value={decision} onChange={(e) => setDecision(e.target.value as typeof decision)} disabled={!canReview || busy} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2">
+              <option value="UPHELD">Uphold action</option>
+              <option value="REVERSED">Reverse action</option>
+              <option value="PARTIALLY_REVERSED">Partially reverse</option>
+              <option value="CLOSED">Close appeal</option>
+            </select>
+          </label>
           <div className="rounded-lg bg-slate-50 p-3 text-xs text-slate-600">Appeal decisions are server-authorized and audited. The reviewer cannot change the original action directly from the browser.</div>
         </div>
-        <label className="mt-4 block text-sm font-medium text-slate-700">Decision reason<textarea value={reason} onChange={(e) => setReason(e.target.value)} maxLength={3000} rows={5} disabled={appeal.status !== "PENDING" || busy} placeholder="Explain the decision and any relevant evidence considered." className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" /></label>
-        <button type="button" onClick={review} disabled={appeal.status !== "PENDING" || busy || reason.trim().length < 10} className="mt-4 rounded-lg bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">{busy ? "Saving…" : "Record decision"}</button>
+        <label className="mt-4 block text-sm font-medium text-slate-700">Decision reason
+          <textarea value={reason} onChange={(e) => setReason(e.target.value)} maxLength={3000} rows={5} disabled={!canReview || busy} placeholder="Explain the decision and any relevant evidence considered." className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" />
+        </label>
+        <button type="button" onClick={review} disabled={!canReview || busy || reason.trim().length < 10} className="mt-4 rounded-lg bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">{busy ? "Saving…" : "Record decision"}</button>
       </section>
     </div>
   );
