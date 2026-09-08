@@ -1,117 +1,7 @@
 begin;
 
--- Repository-wide SECURITY DEFINER contract: privileged helpers must pin an
--- empty search_path and qualify every object explicitly.
-create or replace function public.is_user_restricted(target_user_id uuid)
-returns boolean
-language sql
-stable
-security definer
-set search_path = ''
-as $$
-  select exists (
-    select 1
-    from public.moderation_actions ma
-    where ma.target_type = 'USER'
-      and ma.target_id = target_user_id
-      and ma.action_type = 'USER_RESTRICTED'
-      and ma.revoked_at is null
-      and ma.starts_at <= now()
-      and (ma.expires_at is null or ma.expires_at > now())
-  );
-$$;
-
-revoke all on function public.is_user_restricted(uuid) from public, anon;
-grant execute on function public.is_user_restricted(uuid) to authenticated;
-
--- Narrow moderator-only appeal queue read.
-create or replace function public.get_moderation_appeal_queue(page_limit integer default 50)
-returns table (
-  appeal_id uuid,
-  case_id uuid,
-  case_number text,
-  action_id uuid,
-  appellant_id uuid,
-  target_type text,
-  target_id uuid,
-  action_type text,
-  action_reason text,
-  appeal_reason text,
-  status text,
-  created_at timestamptz
-)
-language plpgsql
-stable
-security definer
-set search_path = ''
-as $$
-begin
-  if auth.uid() is null or not public.is_admin_permission('moderation.cases.assign') then
-    raise exception 'Appeal queue access denied';
-  end if;
-  if page_limit < 1 or page_limit > 100 then
-    raise exception 'Page limit must be between 1 and 100';
-  end if;
-
-  return query
-  select a.id, mc.id, mc.case_number::text, ma.id, a.appellant_id,
-         ma.target_type::text, ma.target_id, ma.action_type::text,
-         ma.reason, a.reason, a.status::text, a.created_at
-  from public.appeals a
-  join public.moderation_actions ma on ma.id = a.action_id
-  join public.moderation_cases mc on mc.id = ma.case_id
-  where a.status in ('SUBMITTED', 'IN_REVIEW')
-  order by a.created_at asc
-  limit page_limit;
-end;
-$$;
-
-revoke all on function public.get_moderation_appeal_queue(integer) from public, anon;
-grant execute on function public.get_moderation_appeal_queue(integer) to authenticated;
-
--- Narrow moderator-only appeal detail read.
-create or replace function public.get_moderation_appeal(target_appeal_id uuid)
-returns table (
-  appeal_id uuid,
-  case_id uuid,
-  case_number text,
-  action_id uuid,
-  appellant_id uuid,
-  target_type text,
-  target_id uuid,
-  action_type text,
-  action_reason text,
-  appeal_reason text,
-  status text,
-  created_at timestamptz
-)
-language plpgsql
-stable
-security definer
-set search_path = ''
-as $$
-begin
-  if auth.uid() is null or not public.is_admin_permission('moderation.cases.assign') then
-    raise exception 'Appeal access denied';
-  end if;
-
-  return query
-  select a.id, mc.id, mc.case_number::text, ma.id, a.appellant_id,
-         ma.target_type::text, ma.target_id, ma.action_type::text,
-         ma.reason, a.reason, a.status::text, a.created_at
-  from public.appeals a
-  join public.moderation_actions ma on ma.id = a.action_id
-  join public.moderation_cases mc on mc.id = ma.case_id
-  where a.id = target_appeal_id;
-end;
-$$;
-
-revoke all on function public.get_moderation_appeal(uuid) from public, anon;
-grant execute on function public.get_moderation_appeal(uuid) to authenticated;
-
--- Align the database parameter name with the existing web client contract.
--- PostgreSQL identifies this overload by types, so CREATE OR REPLACE safely
--- replaces the existing (uuid, appeal_status, text) function.
+-- Align the existing appeal-review function with the web contract without
+-- redefining any existing OUT-parameter row types.
 create or replace function public.review_moderation_appeal(
   target_appeal_id uuid,
   decision public.appeal_status,
@@ -128,77 +18,46 @@ declare
   v_previous_status public.account_status;
   v_result public.appeals;
 begin
-  if auth.uid() is null or not public.is_admin_permission('moderation.cases.assign') then
+  if auth.uid() is null or not public.is_admin_permission('moderation.appeals.review') then
     raise exception 'Appeal review denied';
   end if;
   if decision not in ('UPHELD', 'REVERSED', 'PARTIALLY_REVERSED', 'CLOSED') then
     raise exception 'Invalid appeal decision';
   end if;
-  if decision_reason is null or char_length(trim(decision_reason)) < 10 or char_length(decision_reason) > 3000 then
+  if decision_reason is null or char_length(btrim(decision_reason)) < 10 or char_length(decision_reason) > 3000 then
     raise exception 'Decision reason must contain 10 to 3000 characters';
   end if;
 
-  select * into v_appeal
-  from public.appeals
-  where id = target_appeal_id
-  for update;
+  select * into v_appeal from public.appeals where id = target_appeal_id for update;
   if not found then raise exception 'Appeal not found'; end if;
-  if v_appeal.status not in ('SUBMITTED', 'IN_REVIEW') then
-    raise exception 'Appeal is already resolved';
-  end if;
+  if v_appeal.status not in ('SUBMITTED', 'IN_REVIEW') then raise exception 'Appeal is already resolved'; end if;
 
-  select * into v_action
-  from public.moderation_actions
-  where id = v_appeal.action_id
-  for update;
+  select * into v_action from public.moderation_actions where id = v_appeal.action_id for update;
   if not found then raise exception 'Moderation action not found'; end if;
-  if v_action.performed_by = auth.uid() then
-    raise exception 'A moderator cannot review their own moderation action';
-  end if;
+  if v_action.performed_by = auth.uid() then raise exception 'A moderator cannot review their own moderation action'; end if;
 
-  update public.appeals
-     set status = decision,
-         reviewed_by = auth.uid(),
-         updated_at = now(),
-         resolved_at = now(),
-         resolution = trim(decision_reason)
-   where id = target_appeal_id
-   returning * into v_result;
+  update public.appeals set status = decision, reviewed_by = auth.uid(), updated_at = now(), resolved_at = now(), resolution = btrim(decision_reason) where id = target_appeal_id returning * into v_result;
 
   if decision in ('REVERSED', 'PARTIALLY_REVERSED') then
-    update public.moderation_actions
-       set revoked_at = coalesce(revoked_at, now())
-     where id = v_action.id;
-
-    if v_action.target_type = 'USER' and v_action.action_type in ('USER_SUSPENDED', 'USER_DEACTIVATED', 'USER_BANNED') then
+    update public.moderation_actions set revoked_at = coalesce(revoked_at, now()) where id = v_action.id;
+    if v_action.target_type = 'USER' and v_action.action_type in ('USER_SUSPENDED','USER_DEACTIVATED','USER_BANNED') then
       v_previous_status := nullif(v_action.metadata ->> 'previous_account_status', '')::public.account_status;
-      update public.users
-         set account_status = coalesce(v_previous_status, 'ACTIVE'::public.account_status),
-             updated_at = now()
-       where id = v_action.target_id;
-    elsif v_action.target_type = 'POST' and v_action.action_type in ('CONTENT_HIDDEN', 'CONTENT_REMOVED', 'CONTENT_RESTRICTED') then
+      update public.users set account_status = coalesce(v_previous_status, 'ACTIVE'::public.account_status), updated_at = now() where id = v_action.target_id;
+    elsif v_action.target_type = 'POST' and v_action.action_type in ('CONTENT_HIDDEN','CONTENT_REMOVED','CONTENT_RESTRICTED') then
       update public.posts set status = 'PUBLISHED', updated_at = now() where id = v_action.target_id;
-    elsif v_action.target_type = 'COMMENT' and v_action.action_type in ('CONTENT_HIDDEN', 'CONTENT_REMOVED', 'CONTENT_RESTRICTED') then
+    elsif v_action.target_type = 'COMMENT' and v_action.action_type in ('CONTENT_HIDDEN','CONTENT_REMOVED','CONTENT_RESTRICTED') then
       update public.comments set status = 'PUBLISHED', updated_at = now() where id = v_action.target_id;
     elsif v_action.target_type = 'MESSAGE' and v_action.action_type = 'MESSAGE_RESTRICTED' then
       update public.messages set status = 'SENT', updated_at = now() where id = v_action.target_id;
     end if;
   end if;
 
-  insert into public.moderation_audit_logs (actor_id, action_type, target_type, target_id, metadata)
-  values (auth.uid(), 'APPEAL_REVIEWED', 'APPEAL', target_appeal_id,
-          jsonb_build_object('decision', decision::text, 'action_id', v_action.id));
+  insert into public.moderation_audit_logs (actor_id, action_type, target_type, target_id, case_id, metadata)
+  values (auth.uid(), 'APPEAL_REVIEWED', 'APPEAL', target_appeal_id, v_action.case_id, jsonb_build_object('decision', decision::text, 'action_id', v_action.id));
 
   insert into public.notifications (recipient_id, actor_id, type, entity_type, entity_id, content)
-  values (
-    v_appeal.appellant_id, auth.uid(), 'MODERATION', 'MODERATION', v_action.id,
-    case
-      when decision = 'REVERSED' then 'Your moderation appeal was accepted and the action was reversed.'
-      when decision = 'PARTIALLY_REVERSED' then 'Your moderation appeal was partially accepted.'
-      when decision = 'UPHELD' then 'Your moderation appeal was reviewed and the action remains in effect.'
-      else 'Your moderation appeal has been closed.'
-    end
-  );
+  values (v_appeal.appellant_id, auth.uid(), 'MODERATION', 'MODERATION', v_action.id,
+    case when decision = 'REVERSED' then 'Your moderation appeal was accepted and the action was reversed.' when decision = 'PARTIALLY_REVERSED' then 'Your moderation appeal was partially accepted.' when decision = 'UPHELD' then 'Your moderation appeal was reviewed and the action remains in effect.' else 'Your moderation appeal has been closed.' end);
 
   return v_result;
 end;
