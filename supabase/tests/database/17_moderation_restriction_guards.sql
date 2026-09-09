@@ -1,16 +1,16 @@
 begin;
-select plan(25);
+select plan(22);
 
 select is((select prosecdef from pg_proc where oid = 'public.is_user_restricted(uuid)'::regprocedure), true, 'restriction helper is SECURITY DEFINER');
 select is((select proconfig from pg_proc where oid = 'public.is_user_restricted(uuid)'::regprocedure), array['search_path='], 'restriction helper pins empty search_path');
-select has_function_privilege('public.is_user_restricted(uuid)', 'execute', 'authenticated');
-select has_function_privilege('public.is_user_restricted(uuid)', 'execute', 'anon') is false;
-select has_function_privilege('public.is_user_restricted(uuid)', 'execute', 'public') is false;
+select has_function_privilege('authenticated','public.is_user_restricted(uuid)','execute');
+select is(has_function_privilege('anon','public.is_user_restricted(uuid)','execute'), false);
+select is(has_function_privilege('public','public.is_user_restricted(uuid)','execute'), false);
 
 select is((select prosecdef from pg_proc where oid = 'public.enforce_user_restriction_on_state_change()'::regprocedure), true, 'state-change guard is SECURITY DEFINER');
 select is((select proconfig from pg_proc where oid = 'public.enforce_user_restriction_on_state_change()'::regprocedure), array['search_path='], 'state-change guard pins empty search_path');
-select has_function_privilege('public.enforce_user_restriction_on_state_change()', 'execute', 'anon') is false;
-select has_function_privilege('public.enforce_user_restriction_on_state_change()', 'execute', 'public') is false;
+select is(has_function_privilege('anon','public.enforce_user_restriction_on_state_change()','execute'), false);
+select is(has_function_privilege('public','public.enforce_user_restriction_on_state_change()','execute'), false);
 
 select is((select count(*) from pg_trigger where tgname = 'enforce_user_restriction_follow'), 1::bigint, 'follow restriction trigger exists');
 select is((select count(*) from pg_trigger where tgname = 'enforce_user_restriction_post'), 1::bigint, 'post restriction trigger exists');
