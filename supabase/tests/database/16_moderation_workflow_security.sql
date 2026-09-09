@@ -1,6 +1,6 @@
 begin;
 
-select plan(12);
+select plan(11);
 
 select has_function('public', 'get_moderation_case_detail', ARRAY['uuid'], 'case detail RPC exists');
 select has_function('public', 'add_moderation_note', ARRAY['uuid','text'], 'moderation note RPC exists');
@@ -14,8 +14,8 @@ select is((select proconfig from pg_proc where oid = 'public.get_moderation_case
 select is((select proconfig from pg_proc where oid = 'public.add_moderation_note(uuid,text)'::regprocedure), ARRAY['search_path=""']::text[], 'note RPC pins empty search_path');
 select is((select proconfig from pg_proc where oid = 'public.execute_moderation_action(uuid,public.moderation_action_type,text,public.severity_type,integer)'::regprocedure), ARRAY['search_path=""']::text[], 'action RPC pins empty search_path');
 
-select has_function_privilege('anon', 'public.get_moderation_case_detail(uuid)', 'EXECUTE') is false;
-select has_function_privilege('anon', 'public.execute_moderation_action(uuid,public.moderation_action_type,text,public.severity_type,integer)', 'EXECUTE') is false;
+select ok(not has_function_privilege('anon', 'public.get_moderation_case_detail(uuid)', 'EXECUTE'), 'anon cannot execute case detail');
+select ok(not has_function_privilege('anon', 'public.execute_moderation_action(uuid,public.moderation_action_type,text,public.severity_type,integer)', 'EXECUTE'), 'anon cannot execute moderation action');
 
 select finish();
 rollback;
