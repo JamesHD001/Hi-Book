@@ -1,9 +1,9 @@
 begin;
-select plan(8);
-select has_function_privilege('authenticated', 'public.mark_conversation_read(uuid)', 'execute');
+select plan(7);
+select is(has_function_privilege('authenticated', 'public.mark_conversation_read(uuid)', 'execute'), true, 'authenticated can execute mark_conversation_read');
 select is(has_function_privilege('anon', 'public.mark_conversation_read(uuid)', 'execute'), false);
 select is(has_function_privilege('public', 'public.mark_conversation_read(uuid)', 'execute'), false);
-select has_function_privilege('authenticated', 'public.get_conversation_read_state(uuid)', 'execute');
+select is(has_function_privilege('authenticated', 'public.get_conversation_read_state(uuid)', 'execute'), true, 'authenticated can execute get_conversation_read_state');
 select is(has_function_privilege('anon', 'public.get_conversation_read_state(uuid)', 'execute'), false);
 select is((select prosecdef from pg_proc where oid='public.mark_conversation_read(uuid)'::regprocedure), true, 'mark read is SECURITY DEFINER');
 select is((select prosecdef from pg_proc where oid='public.get_conversation_read_state(uuid)'::regprocedure), true, 'read state is SECURITY DEFINER');
