@@ -2,10 +2,10 @@ begin;
 
 select plan(11);
 
-select has_function_privilege('authenticated', 'public.share_post(uuid)', 'execute');
+select is(has_function_privilege('authenticated', 'public.share_post(uuid)', 'execute'), true, 'authenticated can execute share_post');
 select is(has_function_privilege('anon', 'public.share_post(uuid)', 'execute'), false);
 select is(has_function_privilege('public', 'public.share_post(uuid)', 'execute'), false);
-select has_function_privilege('authenticated', 'public.share_post_to_conversation(uuid,uuid)', 'execute');
+select is(has_function_privilege('authenticated', 'public.share_post_to_conversation(uuid,uuid)', 'execute'), true, 'authenticated can execute share_post_to_conversation');
 select is(has_function_privilege('anon', 'public.share_post_to_conversation(uuid,uuid)', 'execute'), false);
 select is(has_function_privilege('public', 'public.share_post_to_conversation(uuid,uuid)', 'execute'), false);
 select is((select prosecdef from pg_proc where oid = 'public.share_post(uuid)'::regprocedure), true, 'share_post is SECURITY DEFINER');
