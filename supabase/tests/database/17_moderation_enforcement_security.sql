@@ -13,7 +13,7 @@ select function_returns('public', 'submit_moderation_appeal', array['uuid','text
 select has_function('public', 'review_moderation_appeal', array['uuid','public.appeal_status','text']);
 select function_returns('public', 'review_moderation_appeal', array['uuid','public.appeal_status','text'], 'public.appeals');
 select has_function('public', 'get_active_moderation_actions', array['uuid']);
-select function_returns('public', 'get_active_moderation_actions', array['uuid'], 'record');
+select function_returns('public', 'get_active_moderation_actions', array['uuid'], 'setof record');
 
 select is((select prosecdef from pg_proc where oid = 'public.is_user_restricted(uuid)'::regprocedure), true, 'is_user_restricted is SECURITY DEFINER');
 select is((select prosecdef from pg_proc where oid = 'public.execute_moderation_action(uuid,public.moderation_action_type,text,public.severity_type,timestamptz,timestamptz,jsonb)'::regprocedure), true, 'full moderation action RPC is SECURITY DEFINER');
