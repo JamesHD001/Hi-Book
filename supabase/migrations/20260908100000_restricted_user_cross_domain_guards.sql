@@ -3,23 +3,29 @@ begin;
 -- Cross-domain enforcement for USER_RESTRICTED accounts.
 -- Privileged SECURITY DEFINER RPCs execute under their function owner and are
 -- therefore unaffected; ordinary client table writes remain blocked here.
-
+-- Use JSONB field lookup because NEW is a polymorphic trigger record and a
+-- trigger function cannot reference columns that are absent from every table.
 create or replace function public.guard_restricted_social_write()
 returns trigger
 language plpgsql
 set search_path = pg_catalog, public
 as $$
+declare
+  v_actor_id uuid;
 begin
+  v_actor_id := case tg_table_name
+    when 'follows' then nullif(to_jsonb(new)->>'follower_id', '')::uuid
+    when 'posts' then nullif(to_jsonb(new)->>'user_id', '')::uuid
+    when 'comments' then nullif(to_jsonb(new)->>'user_id', '')::uuid
+    when 'post_likes' then nullif(to_jsonb(new)->>'user_id', '')::uuid
+    when 'comment_likes' then nullif(to_jsonb(new)->>'user_id', '')::uuid
+    when 'post_shares' then nullif(to_jsonb(new)->>'user_id', '')::uuid
+    when 'messages' then nullif(to_jsonb(new)->>'sender_id', '')::uuid
+    else null
+  end;
+
   if auth.uid() is not null
-     and auth.uid() = coalesce(
-       case when tg_table_name = 'follows' then new.follower_id else null end,
-       case when tg_table_name = 'posts' then new.user_id else null end,
-       case when tg_table_name = 'comments' then new.user_id else null end,
-       case when tg_table_name = 'post_likes' then new.user_id else null end,
-       case when tg_table_name = 'comment_likes' then new.user_id else null end,
-       case when tg_table_name = 'post_shares' then new.user_id else null end,
-       case when tg_table_name = 'messages' then new.sender_id else null end
-     )
+     and auth.uid() = v_actor_id
      and public.is_user_restricted(auth.uid())
      and current_user = 'authenticated' then
     raise exception 'Account is temporarily restricted from social activity';
