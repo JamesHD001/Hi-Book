@@ -22,28 +22,26 @@ export default async function NotificationsPage() {
     : { data: [] };
 
   const profileMap = new Map((profiles ?? []).map((profile) => [profile.user_id, profile]));
+  const avatarPaths = Array.from(new Set((profiles ?? []).map((profile) => profile.avatar_path).filter((path): path is string => Boolean(path))));
+  const { data: avatarUrls } = avatarPaths.length ? await supabase.storage.from("avatars").createSignedUrls(avatarPaths, 600) : { data: [] };
+  const avatarMap = new Map((avatarUrls ?? []).map((item) => [item.path, item.signedUrl]));
 
-  const items: NotificationItem[] = await Promise.all(
-    (notifications ?? []).map(async (notification) => {
-      const profile = notification.actor_id ? profileMap.get(notification.actor_id) : null;
-      const avatarUrl = profile?.avatar_path
-        ? (await supabase.storage.from("avatars").createSignedUrl(profile.avatar_path, 600)).data?.signedUrl ?? null
-        : null;
-
-      return {
-        id: notification.id,
-        actorUsername: profile?.username ?? null,
-        actorDisplayName: profile?.display_name ?? null,
-        actorAvatarUrl: avatarUrl,
-        type: notification.type,
-        entityType: notification.entity_type,
-        entityId: notification.entity_id,
-        content: notification.content,
-        status: notification.status,
-        createdAt: notification.created_at,
-      };
-    }),
-  );
+  const items: NotificationItem[] = (notifications ?? []).map((notification) => {
+    const profile = notification.actor_id ? profileMap.get(notification.actor_id) : null;
+    const avatarUrl = profile?.avatar_path ? avatarMap.get(profile.avatar_path) ?? null : null;
+    return {
+      id: notification.id,
+      actorUsername: profile?.username ?? null,
+      actorDisplayName: profile?.display_name ?? null,
+      actorAvatarUrl: avatarUrl,
+      type: notification.type,
+      entityType: notification.entity_type,
+      entityId: notification.entity_id,
+      content: notification.content,
+      status: notification.status,
+      createdAt: notification.created_at,
+    };
+  });
 
   return (
     <main>

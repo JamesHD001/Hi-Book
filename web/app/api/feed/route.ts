@@ -37,18 +37,27 @@ export async function GET(request: NextRequest) {
     if (error) throw error;
     const rows = (data ?? []) as FeedRow[];
     const page = rows.slice(0, 20);
-    const posts = await Promise.all(page.map(async (post) => {
-      let avatarUrl: string | null = null;
-      if (post.avatar_path) {
-        const { data: signed } = await supabase.storage.from("avatars").createSignedUrl(post.avatar_path, 600);
-        avatarUrl = signed?.signedUrl ?? null;
-      }
-      const media = await Promise.all((Array.isArray(post.media) ? post.media : []).map(async (item) => {
-        const { data: signed } = await supabase.storage.from("posts").createSignedUrl(item.storage_path, 600);
-        return { id: item.id, url: signed?.signedUrl ?? "", width: item.width, height: item.height, display_order: item.display_order, alt_text: item.alt_text };
+
+    const avatarPaths = Array.from(new Set(page.map((post) => post.avatar_path).filter((path): path is string => Boolean(path))));
+    const mediaPaths = Array.from(new Set(page.flatMap((post) => (Array.isArray(post.media) ? post.media : []).map((item) => item.storage_path))));
+    const [{ data: avatarUrls }, { data: mediaUrls }] = await Promise.all([
+      avatarPaths.length ? supabase.storage.from("avatars").createSignedUrls(avatarPaths, 600) : Promise.resolve({ data: [] }),
+      mediaPaths.length ? supabase.storage.from("posts").createSignedUrls(mediaPaths, 600) : Promise.resolve({ data: [] }),
+    ]);
+    const avatarMap = new Map((avatarUrls ?? []).map((item) => [item.path, item.signedUrl]));
+    const mediaMap = new Map((mediaUrls ?? []).map((item) => [item.path, item.signedUrl]));
+
+    const posts = page.map((post) => {
+      const media = (Array.isArray(post.media) ? post.media : []).map((item) => ({
+        id: item.id,
+        url: mediaMap.get(item.storage_path) ?? "",
+        width: item.width,
+        height: item.height,
+        display_order: item.display_order,
+        alt_text: item.alt_text,
       }));
-      return { post_id: post.post_id, author_id: post.author_id, username: post.username, display_name: post.display_name, avatar_url: avatarUrl, content: post.content, visibility: post.visibility, created_at: post.created_at, published_at: post.published_at, media: media.filter((item) => item.url) };
-    }));
+      return { post_id: post.post_id, author_id: post.author_id, username: post.username, display_name: post.display_name, avatar_url: post.avatar_path ? avatarMap.get(post.avatar_path) ?? null : null, content: post.content, visibility: post.visibility, created_at: post.created_at, published_at: post.published_at, media: media.filter((item) => item.url) };
+    });
     const last = page.at(-1);
     return NextResponse.json({ posts, next_cursor: rows.length > 20 && last ? { created_at: last.created_at, post_id: last.post_id } : null });
   } catch (error) {
