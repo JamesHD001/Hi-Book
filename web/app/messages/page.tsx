@@ -25,9 +25,13 @@ export default async function MessagesPage() {
   const profiles = new Map(((profileData ?? []) as Profile[]).map((profile) => [profile.user_id, profile]));
   const otherByConversation = new Map<string, string>();
   for (const row of rows) if (row.user_id !== user.id) otherByConversation.set(row.conversation_id, row.user_id);
-  const { data: lastMessageData } = conversationIds.length ? await supabase.from("messages").select("conversation_id, sender_id, message_type, content, created_at").in("conversation_id", conversationIds).order("created_at", { ascending: false }).limit(200) : { data: [] };
+
+  const { data: lastMessageData, error: lastMessageError } = conversationIds.length
+    ? await supabase.rpc("get_latest_messages_for_conversations", { target_conversation_ids: conversationIds })
+    : { data: [], error: null };
+  if (lastMessageError) throw new Error("Unable to load conversation previews");
   const latest = new Map<string, LastMessage>();
-  for (const row of (lastMessageData ?? []) as LastMessage[]) if (!latest.has(row.conversation_id)) latest.set(row.conversation_id, row);
+  for (const row of (lastMessageData ?? []) as LastMessage[]) latest.set(row.conversation_id, row);
   const readByConversation = new Map(participantRows.map((row) => [row.conversation_id, row.last_read_at]));
 
   const avatarPaths = Array.from(new Set(otherUserIds.map((id) => profiles.get(id)?.avatar_path).filter((path): path is string => Boolean(path))));
