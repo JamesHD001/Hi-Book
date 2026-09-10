@@ -18,6 +18,9 @@ type Appeal = {
   appeal_reason: string;
   status: string;
   created_at: string;
+  reviewed_by?: string | null;
+  resolved_at?: string | null;
+  resolution?: string | null;
 };
 
 const OPEN_APPEAL_STATUSES = new Set(["SUBMITTED", "IN_REVIEW"]);
@@ -43,14 +46,14 @@ export default function AppealReview({ initialAppeal }: { initialAppeal: Appeal 
     const { error: rpcError } = await supabase.rpc("review_moderation_appeal", {
       target_appeal_id: appeal.appeal_id,
       decision,
-      decision_reason: reason.trim(),
+      resolution_text: reason.trim(),
     });
     if (rpcError) {
       setError(rpcError.message);
       setBusy(false);
       return;
     }
-    setAppeal((current) => ({ ...current, status: decision }));
+    setAppeal((current) => ({ ...current, status: decision, resolution: reason.trim() }));
     setBusy(false);
     router.refresh();
   }

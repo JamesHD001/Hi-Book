@@ -7,7 +7,7 @@ returns boolean
 language sql
 stable
 security definer
-set search_path = pg_catalog, public
+set search_path = ''
 as $$
   select
     auth.uid() is not null
@@ -26,17 +26,16 @@ as $$
           or (ps.message_permission = 'FOLLOWERS' and exists (
             select 1
             from public.follows f
-            where f.follower_id = other_user_id
-              and f.following_id = auth.uid()
+            where f.follower_id = auth.uid()
+              and f.following_id = other_user_id
           ))
         )
     );
 $$;
 
-revoke all on function public.can_message_user(uuid) from public;
+revoke all on function public.can_message_user(uuid) from public, anon;
 grant execute on function public.can_message_user(uuid) to authenticated;
 
--- Keep moderation decisions auditable when an active restriction naturally expires.
 create or replace function public.get_active_moderation_actions(target_user_id uuid)
 returns table (
   action_id uuid,
@@ -50,7 +49,7 @@ returns table (
 language sql
 stable
 security definer
-set search_path = pg_catalog, public
+set search_path = ''
 as $$
   select
     ma.id,
@@ -71,7 +70,7 @@ as $$
     and (target_user_id = auth.uid() or public.is_admin_permission('moderation.cases.view'));
 $$;
 
-revoke all on function public.get_active_moderation_actions(uuid) from public;
+revoke all on function public.get_active_moderation_actions(uuid) from public, anon;
 grant execute on function public.get_active_moderation_actions(uuid) to authenticated;
 
 commit;

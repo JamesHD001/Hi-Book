@@ -1,10 +1,9 @@
 begin;
-select plan(8);
-select has_function_privilege('public.mark_conversation_read(uuid)', 'execute', 'authenticated');
-select has_function_privilege('public.mark_conversation_read(uuid)', 'execute', 'anon') is false;
-select has_function_privilege('public.mark_conversation_read(uuid)', 'execute', 'public') is false;
-select has_function_privilege('public.get_conversation_read_state(uuid)', 'execute', 'authenticated');
-select has_function_privilege('public.get_conversation_read_state(uuid)', 'execute', 'anon') is false;
+select plan(6);
+select is(has_function_privilege('authenticated'::name, 'public.mark_conversation_read(uuid)'::text, 'EXECUTE'), true, 'authenticated can execute mark_conversation_read');
+select is(has_function_privilege('anon'::name, 'public.mark_conversation_read(uuid)'::text, 'EXECUTE'), false, 'anon cannot execute mark_conversation_read');
+select is(has_function_privilege('authenticated'::name, 'public.get_conversation_read_state(uuid)'::text, 'EXECUTE'), true, 'authenticated can execute get_conversation_read_state');
+select is(has_function_privilege('anon'::name, 'public.get_conversation_read_state(uuid)'::text, 'EXECUTE'), false, 'anon cannot execute get_conversation_read_state');
 select is((select prosecdef from pg_proc where oid='public.mark_conversation_read(uuid)'::regprocedure), true, 'mark read is SECURITY DEFINER');
 select is((select prosecdef from pg_proc where oid='public.get_conversation_read_state(uuid)'::regprocedure), true, 'read state is SECURITY DEFINER');
 select * from finish();

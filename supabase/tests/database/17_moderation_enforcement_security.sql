@@ -1,6 +1,6 @@
 begin;
 
-select plan(16);
+select plan(17);
 
 select has_function('public', 'is_user_restricted', array['uuid']);
 select function_returns('public', 'is_user_restricted', array['uuid'], 'boolean');
@@ -13,13 +13,13 @@ select function_returns('public', 'submit_moderation_appeal', array['uuid','text
 select has_function('public', 'review_moderation_appeal', array['uuid','public.appeal_status','text']);
 select function_returns('public', 'review_moderation_appeal', array['uuid','public.appeal_status','text'], 'public.appeals');
 select has_function('public', 'get_active_moderation_actions', array['uuid']);
-select function_returns('public', 'get_active_moderation_actions', array['uuid'], 'record');
+select function_returns('public', 'get_active_moderation_actions', array['uuid'], 'setof record');
 
-select is_security_definer('public', 'is_user_restricted', array['uuid']);
-select is_security_definer('public', 'execute_moderation_action', array['uuid','public.moderation_action_type','text','public.severity_type','timestamptz','timestamptz','jsonb']);
-select is_security_definer('public', 'execute_moderation_action', array['uuid','public.moderation_action_type','text','public.severity_type','integer']);
-select is_security_definer('public', 'submit_moderation_appeal', array['uuid','text']);
-select is_security_definer('public', 'review_moderation_appeal', array['uuid','public.appeal_status','text']);
+select is((select prosecdef from pg_proc where oid = 'public.is_user_restricted(uuid)'::regprocedure), true, 'is_user_restricted is SECURITY DEFINER');
+select is((select prosecdef from pg_proc where oid = 'public.execute_moderation_action(uuid,public.moderation_action_type,text,public.severity_type,timestamptz,timestamptz,jsonb)'::regprocedure), true, 'full moderation action RPC is SECURITY DEFINER');
+select is((select prosecdef from pg_proc where oid = 'public.execute_moderation_action(uuid,public.moderation_action_type,text,public.severity_type,integer)'::regprocedure), true, 'compat moderation action RPC is SECURITY DEFINER');
+select is((select prosecdef from pg_proc where oid = 'public.submit_moderation_appeal(uuid,text)'::regprocedure), true, 'appeal submission is SECURITY DEFINER');
+select is((select prosecdef from pg_proc where oid = 'public.review_moderation_appeal(uuid,public.appeal_status,text)'::regprocedure), true, 'appeal review is SECURITY DEFINER');
 
 select * from finish();
 rollback;
