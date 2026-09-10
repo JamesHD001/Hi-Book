@@ -1,63 +1,30 @@
 # Hi!Book 2.0 — Current TODO
 
-Updated: 2026-09-08
-
-## Completed
-
-- [x] Authentication and account foundation
-- [x] Profile/privacy foundation
-- [x] Follow/unfollow, followers/following
-- [x] Blocking and reporting
-- [x] Notifications foundation
-- [x] Global people discovery
-- [x] Post composer and private image media
-- [x] Home/following/explore feed
-- [x] Post likes
-- [x] Comments, one-level replies, comment likes
-- [x] External and internal post sharing
-- [x] 1:1 messaging
-- [x] Realtime messaging and read state
-- [x] Moderation report-to-case pipeline
-- [x] Moderation queue and case detail UI
-- [x] Moderator notes and action UI
-- [x] Server-side moderation action enforcement
-- [x] Temporary USER_RESTRICTED authorization state
-- [x] User-facing moderation appeal submission
-- [x] Moderator appeal review UI and RPC
-- [x] Moderation audit entries and user moderation notifications
-- [x] Cross-domain restricted-user write guards
-
 ## Current gate
+- [x] Database migrations and pgTAP security suite green in CI.
+- [x] Audit feed, messaging inbox, and notifications for application-level N+1 storage URL generation.
+- [x] Batch signed avatar/media URL generation on feed, messaging inbox, and notifications.
+- [ ] Audit remaining web data-access paths for N+1 patterns.
+- [ ] Harden messaging inbox latest-message retrieval with a server-side latest-per-conversation query/RPC.
+- [ ] Complete moderation cross-domain authorization audit, including partial appeal reversal semantics.
+- [ ] Add/document deployment reverse-proxy protections appropriate to Vercel or self-hosted deployment.
+- [ ] Re-run web CI after the performance changes and fix any failures.
 
-- [ ] Supabase migration reset and full pgTAP suite passes for the latest moderation/restriction migrations
-- [ ] Web lint/build passes after the latest moderation UI changes
-- [ ] Resolve any CI regressions before advancing the domain
+## MVP domains implemented
+- [x] Authentication and account lifecycle foundation
+- [x] Profiles and privacy settings
+- [x] Follow / block / report
+- [x] Posts and private media
+- [x] Feed and discovery
+- [x] Likes, comments, mentions, tags, shares
+- [x] Notifications
+- [x] 1:1 messaging and read state
+- [x] Moderation queue, enforcement, and appeals
 
-## Next implementation
-
-- [ ] Add explicit moderation status/banner UX for restricted/suspended accounts
-- [ ] Expand moderation regression coverage for posts, comments, follows, likes, shares, and messages
-- [ ] Complete deletion/retention CI gate
-- [ ] Run final cross-domain security audit
-
-## After safety gate
-
-- [ ] Account deletion UI and lifecycle worker integration
-- [ ] Notification preference UX and delivery adapters
-- [ ] Media/message image upload hardening and signed URL lifecycle
-- [ ] Full integration/e2e test coverage
-- [ ] Production deployment hardening
-- [ ] Observability and operational dashboards
-- [ ] MVP launch readiness review
-
-## Deferred post-MVP
-
-- [ ] Group messaging
-- [ ] Voice messages
-- [ ] Voice/video calls
-- [ ] Live streaming
-- [ ] HBC purchases and creator economy
-- [ ] Gifts and payouts
-- [ ] Subscriptions/premium features
-- [ ] Mobile app
-- [ ] Advanced recommendation/ranking systems
+## Next major gates
+1. Finish web N+1/data-access audit.
+2. Finish moderation cross-domain audit.
+3. Finish reverse-proxy/deployment security layer.
+4. Verify web CI on current main.
+5. Update `docs/hi-book-plan.md` with the completed architecture gates.
+6. Move to the next MVP product domain only after the above gates are green.
