@@ -49,18 +49,18 @@ export default function PostComments({ postId }: { postId: string }) {
       });
       if (rpcError) throw rpcError;
       const rows = (data ?? []) as Comment[];
-      const hydrated = await Promise.all(rows.map(async (comment) => {
-        if (!comment.avatar_path) return comment;
-        const { data: signed } = await supabase.storage.from("avatars").createSignedUrl(comment.avatar_path, 600);
-        return { ...comment, avatar_url: signed?.signedUrl ?? null };
-      }));
+      const avatarPaths = Array.from(new Set(rows.map((comment) => comment.avatar_path).filter((path): path is string => Boolean(path))));
+      const { data: avatarData } = avatarPaths.length ? await supabase.storage.from("avatars").createSignedUrls(avatarPaths, 600) : { data: [] };
+      const avatarMap = new Map((avatarData ?? []).map((item) => [item.path, item.signedUrl]));
+      const hydrated = rows.map((comment) => ({ ...comment, avatar_url: comment.avatar_path ? avatarMap.get(comment.avatar_path) ?? null : null }));
       setComments(hydrated);
-      const likeEntries = await Promise.all(hydrated.map(async (comment) => {
-        const { data: likeData } = await supabase.rpc("get_comment_like_state", { target_comment_id: comment.comment_id });
-        const state = likeData?.[0];
-        return state ? [comment.comment_id, { liked: Boolean(state.liked), like_count: Number(state.like_count) }] as const : null;
-      }));
-      setLikes(Object.fromEntries(likeEntries.filter((entry): entry is readonly [string, LikeState] => entry !== null)));
+
+      const { data: likeData, error: likeError } = hydrated.length
+        ? await supabase.rpc("get_comment_like_states", { target_comment_ids: hydrated.map((comment) => comment.comment_id) })
+        : { data: [], error: null };
+      if (likeError) throw likeError;
+      const nextLikes = Object.fromEntries(((likeData ?? []) as { comment_id: string; liked: boolean; like_count: number }[]).map((state) => [state.comment_id, { liked: Boolean(state.liked), like_count: Number(state.like_count) }]));
+      setLikes(nextLikes);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Could not load comments.");
     } finally {
