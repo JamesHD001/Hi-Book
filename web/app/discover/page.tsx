@@ -13,21 +13,18 @@ type DiscoveryPerson = {
   country_code: string | null;
   shared_interest_count: number;
   shared_language_count: number;
+  avatar_url?: string | null;
 };
 
 export default async function DiscoverPage() {
   const { supabase } = await requireActiveUser();
-
   const { data, error } = await supabase.rpc("discover_people", { candidate_limit: 20 });
   const people = (data ?? []) as DiscoveryPerson[];
 
-  const withAvatars = await Promise.all(
-    people.map(async (person) => {
-      if (!person.avatar_path) return { ...person, avatar_url: null };
-      const { data: signed } = await supabase.storage.from("avatars").createSignedUrl(person.avatar_path, 600);
-      return { ...person, avatar_url: signed?.signedUrl ?? null };
-    }),
-  );
+  const avatarPaths = Array.from(new Set(people.map((person) => person.avatar_path).filter((path): path is string => Boolean(path))));
+  const { data: avatarUrls } = avatarPaths.length ? await supabase.storage.from("avatars").createSignedUrls(avatarPaths, 600) : { data: [] };
+  const avatarMap = new Map((avatarUrls ?? []).map((item) => [item.path, item.signedUrl]));
+  const withAvatars = people.map((person) => ({ ...person, avatar_url: person.avatar_path ? avatarMap.get(person.avatar_path) ?? null : null }));
 
   return (
     <main>
