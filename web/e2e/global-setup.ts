@@ -22,6 +22,49 @@ const users: TestUser[] = [
   },
 ];
 
+async function resetUserState(
+  api: Awaited<ReturnType<typeof request.newContext>>,
+  url: string,
+  accessToken: string,
+  userId: string,
+  testUser: TestUser,
+) {
+  const headers = { Authorization: `Bearer ${accessToken}` };
+  const operations = [
+    api.delete(`${url}/rest/v1/follows?follower_id=eq.${userId}`, { headers }),
+    api.delete(`${url}/rest/v1/follows?following_id=eq.${userId}`, { headers }),
+    api.delete(`${url}/rest/v1/blocks?blocker_id=eq.${userId}`, { headers }),
+    api.delete(`${url}/rest/v1/reports?reporter_id=eq.${userId}`, { headers }),
+    api.delete(`${url}/rest/v1/posts?user_id=eq.${userId}`, { headers }),
+    api.patch(`${url}/rest/v1/profiles?user_id=eq.${userId}`, {
+      headers: { ...headers, Prefer: "return=minimal" },
+      data: {
+        display_name: `${testUser.firstName} ${testUser.lastName}`,
+        bio: null,
+      },
+    }),
+    api.patch(`${url}/rest/v1/user_privacy_settings?user_id=eq.${userId}`, {
+      headers: { ...headers, Prefer: "return=minimal" },
+      data: {
+        profile_visibility: "PUBLIC",
+        country_visibility: "PUBLIC",
+        message_permission: "FOLLOWERS",
+        discoverable: true,
+      },
+    }),
+    api.patch(`${url}/rest/v1/discovery_preferences?user_id=eq.${userId}`, {
+      headers: { ...headers, Prefer: "return=minimal" },
+      data: { global_discovery_enabled: true },
+    }),
+  ];
+
+  const results = await Promise.all(operations);
+  const failed = results.find((result) => !result.ok() && result.status() !== 404);
+  if (failed) {
+    throw new Error(`Could not reset E2E state for ${testUser.email}: ${failed.status()} ${await failed.text()}`);
+  }
+}
+
 async function createOrSignInTestUser(api: Awaited<ReturnType<typeof request.newContext>>, testUser: TestUser) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const signup = await api.post(`${url}/auth/v1/signup`, {
@@ -40,8 +83,11 @@ async function createOrSignInTestUser(api: Awaited<ReturnType<typeof request.new
   });
 
   let accessToken: string | undefined;
+  let userId: string | undefined;
   if (signup.ok()) {
-    accessToken = (await signup.json()).access_token;
+    const body = await signup.json();
+    accessToken = body.access_token;
+    userId = body.user?.id;
   } else if (signup.status() === 400) {
     const login = await api.post(`${url}/auth/v1/token?grant_type=password`, {
       data: { email: testUser.email, password: testUser.password },
@@ -49,13 +95,15 @@ async function createOrSignInTestUser(api: Awaited<ReturnType<typeof request.new
     if (!login.ok()) {
       throw new Error(`Could not authenticate E2E user ${testUser.email}: ${login.status()} ${await login.text()}`);
     }
-    accessToken = (await login.json()).access_token;
+    const body = await login.json();
+    accessToken = body.access_token;
+    userId = body.user?.id;
   } else {
     throw new Error(`Could not create E2E user ${testUser.email}: ${signup.status()} ${await signup.text()}`);
   }
 
-  if (!accessToken) {
-    throw new Error(`Supabase did not return an access token for ${testUser.email}. Local auth must auto-confirm test accounts.`);
+  if (!accessToken || !userId) {
+    throw new Error(`Supabase did not return an authenticated user for ${testUser.email}.`);
   }
 
   const complete = await api.post(`${url}/rest/v1/rpc/complete_registration`, {
@@ -65,6 +113,8 @@ async function createOrSignInTestUser(api: Awaited<ReturnType<typeof request.new
   if (!complete.ok()) {
     throw new Error(`Could not complete E2E registration for ${testUser.email}: ${complete.status()} ${await complete.text()}`);
   }
+
+  await resetUserState(api, url, accessToken, userId, testUser);
 }
 
 export default async function globalSetup() {
