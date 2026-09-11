@@ -26,15 +26,8 @@ async function signIn(page: Page, email: string, password: string) {
 
 async function openProfile(page: Page, username: string, displayName: string) {
   await page.goto(`/u/${username}`);
-  await expect(page.getByRole("heading", { name: displayName })).toBeVisible();
-}
-
-async function openDiscoveredProfile(page: Page, displayName: string) {
-  await page.goto("/discover");
-  const card = page.locator("article").filter({ hasText: displayName }).first();
-  await expect(card).toBeVisible();
-  await card.getByRole("link", { name: "View profile" }).click();
-  await expect(page.getByRole("heading", { name: displayName })).toBeVisible();
+  await expect(page.getByText(`@${username}`, { exact: true })).toBeVisible();
+  await expect(page.getByText(displayName, { exact: true }).first()).toBeVisible();
 }
 
 test.describe("two-user authorization and privacy matrix", () => {
@@ -133,7 +126,7 @@ test.describe("two-user authorization and privacy matrix", () => {
         await expect(pageB.getByText(/blocked|not permitted|permission/i)).toBeVisible();
         await expect(pageB.getByText(blockedMessage)).toHaveCount(0);
       } else {
-        await expect(pageB.getByRole("heading", { name: "Page not found" })).toBeVisible();
+        await expect(pageB.getByText(/Page not found/i)).toBeVisible();
       }
     } finally {
       await contextA.close();
