@@ -1,4 +1,6 @@
 import { request } from "@playwright/test";
+import { mkdir, writeFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
 
 type TestUser = {
   email: string;
@@ -21,6 +23,8 @@ const users: TestUser[] = [
     lastName: "Tester",
   },
 ];
+
+type FixtureUser = TestUser & { id: string; username: string };
 
 async function resetUserState(
   api: Awaited<ReturnType<typeof request.newContext>>,
@@ -65,7 +69,10 @@ async function resetUserState(
   }
 }
 
-async function createOrSignInTestUser(api: Awaited<ReturnType<typeof request.newContext>>, testUser: TestUser) {
+async function createOrSignInTestUser(
+  api: Awaited<ReturnType<typeof request.newContext>>,
+  testUser: TestUser,
+): Promise<FixtureUser> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const signup = await api.post(`${url}/auth/v1/signup`, {
     data: {
@@ -115,6 +122,16 @@ async function createOrSignInTestUser(api: Awaited<ReturnType<typeof request.new
   }
 
   await resetUserState(api, url, accessToken, userId, testUser);
+
+  const profile = await api.get(`${url}/rest/v1/profiles?user_id=eq.${userId}&select=username`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!profile.ok()) throw new Error(`Could not read E2E profile for ${testUser.email}: ${profile.status()} ${await profile.text()}`);
+  const rows = (await profile.json()) as { username: string }[];
+  const username = rows[0]?.username;
+  if (!username) throw new Error(`E2E profile for ${testUser.email} has no username.`);
+
+  return { ...testUser, id: userId, username };
 }
 
 export default async function globalSetup() {
@@ -130,7 +147,11 @@ export default async function globalSetup() {
 
   const api = await request.newContext({ extraHTTPHeaders: { apikey: key } });
   try {
-    for (const user of users) await createOrSignInTestUser(api, user);
+    const fixtureUsers: FixtureUser[] = [];
+    for (const user of users) fixtureUsers.push(await createOrSignInTestUser(api, user));
+    const fixturePath = resolve(process.cwd(), "e2e/.fixture.json");
+    await mkdir(dirname(fixturePath), { recursive: true });
+    await writeFile(fixturePath, `${JSON.stringify({ users: fixtureUsers }, null, 2)}\n`, "utf8");
   } finally {
     await api.dispose();
   }
