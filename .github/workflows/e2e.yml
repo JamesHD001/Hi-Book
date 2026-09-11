@@ -1,0 +1,70 @@
+name: Hi!Book E2E
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "web/**"
+      - "supabase/**"
+      - ".github/workflows/e2e.yml"
+  pull_request:
+    paths:
+      - "web/**"
+      - "supabase/**"
+      - ".github/workflows/e2e.yml"
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package.json
+
+      - name: Start disposable local Supabase
+        working-directory: .
+        run: npx supabase@latest start
+
+      - name: Read local Supabase credentials
+        working-directory: .
+        shell: bash
+        run: |
+          npx supabase@latest status -o env > /tmp/supabase.env
+          source /tmp/supabase.env
+          echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$ANON_KEY" >> "$GITHUB_ENV"
+          echo "E2E_BASE_URL=http://127.0.0.1:3000" >> "$GITHUB_ENV"
+          echo "E2E_TEST_EMAIL=e2e-test@hibook.test" >> "$GITHUB_ENV"
+          echo "E2E_TEST_PASSWORD=E2eTestPassword123!" >> "$GITHUB_ENV"
+
+      - name: Install web dependencies
+        run: npm install
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run critical journey tests
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hibook-playwright-report
+          path: web/playwright-report/
+          if-no-files-found: ignore
+
+      - name: Stop disposable local Supabase
+        if: always()
+        working-directory: .
+        run: npx supabase@latest stop --no-backup
