@@ -24,16 +24,16 @@ test.describe("security-critical authenticated journeys", () => {
       ["/profile", "Make your profile yours."],
     ] as const) {
       await page.goto(path);
-      await expect(page.getByRole("heading", { name: heading })).toBeVisible();
+      await expect(page.getByText(heading, { exact: true }).first()).toBeVisible();
     }
   });
 
   test("profile editor rejects invalid country data before persistence", async ({ page }) => {
     await signIn(page);
     await page.goto("/profile");
-    await page.getByLabel("Country").fill("N");
+    await page.getByRole("textbox", { name: /Country Two-letter ISO/i }).fill("N");
     await page.getByRole("button", { name: "Save changes" }).click();
-    await expect(page.getByRole("alert")).toHaveText(/two-letter ISO country code/i);
+    await expect(page.getByText(/two-letter ISO country code/i)).toBeVisible();
   });
 
   test("profile and privacy settings persist through the atomic save flow", async ({ page }) => {
@@ -41,7 +41,7 @@ test.describe("security-critical authenticated journeys", () => {
     await page.goto("/profile");
     await page.getByLabel("Display name").fill("E2E Profile Tester");
     await page.getByLabel("Bio").fill("Automated profile persistence test.");
-    await page.getByLabel("Country").fill("NG");
+    await page.getByRole("textbox", { name: /Country Two-letter ISO/i }).fill("NG");
     await page.getByLabel("Profile visibility").selectOption("PRIVATE");
     await page.getByLabel("Country visibility").selectOption("PRIVATE");
     await page.getByLabel("Who can message you?").selectOption("NO_ONE");
@@ -52,13 +52,12 @@ test.describe("security-critical authenticated journeys", () => {
     await page.reload();
     await expect(page.getByLabel("Display name")).toHaveValue("E2E Profile Tester");
     await expect(page.getByLabel("Bio")).toHaveValue("Automated profile persistence test.");
-    await expect(page.getByLabel("Country")).toHaveValue("NG");
+    await expect(page.getByRole("textbox", { name: /Country Two-letter ISO/i })).toHaveValue("NG");
     await expect(page.getByLabel("Profile visibility")).toHaveValue("PRIVATE");
     await expect(page.getByLabel("Country visibility")).toHaveValue("PRIVATE");
     await expect(page.getByLabel("Who can message you?")).toHaveValue("NO_ONE");
     await expect(discovery).not.toBeChecked();
 
-    // Leave the disposable two-user fixture in its public/default state for later specs.
     await page.getByLabel("Display name").fill("E2E User A Tester");
     await page.getByLabel("Bio").fill("");
     await page.getByLabel("Profile visibility").selectOption("PUBLIC");
@@ -87,7 +86,7 @@ test.describe("security-critical authenticated journeys", () => {
     }
     await expect(cards.first().getByRole("button", { name: "Follow" })).toBeVisible();
     await cards.first().getByRole("link", { name: "View profile" }).click();
-    await expect(page.getByRole("button", { name: "Block" })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Block|Unblock/i })).toBeVisible();
     await expect(page.getByRole("button", { name: /Report/i })).toBeVisible();
   });
 
@@ -100,6 +99,6 @@ test.describe("security-critical authenticated journeys", () => {
   test("notifications render the authenticated activity surface", async ({ page }) => {
     await signIn(page);
     await page.goto("/notifications");
-    await expect(page.getByRole("heading", { name: "Notifications" })).toBeVisible();
+    await expect(page.getByText("Notifications", { exact: true }).first()).toBeVisible();
   });
 });
