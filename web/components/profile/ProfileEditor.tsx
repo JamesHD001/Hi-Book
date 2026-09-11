@@ -163,80 +163,41 @@ export default function ProfileEditor({
 
     setSaving(true);
     const supabase = createClient();
+    let uploadedAvatarPath: string | null = null;
 
     try {
       if (avatarFile) {
         const webp = await resizeToWebp(avatarFile);
-        const path = `${userId}/profile.webp`;
+        uploadedAvatarPath = `${userId}/profile-${crypto.randomUUID()}.webp`;
         const { error: uploadError } = await supabase.storage
           .from("avatars")
-          .upload(path, webp, {
+          .upload(uploadedAvatarPath, webp, {
             contentType: "image/webp",
-            upsert: true,
+            upsert: false,
             cacheControl: "3600",
           });
         if (uploadError) throw uploadError;
-
-        const { error: avatarDbError } = await supabase
-          .from("profiles")
-          .update({ avatar_path: path })
-          .eq("user_id", userId);
-        if (avatarDbError) throw avatarDbError;
       }
 
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({ display_name: trimmedName, bio: trimmedBio || null })
-        .eq("user_id", userId);
-      if (profileError) throw profileError;
+      const { error: profileUpdateError } = await supabase.rpc("update_profile_atomic", {
+        p_display_name: trimmedName,
+        p_bio: trimmedBio || null,
+        p_country_code: normalizedCountry,
+        p_profile_visibility: profileVisibility,
+        p_country_visibility: countryVisibility,
+        p_message_permission: messagePermission,
+        p_discoverable: discoverable,
+        p_language_ids: languageIds,
+        p_interest_ids: interestIds,
+        p_avatar_path: uploadedAvatarPath,
+      });
 
-      const { error: countryError } = await supabase
-        .from("users")
-        .update({ country_code: normalizedCountry })
-        .eq("id", userId);
-      if (countryError) throw countryError;
+      if (profileUpdateError) throw profileUpdateError;
 
-      const { error: privacyError } = await supabase
-        .from("user_privacy_settings")
-        .update({
-          profile_visibility: profileVisibility,
-          country_visibility: countryVisibility,
-          message_permission: messagePermission,
-          discoverable,
-        })
-        .eq("user_id", userId);
-      if (privacyError) throw privacyError;
-
-      const { error: languageDeleteError } = await supabase
-        .from("user_language")
-        .delete()
-        .eq("user_id", userId);
-      if (languageDeleteError) throw languageDeleteError;
-
-      if (languageIds.length > 0) {
-        const { error: languageInsertError } = await supabase
-          .from("user_language")
-          .insert(languageIds.map((languageId) => ({ user_id: userId, language_id: languageId })));
-        if (languageInsertError) throw languageInsertError;
-      }
-
-      const { error: interestDeleteError } = await supabase
-        .from("user_interest")
-        .delete()
-        .eq("user_id", userId);
-      if (interestDeleteError) throw interestDeleteError;
-
-      if (interestIds.length > 0) {
-        const { error: interestInsertError } = await supabase
-          .from("user_interest")
-          .insert(interestIds.map((interestId) => ({ user_id: userId, interest_id: interestId })));
-        if (interestInsertError) throw interestInsertError;
-      }
-
-      if (avatarFile) {
+      if (uploadedAvatarPath) {
         const { data } = await supabase.storage
           .from("avatars")
-          .createSignedUrl(`${userId}/profile.webp`, 600);
+          .createSignedUrl(uploadedAvatarPath, 600);
         if (data?.signedUrl) setAvatarPreview(data.signedUrl);
         setAvatarFile(null);
       }
@@ -247,7 +208,14 @@ export default function ProfileEditor({
       setSuccess("Your profile has been updated.");
       router.refresh();
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "We could not save your profile.");
+      if (uploadedAvatarPath) {
+        await supabase.storage.from("avatars").remove([uploadedAvatarPath]);
+      }
+      setError(
+        submitError instanceof Error
+          ? submitError.message
+          : "We could not save your profile.",
+      );
     } finally {
       setSaving(false);
     }
