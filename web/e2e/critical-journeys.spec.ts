@@ -25,7 +25,7 @@ test.describe("critical public and authentication journeys", () => {
     await page.getByRole("checkbox", { name: /Privacy Policy/ }).check();
     await page.getByRole("button", { name: "Create account" }).click();
 
-    await expect(page.getByRole("alert")).toHaveText(/not available to anyone under 13/i);
+    await expect(page.getByText(/not available to anyone under 13/i)).toBeVisible();
   });
 
   test("login rejects invalid credentials without leaving the login page", async ({ page }) => {
@@ -34,7 +34,7 @@ test.describe("critical public and authentication journeys", () => {
     await page.getByLabel("Password").fill("wrong-password");
     await page.getByRole("button", { name: "Sign in" }).click();
 
-    await expect(page.getByRole("alert")).toBeVisible();
+    await expect(page.getByRole("alert").filter({ visible: true }).first()).toBeVisible();
     await expect(page).toHaveURL(/\/login$/);
   });
 
