@@ -74,7 +74,7 @@ begin
     raise exception 'One or more selected interests are invalid';
   end if;
 
-  if p_avatar_path is not null and p_avatar_path !~ ('^' || v_user_id::text || '/[^/]+\\.webp$') then
+  if p_avatar_path is not null and p_avatar_path !~ ('^' || v_user_id::text || '/[^/]+\.webp$') then
     raise exception 'Invalid avatar storage path';
   end if;
 
