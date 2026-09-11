@@ -34,7 +34,7 @@ test.describe("critical public and authentication journeys", () => {
     await page.getByLabel("Password").fill("wrong-password");
     await page.getByRole("button", { name: "Sign in" }).click();
 
-    await expect(page.getByRole("alert").filter({ visible: true }).first()).toBeVisible();
+    await expect(page.getByText(/invalid|incorrect|unable to sign in/i).first()).toBeVisible();
     await expect(page).toHaveURL(/\/login$/);
   });
 
