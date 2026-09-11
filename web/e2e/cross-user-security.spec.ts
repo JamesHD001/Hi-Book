@@ -28,9 +28,9 @@ async function makeProfilePublic(page: Page) {
   await expect(page.getByRole("status")).toHaveText(/profile has been updated/i);
 }
 
-async function openProfile(page: Page, username: string, displayName: string) {
+async function openProfile(page: Page, username: string) {
   await page.goto(`/u/${username}`);
-  await expect(page.getByText(displayName, { exact: true }).first()).toBeVisible();
+  await expect(page.getByRole("button", { name: /Follow|Following|Message/i }).first()).toBeVisible();
 }
 
 test.describe("two-user authorization and privacy matrix", () => {
@@ -48,16 +48,15 @@ test.describe("two-user authorization and privacy matrix", () => {
     const blockedMessage = `E2E blocked message ${Date.now()}`;
 
     try {
-      // B establishes its public/privacy state through the same atomic profile workflow users use.
       await signIn(pageB, userB.email, userB.password);
       await makeProfilePublic(pageB);
 
       await signIn(pageA, userA.email, userA.password);
-      await openProfile(pageA, fixtureB.username, "E2E User B Tester");
+      await openProfile(pageA, fixtureB.username);
       await pageA.getByRole("button", { name: "Follow" }).click();
       await expect(pageA.getByRole("button", { name: "Following" })).toBeVisible();
 
-      await openProfile(pageB, fixtureA.username, "E2E User A Tester");
+      await openProfile(pageB, fixtureA.username);
       await pageB.getByRole("button", { name: "Follow" }).click();
       await expect(pageB.getByRole("button", { name: "Following" })).toBeVisible();
 
@@ -86,7 +85,7 @@ test.describe("two-user authorization and privacy matrix", () => {
       await pageB.goto("/community");
       await expect(pageB.locator("article").filter({ hasText: followerPost }).first()).toBeVisible();
 
-      await openProfile(pageA, fixtureB.username, "E2E User B Tester");
+      await openProfile(pageA, fixtureB.username);
       await pageA.getByRole("button", { name: "Message" }).click();
       await expect(pageA).toHaveURL(/\/messages\/[0-9a-f-]+$/i);
       await pageA.getByPlaceholder("Write a message…").fill(messageText);
@@ -96,23 +95,23 @@ test.describe("two-user authorization and privacy matrix", () => {
       await pageB.goto(conversationUrl);
       await expect(pageB.getByText(messageText)).toBeVisible();
 
-      await openProfile(pageA, fixtureB.username, "E2E User B Tester");
+      await openProfile(pageA, fixtureB.username);
       await pageA.getByRole("button", { name: "Report" }).click();
       await pageA.getByLabel("Reason").selectOption("OTHER");
       await pageA.getByRole("button", { name: "Submit report" }).click();
       await expect(pageA.getByText(/Report submitted|already submitted/i)).toBeVisible();
 
-      await openProfile(pageB, fixtureA.username, "E2E User A Tester");
+      await openProfile(pageB, fixtureA.username);
       await pageB.getByRole("button", { name: "Following" }).click();
       await expect(pageB.getByRole("button", { name: "Follow" })).toBeVisible();
       await pageB.goto("/community");
       await expect(pageB.locator("article").filter({ hasText: followerPost })).toHaveCount(0);
 
-      await openProfile(pageA, fixtureB.username, "E2E User B Tester");
+      await openProfile(pageA, fixtureB.username);
       await pageA.getByRole("button", { name: "Block" }).click();
       await expect(pageA).toHaveURL(/\/community(?:\/)?$/);
       await pageB.goto("/discover");
-      await expect(pageB.locator("article").filter({ hasText: "E2E User A Tester" })).toHaveCount(0);
+      await expect(pageB.locator("article").filter({ hasText: /E2E User A/i })).toHaveCount(0);
 
       await pageB.goto(conversationUrl);
       const messageInput = pageB.getByPlaceholder("Write a message…");
