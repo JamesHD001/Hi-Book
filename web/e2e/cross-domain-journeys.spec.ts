@@ -57,6 +57,14 @@ test.describe("security-critical authenticated journeys", () => {
     await expect(page.getByLabel("Country visibility")).toHaveValue("PRIVATE");
     await expect(page.getByLabel("Who can message you?")).toHaveValue("NO_ONE");
     await expect(discovery).not.toBeChecked();
+
+    // Leave the disposable two-user fixture in its public/default state for later specs.
+    await page.getByLabel("Profile visibility").selectOption("PUBLIC");
+    await page.getByLabel("Country visibility").selectOption("PUBLIC");
+    await page.getByLabel("Who can message you?").selectOption("FOLLOWERS");
+    await discovery.check();
+    await page.getByRole("button", { name: "Save changes" }).click();
+    await expect(page.getByRole("status")).toHaveText(/profile has been updated/i);
   });
 
   test("community exposes post creation and safely disables an empty submission", async ({ page }) => {
