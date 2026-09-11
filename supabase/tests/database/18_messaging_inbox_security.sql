@@ -22,7 +22,7 @@ select is(
   'get_message_inbox uses an empty search_path'
 );
 select is(
-  (select pronargs from pg_proc where oid = 'public.get_message_inbox()'::regprocedure),
+  (select pronargs::integer from pg_proc where oid = 'public.get_message_inbox()'::regprocedure),
   0,
   'get_message_inbox accepts no client-controlled identifiers'
 );
