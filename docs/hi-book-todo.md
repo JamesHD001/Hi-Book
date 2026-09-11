@@ -14,7 +14,9 @@
 - [x] Document the E2E journey matrix and production-readiness exit criteria in `docs/production-readiness-audit.md`.
 - [x] Remediate the profile editor's multi-operation partial-failure risk with an atomic server-side workflow.
 - [x] Add database security coverage for the atomic profile update RPC.
-- [ ] Add integration/end-to-end coverage for security-critical workflows.
+- [x] Add a disposable local-Supabase Playwright E2E environment.
+- [x] Add critical authentication/public journey coverage and failure-path checks.
+- [ ] Expand E2E coverage to profile/privacy, social graph, posts/comments, messaging, notifications, and account lifecycle.
 - [ ] Verify responsive/mobile behavior across core MVP surfaces.
 - [ ] Verify accessibility across core MVP surfaces.
 - [ ] Audit rate limiting and abuse controls.
@@ -54,4 +56,4 @@
 - [ ] Additional media types
 
 ## Next major gate
-Establish the disposable E2E environment and execute the critical journey matrix before treating the MVP as production-ready.
+Expand the E2E suite across the remaining security-critical authenticated domains, then run responsive, accessibility, abuse-control, and operational readiness audits.
