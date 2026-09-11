@@ -1,6 +1,6 @@
 # Hi!Book 2.0 — Current TODO
 
-## Current gate
+## Current gate — Production readiness
 - [x] Database migrations and pgTAP security suite green in CI.
 - [x] Audit remaining web data-access paths for N+1 patterns.
 - [x] Batch signed avatar/media URL generation on feed, messaging inbox, notifications, discovery, and social-list paths.
@@ -8,7 +8,17 @@
 - [x] Complete moderation cross-domain authorization audit, including explicit action/appeal permissions and safe partial-appeal semantics.
 - [x] Add/document deployment reverse-proxy protections appropriate to Vercel or self-hosted deployment.
 - [x] Re-run web CI after the performance and security hardening changes and confirm lint/build pass.
-- [ ] Update `docs/hi-book-plan.md` with the completed architecture gates.
+- [x] Update `docs/hi-book-plan.md` with the completed architecture/security gates.
+- [x] Add global web error, loading, and not-found boundaries.
+- [ ] Audit all critical authenticated user journeys end-to-end.
+- [ ] Add integration/end-to-end coverage for security-critical workflows.
+- [ ] Verify responsive/mobile behavior across core MVP surfaces.
+- [ ] Verify accessibility across core MVP surfaces.
+- [ ] Audit rate limiting and abuse controls.
+- [ ] Audit production observability, error reporting, backups, and deployment configuration.
+- [ ] Fix all production blockers/high-severity findings.
+- [ ] Re-run database and web CI after production-readiness fixes.
+- [ ] Prepare a controlled production deployment checklist.
 
 ## MVP domains implemented
 - [x] Authentication and account lifecycle foundation
@@ -21,6 +31,23 @@
 - [x] 1:1 messaging and read state
 - [x] Moderation queue, enforcement, and appeals
 
-## Next major gates
-1. Mark the completed architecture/security gates in `docs/hi-book-plan.md`.
-2. Begin the next product/production-readiness milestone only after the architecture plan reflects the verified CI state.
+## Important launch blockers
+- [ ] Production-grade integration/e2e test coverage
+- [ ] Minor-safety requirements for ages 13–17 finalized before public production launch
+- [ ] Operational rate limiting/abuse protection verified
+- [ ] Production observability and recovery procedures verified
+- [ ] Responsive/accessibility audit completed
+
+## Deferred / post-MVP
+- [ ] HBC purchases and creator economy
+- [ ] Gifts
+- [ ] Payouts
+- [ ] Subscriptions
+- [ ] Group messaging
+- [ ] Voice/video features
+- [ ] Live streaming
+- [ ] Advanced recommendation/ranking systems
+- [ ] Additional media types
+
+## Next major gate
+Complete the production-readiness audit, resolve blockers/high-severity findings, and establish integration/end-to-end coverage before treating the MVP as production-ready.
