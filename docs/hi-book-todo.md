@@ -17,7 +17,9 @@
 - [x] Add a disposable local-Supabase Playwright E2E environment.
 - [x] Add critical authentication/public journey coverage and failure-path checks.
 - [x] Expand E2E coverage with authenticated profile/privacy, core navigation, post-composer failure, discovery safety controls, messaging boundaries, and notifications checks.
-- [ ] Expand E2E coverage to true cross-user social graph, posts/comments, media, messaging/realtime, moderation, and account lifecycle workflows.
+- [x] Add a deterministic two-user E2E fixture with independent browser sessions.
+- [x] Exercise cross-user follow/unfollow, public and followers-only post visibility, post likes/comments, direct messaging, reporting, and block enforcement through the real UI.
+- [ ] Expand E2E coverage to valid media uploads, realtime message delivery/read state, moderation workflow, and account lifecycle/deletion workflows.
 - [ ] Verify responsive/mobile behavior across core MVP surfaces.
 - [ ] Verify accessibility across core MVP surfaces.
 - [ ] Audit rate limiting and abuse controls.
@@ -57,4 +59,4 @@
 - [ ] Additional media types
 
 ## Next major gate
-Build the two-user E2E fixture and exercise real follow/block/report/post/comment/message/privacy enforcement across independent sessions. Then run responsive, accessibility, abuse-control, and operational readiness audits.
+Run the completed two-user matrix in CI, then cover media uploads, realtime/read state, moderation, account lifecycle, responsive/mobile behavior, accessibility, abuse controls, and operational readiness.
