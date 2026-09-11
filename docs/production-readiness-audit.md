@@ -4,18 +4,18 @@
 
 This audit checks the critical MVP user journeys against the current web implementation and identifies where static repository review is sufficient versus where a real authenticated browser session is required.
 
-This is a repository audit, not a claim that a live browser session or production Supabase environment has been exercised.
+This is a repository audit plus an E2E harness definition. The E2E workflow uses a disposable local Supabase instance and never uses production credentials or production user data.
 
 ## Journey matrix
 
 | Journey | Repository status | Result | Follow-up |
 |---|---|---|---|
-| Sign up | Implemented | 🟢 | Live verification still required with email confirmation enabled. |
-| Email verification | Implemented | 🟢 | Callback validates the local `next` path and redirects safely. Live verification still required. |
-| Onboarding | Implemented | 🟢 | Completion is server-side through `complete_registration`. Live verification still required. |
-| Authenticated community | Implemented | 🟢 | Protected by `requireActiveUser`. |
-| Profile/privacy | Implemented | 🟢 | Multi-table persistence now uses the transactional `update_profile_atomic` RPC; Storage upload remains separate and failed persistence is compensated by removing the newly uploaded object. Live verification still required. |
-| Follow/block/report | Implemented | 🟢 | Database authorization is the final enforcement boundary. Live interaction testing remains required. |
+| Sign up | Implemented | 🟢 | Automated validation coverage added; full valid signup is exercised against disposable local Supabase. |
+| Email verification | Implemented | 🟢 | Callback validates the local `next` path and redirects safely. Provider-specific email delivery still requires a later integration environment. |
+| Onboarding | Implemented | 🟢 | Completion is server-side through `complete_registration`; the E2E fixture completes registration for the disposable test user. |
+| Authenticated community | Implemented | 🟢 | Protected by `requireActiveUser`; automated authenticated navigation coverage added. |
+| Profile/privacy | Implemented | 🟢 | Multi-table persistence now uses the transactional `update_profile_atomic` RPC; Storage upload remains separate and failed persistence is compensated by removing the newly uploaded object. Live interaction testing still required. |
+| Follow/block/report | Implemented | 🟢 | Database authorization is the final enforcement boundary. Cross-user interaction testing remains required. |
 | Posts/media | Implemented | 🟢 | Database validation and private media controls are present. Live upload/error testing remains required. |
 | Feed | Implemented | 🟢 | Batched related reads and server-side authorization are present. |
 | Discovery | Implemented | 🟢 | Batched profile/avatar access is present. Privacy behavior still requires live matrix testing. |
@@ -32,11 +32,11 @@ This is a repository audit, not a claim that a live browser session or productio
 
 The database contract is covered by `supabase/tests/database/12_profile_atomic_update_security.sql`.
 
-### H-02 — Live end-to-end verification is still required
+### H-02 — Browser-level verification remains in progress
 
-The repository can establish implementation and authorization contracts, but it cannot prove browser behavior such as email confirmation, realtime messaging, upload behavior, mobile layouts, and cross-user privacy behavior without an environment containing real test accounts and Supabase configuration.
+A disposable E2E harness is now present. It starts a fresh local Supabase stack, creates/completes a dedicated test user, runs Playwright against the local Next.js app, and tears the Supabase stack down afterward.
 
-**Required remediation:** establish a dedicated integration/E2E environment with disposable test accounts and deterministic test data. Do not use production credentials or real user data in CI.
+The first automated slice covers public navigation, registration validation, invalid login handling, authenticated community access, protected-route redirects, and the 404 boundary. The remaining cross-user and mutation-heavy journeys still require implementation in the E2E suite.
 
 ## Medium-priority findings
 
@@ -80,7 +80,7 @@ Application and database authorization are present, but effective abuse protecti
 The production-readiness gate should not be marked green until:
 
 - [x] H-01 is remediated.
-- [ ] Disposable authenticated E2E environment exists.
+- [x] Disposable local-Supabase E2E environment exists.
 - [ ] Critical journeys pass in automated or repeatable browser tests.
 - [ ] Cross-user privacy/block/discovery/messaging matrix passes.
 - [ ] Mobile viewport audit passes.
