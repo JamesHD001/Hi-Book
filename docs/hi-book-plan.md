@@ -75,7 +75,7 @@ The project is being developed in security-first stages.
 
 ## Phase 0 — Architecture & Security Foundation
 
-**Status: In progress / database foundation substantially complete**
+**Status: Completed / verified in CI**
 
 ### Deliverables
 - Product requirements and domain boundaries
@@ -90,14 +90,22 @@ The project is being developed in security-first stages.
 - Database pgTAP security suites
 - GitHub Actions database CI
 
-### Security gates
-- Schema contract
-- RLS/security contract
-- Behavioral social/content security
-- Messaging security
-- Financial security
-- Deletion/retention security
-- Final cross-domain security audit
+### Verified security gates
+- Schema contract — Green
+- RLS/security contract — Green
+- Behavioral social/content security — Green
+- Messaging security — Green
+- Financial security — Green
+- Deletion/retention security — Green
+- Final cross-domain security audit — Green
+
+### Application hardening gates completed after the database freeze
+- Web data-access/N+1 audit — Green
+- Batched signed media/avatar URL generation — Green
+- Server-side latest-per-conversation messaging retrieval — Green
+- Moderation cross-domain authorization audit — Green
+- Deployment/reverse-proxy security documentation — Green
+- Web lint/build CI — Green
 
 ---
 
@@ -265,7 +273,6 @@ This is a major product differentiator.
 - Respect profile privacy
 - Respect country visibility
 - Respect moderation restrictions
-- Avoid already-followed users where appropriate
 
 ### Ranking principles
 May use:
@@ -599,10 +606,10 @@ Do not duplicate restriction state across domain tables.
 | `02_behavioral_security.sql` | Social/content authorization | Green |
 | `03_messaging_security.sql` | Messaging authorization and isolation | Green |
 | `04_financial_security.sql` | Wallet/payment/gift/ledger security | Green |
-| `05_deletion_retention_security.sql` | Deletion lifecycle and retention barriers | In progress |
-| Final cross-domain audit | Combined security review | Pending |
+| `05_deletion_retention_security.sql` | Deletion lifecycle and retention barriers | Green |
+| Final cross-domain audit | Combined security review | Green |
 
-### CI requirements
+### Database CI requirements
 Every database change must pass:
 
 1. Supabase startup
@@ -612,11 +619,32 @@ Every database change must pass:
 
 No feature is considered database-complete while the CI gate is failing.
 
+## Web CI
+
+The web application has a GitHub Actions verification gate covering:
+
+1. Dependency installation
+2. ESLint
+3. Next.js production build
+
+The current web CI gate is green. Web CI validates compilation and static quality; it does not replace integration or end-to-end behavioral testing.
+
+## Application testing gate
+
+Before production launch, the web layer still requires:
+
+- Integration tests for authenticated workflows
+- End-to-end tests for critical user journeys
+- Authorization regression tests at the application boundary
+- Mobile/responsive verification
+- Accessibility verification
+- Failure/recovery-path verification
+
 ---
 
 # 13. Post-Database Application Roadmap
 
-Once the database/security gate is fully green:
+The database/security foundation and current web CI gate are now proven. The application layer is partially implemented and moves into production-readiness hardening before launch.
 
 ### A. Application foundation
 - Initialize Next.js application
@@ -776,29 +804,33 @@ A feature is considered complete only when:
 - Analytics/telemetry architecture
 - Financial architecture
 - Financial security tests
+- Account deletion/retention security tests
+- Final cross-domain security audit
 - GitHub Actions database CI
+- Web data-access/N+1 audit
+- Batched signed media/avatar URL generation
+- Latest-per-conversation messaging retrieval
+- Moderation cross-domain authorization hardening
+- Deployment/reverse-proxy security documentation
+- GitHub Actions web lint/build CI
+- Production error, loading, and not-found boundaries
 
-### In progress
-- Account deletion/retention security suite
+### Current gate
+- Production-readiness audit of the complete web application
 
 ### Next gates
-1. Get deletion/retention suite green.
-2. Run final cross-domain security audit.
-3. Lock the database/security foundation.
-4. Begin Next.js application foundation.
-5. Implement authentication and landing experience.
-6. Implement profiles and social graph.
-7. Implement posts/media/feed.
-8. Implement global discovery.
-9. Implement messaging and notifications.
-10. Complete MVP safety/moderation UX.
-11. Run integration/end-to-end testing.
-12. Prepare production deployment.
+1. Audit critical authenticated user journeys end-to-end.
+2. Add integration/end-to-end coverage for security-critical and revenue-adjacent future-safe workflows.
+3. Verify mobile/responsive and accessibility behavior.
+4. Verify operational requirements: rate limiting, abuse controls, observability, backups, and deployment configuration.
+5. Fix all production blockers/high-severity findings.
+6. Re-run database and web CI after hardening changes.
+7. Prepare the MVP for controlled production deployment.
 
 ---
 
 # 18. Project Rule
 
-**Do not move to application coding simply because the schema exists. Move when the database/security contract is proven by automated tests and the remaining risks are explicitly understood.**
+**Do not move to production or financial expansion simply because the schema and UI exist. The database/security contract must be proven by automated tests, the web layer must pass its CI gate, and remaining production risks must be explicitly understood and resolved according to severity.**
 
 Hi!Book should be built as a trustworthy global connection platform first, and optimized for scale and monetization second.
