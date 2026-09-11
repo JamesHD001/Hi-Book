@@ -16,7 +16,8 @@
 - [x] Add database security coverage for the atomic profile update RPC.
 - [x] Add a disposable local-Supabase Playwright E2E environment.
 - [x] Add critical authentication/public journey coverage and failure-path checks.
-- [ ] Expand E2E coverage to profile/privacy, social graph, posts/comments, messaging, notifications, and account lifecycle.
+- [x] Expand E2E coverage with authenticated profile/privacy, core navigation, post-composer failure, discovery safety controls, messaging boundaries, and notifications checks.
+- [ ] Expand E2E coverage to true cross-user social graph, posts/comments, media, messaging/realtime, moderation, and account lifecycle workflows.
 - [ ] Verify responsive/mobile behavior across core MVP surfaces.
 - [ ] Verify accessibility across core MVP surfaces.
 - [ ] Audit rate limiting and abuse controls.
@@ -56,4 +57,4 @@
 - [ ] Additional media types
 
 ## Next major gate
-Expand the E2E suite across the remaining security-critical authenticated domains, then run responsive, accessibility, abuse-control, and operational readiness audits.
+Build the two-user E2E fixture and exercise real follow/block/report/post/comment/message/privacy enforcement across independent sessions. Then run responsive, accessibility, abuse-control, and operational readiness audits.
