@@ -1,6 +1,6 @@
 begin;
 
-select plan(23);
+select plan(25);
 
 select has_function('public', 'is_user_restricted', array['uuid']);
 select function_returns('public', 'is_user_restricted', array['uuid'], 'boolean');
@@ -26,6 +26,8 @@ select is(has_function_privilege('anon'::name, 'public.execute_moderation_action
 select is(has_function_privilege('anon'::name, 'public.review_moderation_appeal(uuid,public.appeal_status,text)'::text, 'EXECUTE'), false, 'appeal review is not executable by anon');
 select is(has_function_privilege('authenticated'::name, 'public.execute_moderation_action(uuid,public.moderation_action_type,text,public.severity_type,timestamptz,timestamptz,jsonb)'::text, 'EXECUTE'), true, 'authenticated can execute moderation action RPC');
 select is(has_function_privilege('authenticated'::name, 'public.review_moderation_appeal(uuid,public.appeal_status,text)'::text, 'EXECUTE'), true, 'authenticated can execute appeal review RPC');
+select is((select prosrc like '%moderation.actions.execute%' from pg_proc where oid = 'public.execute_moderation_action(uuid,public.moderation_action_type,text,public.severity_type,timestamptz,timestamptz,jsonb)'::regprocedure), true, 'moderation action executor checks the dedicated action permission');
+select is((select prosrc like '%moderation.appeals.review%' from pg_proc where oid = 'public.review_moderation_appeal(uuid,public.appeal_status,text)'::regprocedure), true, 'appeal reviewer checks the dedicated appeal permission');
 
 select * from finish();
 rollback;
