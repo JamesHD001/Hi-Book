@@ -7,7 +7,7 @@
 - [x] Harden messaging inbox latest-message retrieval with a server-side latest-per-conversation query/RPC and supporting index.
 - [x] Complete moderation cross-domain authorization audit, including explicit action/appeal permissions and safe partial-appeal semantics.
 - [x] Add/document deployment reverse-proxy protections appropriate to Vercel or self-hosted deployment.
-- [ ] Re-run web CI after the performance and security hardening changes and fix any failures.
+- [x] Re-run web CI after the performance and security hardening changes and confirm lint/build pass.
 - [ ] Update `docs/hi-book-plan.md` with the completed architecture gates.
 
 ## MVP domains implemented
@@ -22,6 +22,5 @@
 - [x] Moderation queue, enforcement, and appeals
 
 ## Next major gates
-1. Confirm the web CI gate is green on the current main branch.
-2. Mark the completed architecture/security gates in `docs/hi-book-plan.md`.
-3. Move into the next product/production-readiness milestone only after the web gate is green.
+1. Mark the completed architecture/security gates in `docs/hi-book-plan.md`.
+2. Begin the next product/production-readiness milestone only after the architecture plan reflects the verified CI state.
