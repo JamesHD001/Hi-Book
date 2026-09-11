@@ -10,7 +10,9 @@
 - [x] Re-run web CI after the performance and security hardening changes and confirm lint/build pass.
 - [x] Update `docs/hi-book-plan.md` with the completed architecture/security gates.
 - [x] Add global web error, loading, and not-found boundaries.
-- [ ] Audit all critical authenticated user journeys end-to-end.
+- [x] Perform repository-level audit of critical authenticated user journeys.
+- [x] Document the E2E journey matrix and production-readiness exit criteria in `docs/production-readiness-audit.md`.
+- [ ] Remediate the profile editor's multi-operation partial-failure risk with an atomic server-side workflow.
 - [ ] Add integration/end-to-end coverage for security-critical workflows.
 - [ ] Verify responsive/mobile behavior across core MVP surfaces.
 - [ ] Verify accessibility across core MVP surfaces.
@@ -32,6 +34,7 @@
 - [x] Moderation queue, enforcement, and appeals
 
 ## Important launch blockers
+- [ ] Atomic profile update workflow
 - [ ] Production-grade integration/e2e test coverage
 - [ ] Minor-safety requirements for ages 13–17 finalized before public production launch
 - [ ] Operational rate limiting/abuse protection verified
@@ -50,4 +53,4 @@
 - [ ] Additional media types
 
 ## Next major gate
-Complete the production-readiness audit, resolve blockers/high-severity findings, and establish integration/end-to-end coverage before treating the MVP as production-ready.
+Remediate the profile update atomicity finding, establish the disposable E2E environment, and execute the critical journey matrix before treating the MVP as production-ready.
