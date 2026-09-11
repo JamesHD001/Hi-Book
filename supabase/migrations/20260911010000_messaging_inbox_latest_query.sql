@@ -1,5 +1,10 @@
 begin;
 
+-- The lateral lookup below is indexed by conversation and descending message
+-- chronology, so the database can stop after the newest row for each thread.
+create index if not exists idx_messages_conversation_created_id_desc
+  on public.messages (conversation_id, created_at desc, id desc);
+
 -- Return the authenticated user's direct conversations together with the other
 -- participant and exactly one latest message per conversation. Keeping the
 -- latest-message selection inside PostgreSQL avoids fetching a global message
