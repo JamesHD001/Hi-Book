@@ -59,6 +59,8 @@ test.describe("security-critical authenticated journeys", () => {
     await expect(discovery).not.toBeChecked();
 
     // Leave the disposable two-user fixture in its public/default state for later specs.
+    await page.getByLabel("Display name").fill("E2E User A Tester");
+    await page.getByLabel("Bio").fill("");
     await page.getByLabel("Profile visibility").selectOption("PUBLIC");
     await page.getByLabel("Country visibility").selectOption("PUBLIC");
     await page.getByLabel("Who can message you?").selectOption("FOLLOWERS");
