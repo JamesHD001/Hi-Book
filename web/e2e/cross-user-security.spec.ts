@@ -30,7 +30,8 @@ async function makeProfilePublic(page: Page) {
 
 async function openProfile(page: Page, username: string) {
   await page.goto(`/u/${username}`);
-  await expect(page.getByRole("button", { name: /Follow|Following|Message/i }).first()).toBeVisible();
+  await expect(page.locator("main h1").first()).toBeVisible();
+  await expect(page.locator("main").getByText(`@${username}`, { exact: true })).toBeVisible();
 }
 
 test.describe("two-user authorization and privacy matrix", () => {
@@ -53,10 +54,12 @@ test.describe("two-user authorization and privacy matrix", () => {
 
       await signIn(pageA, userA.email, userA.password);
       await openProfile(pageA, fixtureB.username);
+      await expect(pageA.getByRole("button", { name: "Follow" })).toBeVisible();
       await pageA.getByRole("button", { name: "Follow" }).click();
       await expect(pageA.getByRole("button", { name: "Following" })).toBeVisible();
 
       await openProfile(pageB, fixtureA.username);
+      await expect(pageB.getByRole("button", { name: "Follow" })).toBeVisible();
       await pageB.getByRole("button", { name: "Follow" }).click();
       await expect(pageB.getByRole("button", { name: "Following" })).toBeVisible();
 
@@ -86,6 +89,7 @@ test.describe("two-user authorization and privacy matrix", () => {
       await expect(pageB.locator("article").filter({ hasText: followerPost }).first()).toBeVisible();
 
       await openProfile(pageA, fixtureB.username);
+      await expect(pageA.getByRole("button", { name: "Message" })).toBeVisible();
       await pageA.getByRole("button", { name: "Message" }).click();
       await expect(pageA).toHaveURL(/\/messages\/[0-9a-f-]+$/i);
       await pageA.getByPlaceholder("Write a message…").fill(messageText);
