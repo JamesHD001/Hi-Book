@@ -12,7 +12,8 @@
 - [x] Add global web error, loading, and not-found boundaries.
 - [x] Perform repository-level audit of critical authenticated user journeys.
 - [x] Document the E2E journey matrix and production-readiness exit criteria in `docs/production-readiness-audit.md`.
-- [ ] Remediate the profile editor's multi-operation partial-failure risk with an atomic server-side workflow.
+- [x] Remediate the profile editor's multi-operation partial-failure risk with an atomic server-side workflow.
+- [x] Add database security coverage for the atomic profile update RPC.
 - [ ] Add integration/end-to-end coverage for security-critical workflows.
 - [ ] Verify responsive/mobile behavior across core MVP surfaces.
 - [ ] Verify accessibility across core MVP surfaces.
@@ -34,7 +35,7 @@
 - [x] Moderation queue, enforcement, and appeals
 
 ## Important launch blockers
-- [ ] Atomic profile update workflow
+- [x] Atomic profile update workflow
 - [ ] Production-grade integration/e2e test coverage
 - [ ] Minor-safety requirements for ages 13–17 finalized before public production launch
 - [ ] Operational rate limiting/abuse protection verified
@@ -53,4 +54,4 @@
 - [ ] Additional media types
 
 ## Next major gate
-Remediate the profile update atomicity finding, establish the disposable E2E environment, and execute the critical journey matrix before treating the MVP as production-ready.
+Establish the disposable E2E environment and execute the critical journey matrix before treating the MVP as production-ready.
