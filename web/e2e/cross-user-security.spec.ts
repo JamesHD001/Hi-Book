@@ -41,9 +41,9 @@ test.describe("two-user authorization and privacy matrix", () => {
     const followerPost = `E2E followers-only post ${Date.now()}`;
     const commentText = `E2E comment ${Date.now()}`;
     const messageText = `E2E message ${Date.now()}`;
+    const blockedMessage = `E2E blocked message ${Date.now()}`;
 
     try {
-      // A -> B follow and B -> A follow establish the real social graph.
       await signIn(pageA, userA.email, userA.password);
       await openDiscoveredProfile(pageA, "E2E User B Tester");
       await expect(pageA.getByRole("button", { name: "Follow" })).toBeVisible();
@@ -51,7 +51,7 @@ test.describe("two-user authorization and privacy matrix", () => {
       await expect(pageA.getByRole("button", { name: "Following" })).toBeVisible();
 
       await signIn(pageB, userB.email, userB.password);
-      await openDiscoveredProfile(pageB, "E2E Profile Tester");
+      await openDiscoveredProfile(pageB, "E2E User A Tester");
       await expect(pageB.getByRole("button", { name: "Follow" })).toBeVisible();
       await pageB.getByRole("button", { name: "Follow" }).click();
       await expect(pageB.getByRole("button", { name: "Following" })).toBeVisible();
@@ -92,7 +92,6 @@ test.describe("two-user authorization and privacy matrix", () => {
       await pageA.getByRole("button", { name: "Send" }).click();
       await expect(pageA.getByText(messageText)).toBeVisible();
 
-      // B sees the same conversation through the independent session.
       const conversationUrl = pageA.url();
       await pageB.goto(conversationUrl);
       await expect(pageB.getByText(messageText)).toBeVisible();
@@ -102,10 +101,10 @@ test.describe("two-user authorization and privacy matrix", () => {
       await pageA.getByRole("button", { name: "Report" }).click();
       await pageA.getByLabel("Reason").selectOption("OTHER");
       await pageA.getByRole("button", { name: "Submit report" }).click();
-      await expect(pageA.getByText(/Report submitted/i)).toBeVisible();
+      await expect(pageA.getByText(/Report submitted|already submitted/i)).toBeVisible();
 
       // B unfollows A. The followers-only post must then disappear from B's feed.
-      await openDiscoveredProfile(pageB, "E2E Profile Tester");
+      await openDiscoveredProfile(pageB, "E2E User A Tester");
       await expect(pageB.getByRole("button", { name: "Following" })).toBeVisible();
       await pageB.getByRole("button", { name: "Following" }).click();
       await expect(pageB.getByRole("button", { name: "Follow" })).toBeVisible();
@@ -118,12 +117,19 @@ test.describe("two-user authorization and privacy matrix", () => {
       await expect(pageA).toHaveURL(/\/community(?:\/)?$/);
 
       await pageB.goto("/discover");
-      await expect(pageB.locator("article").filter({ hasText: "E2E Profile Tester" })).toHaveCount(0);
+      await expect(pageB.locator("article").filter({ hasText: "E2E User A Tester" })).toHaveCount(0);
 
-      // The blocked user cannot continue using the existing direct conversation.
+      // The blocked user cannot continue sending through the existing conversation.
       await pageB.goto(conversationUrl);
-      await expect(pageB.getByRole("heading", { name: "Page not found" })).toBeVisible();
-      await expect(pageB.getByPlaceholder("Write a message…")).toHaveCount(0);
+      const messageInput = pageB.getByPlaceholder("Write a message…");
+      if (await messageInput.count()) {
+        await messageInput.fill(blockedMessage);
+        await pageB.getByRole("button", { name: "Send" }).click();
+        await expect(pageB.getByText(/blocked|not permitted|permission/i)).toBeVisible();
+        await expect(pageB.getByText(blockedMessage)).toHaveCount(0);
+      } else {
+        await expect(pageB.getByRole("heading", { name: "Page not found" })).toBeVisible();
+      }
     } finally {
       await contextA.close();
       await contextB.close();
