@@ -1,5 +1,6 @@
 begin;
 
+-- CI verification checkpoint: execute the complete Supabase database suite on main.
 select plan(25);
 
 select has_function('public', 'is_user_restricted', array['uuid']);
