@@ -84,7 +84,7 @@ test.describe("two-user authorization and privacy matrix", () => {
       await pageB.goto("/community");
       await expect(pageB.locator("article").filter({ hasText: followerPost }).first()).toBeVisible();
 
-      // B can open a permitted direct conversation because B follows A.
+      // A can message B because B follows A and B's message permission defaults to FOLLOWERS.
       await openDiscoveredProfile(pageA, "E2E User B Tester");
       await pageA.getByRole("button", { name: "Message" }).click();
       await expect(pageA).toHaveURL(/\/messages\/[0-9a-f-]+$/i);
@@ -98,8 +98,6 @@ test.describe("two-user authorization and privacy matrix", () => {
       await expect(pageB.getByText(messageText)).toBeVisible();
 
       // Reporting is independent from blocking and creates a safety signal.
-      await pageA.goto("/u/" + (await pageA.getByRole("link", { name: /@/ }).first().getAttribute("href") ?? ""));
-      // Return to B's profile through discovery so the target is resolved by the real UI.
       await openDiscoveredProfile(pageA, "E2E User B Tester");
       await pageA.getByRole("button", { name: "Report" }).click();
       await pageA.getByLabel("Reason").selectOption("OTHER");
@@ -114,7 +112,7 @@ test.describe("two-user authorization and privacy matrix", () => {
       await pageB.goto("/community");
       await expect(pageB.locator("article").filter({ hasText: followerPost })).toHaveCount(0);
 
-      // A blocks B. The block removes the social edge and the target must no longer be discoverable.
+      // A blocks B. The block removes the social edge and B can no longer discover A.
       await openDiscoveredProfile(pageA, "E2E User B Tester");
       await pageA.getByRole("button", { name: "Block" }).click();
       await expect(pageA).toHaveURL(/\/community(?:\/)?$/);
@@ -122,9 +120,9 @@ test.describe("two-user authorization and privacy matrix", () => {
       await pageB.goto("/discover");
       await expect(pageB.locator("article").filter({ hasText: "E2E Profile Tester" })).toHaveCount(0);
 
-      // The blocked user cannot open the existing direct conversation anymore.
+      // The blocked user cannot continue using the existing direct conversation.
       await pageB.goto(conversationUrl);
-      await expect(pageB.getByText(/Conversation|not found/i).first()).toBeVisible();
+      await expect(pageB.getByRole("heading", { name: "Page not found" })).toBeVisible();
       await expect(pageB.getByPlaceholder("Write a message…")).toHaveCount(0);
     } finally {
       await contextA.close();
