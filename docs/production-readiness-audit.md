@@ -14,7 +14,7 @@ This is a repository audit, not a claim that a live browser session or productio
 | Email verification | Implemented | 🟢 | Callback validates the local `next` path and redirects safely. Live verification still required. |
 | Onboarding | Implemented | 🟢 | Completion is server-side through `complete_registration`. Live verification still required. |
 | Authenticated community | Implemented | 🟢 | Protected by `requireActiveUser`. |
-| Profile/privacy | Implemented | 🟠 | Client performs several independent writes; a partial failure can leave profile fields and relationship selections out of sync. This should be consolidated into an atomic server-side workflow before production. |
+| Profile/privacy | Implemented | 🟢 | Multi-table persistence now uses the transactional `update_profile_atomic` RPC; Storage upload remains separate and failed persistence is compensated by removing the newly uploaded object. Live verification still required. |
 | Follow/block/report | Implemented | 🟢 | Database authorization is the final enforcement boundary. Live interaction testing remains required. |
 | Posts/media | Implemented | 🟢 | Database validation and private media controls are present. Live upload/error testing remains required. |
 | Feed | Implemented | 🟢 | Batched related reads and server-side authorization are present. |
@@ -26,11 +26,11 @@ This is a repository audit, not a claim that a live browser session or productio
 
 ## High-severity findings
 
-### H-01 — Profile updates are not atomic
+### H-01 — Profile updates are not atomic — Remediated
 
-`web/components/profile/ProfileEditor.tsx` currently performs avatar upload, profile update, country update, privacy update, language replacement, and interest replacement as separate client-side operations. If an operation fails after earlier operations succeed, the user can be left with a partially updated profile.
+`web/components/profile/ProfileEditor.tsx` now uploads a new avatar separately and sends all database-backed profile changes through the `update_profile_atomic` PostgreSQL RPC. The RPC derives the authenticated user from `auth.uid()`, validates the payload, and updates the profile, country, privacy settings, languages, and interests in one database transaction. If the database operation fails after an avatar upload, the client removes the newly uploaded object as compensation.
 
-**Required remediation:** move the multi-table profile update into a narrow server-side transactional workflow/RPC, while keeping Storage upload handling separate and compensating for failed database persistence where necessary.
+The database contract is covered by `supabase/tests/database/12_profile_atomic_update_security.sql`.
 
 ### H-02 — Live end-to-end verification is still required
 
@@ -79,7 +79,7 @@ Application and database authorization are present, but effective abuse protecti
 
 The production-readiness gate should not be marked green until:
 
-- [ ] H-01 is remediated.
+- [x] H-01 is remediated.
 - [ ] Disposable authenticated E2E environment exists.
 - [ ] Critical journeys pass in automated or repeatable browser tests.
 - [ ] Cross-user privacy/block/discovery/messaging matrix passes.
