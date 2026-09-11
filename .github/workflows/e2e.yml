@@ -46,6 +46,8 @@ jobs:
           echo "E2E_BASE_URL=http://127.0.0.1:3000" >> "$GITHUB_ENV"
           echo "E2E_TEST_EMAIL=e2e-test@hibook.test" >> "$GITHUB_ENV"
           echo "E2E_TEST_PASSWORD=E2eTestPassword123!" >> "$GITHUB_ENV"
+          echo "E2E_TEST_EMAIL_B=e2e-test-b@hibook.test" >> "$GITHUB_ENV"
+          echo "E2E_TEST_PASSWORD_B=E2eTestPassword123!" >> "$GITHUB_ENV"
 
       - name: Install web dependencies
         run: npm install
