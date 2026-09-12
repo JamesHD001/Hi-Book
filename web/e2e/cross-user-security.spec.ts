@@ -75,6 +75,7 @@ test.describe("two-user authorization and privacy matrix", () => {
       const composerA = pageA.getByRole("region", { name: "Create a post" });
       await composerA.getByPlaceholder("What would you like to share with the community?").fill(publicPost);
       await composerA.getByRole("button", { name: "Publish post" }).click();
+      await expect(composerA.getByRole("status")).toHaveText(/post has been published/i);
 
       await pageB.goto("/community");
       const publicArticle = pageB.locator("article").filter({ hasText: publicPost }).first();
@@ -91,6 +92,7 @@ test.describe("two-user authorization and privacy matrix", () => {
       await followerComposer.getByPlaceholder("What would you like to share with the community?").fill(followerPost);
       await followerComposer.getByLabel("Visibility").selectOption("FOLLOWERS");
       await followerComposer.getByRole("button", { name: "Publish post" }).click();
+      await expect(followerComposer.getByRole("status")).toHaveText(/post has been published/i);
       await pageB.goto("/community");
       await expect(pageB.locator("article").filter({ hasText: followerPost }).first()).toBeVisible();
 
