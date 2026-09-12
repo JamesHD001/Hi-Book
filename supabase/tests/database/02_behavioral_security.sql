@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap;
 
-select plan(22);
+select plan(24);
 
 -- Deterministic identities used only inside this rolled-back test transaction.
 -- auth.users is seeded first because public.users references Supabase Auth.
@@ -35,6 +35,20 @@ select ok((select count(*) from public.profiles) = 3, 'profile RLS exposes profi
 select ok((select public.can_view_profile('00000000-0000-0000-0000-000000000002')) is true, 'public profile is viewable before blocking');
 select ok((select count(*) from public.posts where id = '10000000-0000-0000-0000-000000000001') = 1, 'owner can view own public post');
 select ok((select count(*) from public.posts where id = '10000000-0000-0000-0000-000000000003') = 1, 'owner can view own private post');
+
+select throws_ok($direct_post_insert$
+  insert into public.posts (user_id, content, visibility, status, published_at)
+  values ('00000000-0000-0000-0000-000000000001', 'Direct client insert must be rejected', 'PUBLIC', 'PUBLISHED', now())
+$direct_post_insert$, '42501', null, 'direct post inserts are blocked by the RLS boundary');
+
+select lives_ok($rpc_post_insert$
+  select public.create_post(
+    '20000000-0000-0000-0000-000000000001',
+    'RPC-created post',
+    'PUBLIC',
+    '[]'::jsonb
+  )
+$rpc_post_insert$, 'authenticated users create posts through the trusted RPC');
 
 select lives_ok($follow$
   insert into public.follows (follower_id, following_id)
