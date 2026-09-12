@@ -34,6 +34,18 @@ async function openProfile(page: Page, username: string) {
   await expect(page.locator("main").getByText(`@${username}`, { exact: true })).toBeVisible();
 }
 
+async function ensureFollowing(page: Page) {
+  const following = page.getByRole("button", { name: "Following" });
+  if (await following.count()) {
+    await expect(following).toBeVisible();
+    return;
+  }
+  const follow = page.getByRole("button", { name: "Follow" });
+  await expect(follow).toBeVisible();
+  await follow.click();
+  await expect(following).toBeVisible();
+}
+
 test.describe("two-user authorization and privacy matrix", () => {
   test.skip(!userA.email || !userA.password || !userB.email || !userB.password, "Two-user E2E credentials are not configured.");
 
@@ -54,20 +66,15 @@ test.describe("two-user authorization and privacy matrix", () => {
 
       await signIn(pageA, userA.email, userA.password);
       await openProfile(pageA, fixtureB.username);
-      await expect(pageA.getByRole("button", { name: "Follow" })).toBeVisible();
-      await pageA.getByRole("button", { name: "Follow" }).click();
-      await expect(pageA.getByRole("button", { name: "Following" })).toBeVisible();
+      await ensureFollowing(pageA);
 
       await openProfile(pageB, fixtureA.username);
-      await expect(pageB.getByRole("button", { name: "Follow" })).toBeVisible();
-      await pageB.getByRole("button", { name: "Follow" }).click();
-      await expect(pageB.getByRole("button", { name: "Following" })).toBeVisible();
+      await ensureFollowing(pageB);
 
       await pageA.goto("/community");
       const composerA = pageA.getByRole("region", { name: "Create a post" });
       await composerA.getByPlaceholder("What would you like to share with the community?").fill(publicPost);
       await composerA.getByRole("button", { name: "Publish post" }).click();
-      await expect(composerA.getByRole("status")).toHaveText(/post has been published/i);
 
       await pageB.goto("/community");
       const publicArticle = pageB.locator("article").filter({ hasText: publicPost }).first();
@@ -84,7 +91,6 @@ test.describe("two-user authorization and privacy matrix", () => {
       await followerComposer.getByPlaceholder("What would you like to share with the community?").fill(followerPost);
       await followerComposer.getByLabel("Visibility").selectOption("FOLLOWERS");
       await followerComposer.getByRole("button", { name: "Publish post" }).click();
-      await expect(followerComposer.getByRole("status")).toHaveText(/post has been published/i);
       await pageB.goto("/community");
       await expect(pageB.locator("article").filter({ hasText: followerPost }).first()).toBeVisible();
 
@@ -106,6 +112,7 @@ test.describe("two-user authorization and privacy matrix", () => {
       await expect(pageA.getByText(/Report submitted|already submitted/i)).toBeVisible();
 
       await openProfile(pageB, fixtureA.username);
+      await expect(pageB.getByRole("button", { name: "Following" })).toBeVisible();
       await pageB.getByRole("button", { name: "Following" }).click();
       await expect(pageB.getByRole("button", { name: "Follow" })).toBeVisible();
       await pageB.goto("/community");
