@@ -6,14 +6,13 @@ begin;
 -- post id and records the matching media metadata in the same database transaction.
 
 drop function if exists public.create_post(text, public.post_visibility, jsonb);
-
-drop function if exists public.create_post(text, public.post_visibility, jsonb, uuid);
+drop function if exists public.create_post(uuid, text, public.post_visibility, jsonb);
 
 create or replace function public.create_post(
+  p_post_id uuid,
   p_content text,
   p_visibility public.post_visibility default 'PUBLIC',
-  p_media jsonb default '[]'::jsonb,
-  p_post_id uuid
+  p_media jsonb default '[]'::jsonb
 )
 returns uuid
 language plpgsql
@@ -22,7 +21,7 @@ set search_path = pg_catalog, public
 as $$
 declare
   v_user_id uuid := auth.uid();
-  v_post_id uuid := coalesce(p_post_id, gen_random_uuid());
+  v_post_id uuid := p_post_id;
   v_item jsonb;
   v_order integer := 0;
   v_path text;
@@ -45,7 +44,7 @@ begin
     raise exception 'Active account required';
   end if;
 
-  if p_post_id is null then
+  if v_post_id is null then
     raise exception 'Post id is required';
   end if;
 
@@ -134,10 +133,11 @@ begin
 end;
 $$;
 
-revoke all on function public.create_post(text, public.post_visibility, jsonb, uuid) from public, anon;
-grant execute on function public.create_post(text, public.post_visibility, jsonb, uuid) to authenticated;
+revoke all on function public.create_post(uuid, text, public.post_visibility, jsonb) from public, anon;
+grant execute on function public.create_post(uuid, text, public.post_visibility, jsonb) to authenticated;
 
--- Preserve the original no-explicit-id RPC contract for trusted callers.
+-- Preserve the original no-explicit-id RPC contract for callers that do not
+-- need to coordinate a storage path before the database transaction.
 create or replace function public.create_post(
   p_content text,
   p_visibility public.post_visibility default 'PUBLIC',
@@ -148,7 +148,7 @@ language sql
 security definer
 set search_path = pg_catalog, public
 as $$
-  select public.create_post(p_content, p_visibility, p_media, gen_random_uuid());
+  select public.create_post(gen_random_uuid(), p_content, p_visibility, p_media);
 $$;
 
 revoke all on function public.create_post(text, public.post_visibility, jsonb) from public, anon;
