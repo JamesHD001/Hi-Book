@@ -6,9 +6,9 @@ import { createClient } from "@/lib/supabase/client";
 const MAX_IMAGES = 10;
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
 const ACCEPTED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
-
 type Visibility = "PUBLIC" | "FOLLOWERS" | "PRIVATE";
 type SelectedImage = { file: File; previewUrl: string };
+type PreparedImage = { blob: Blob; width: number; height: number; mediaId: string; storagePath: string };
 
 async function prepareImage(file: File) {
   if (!ACCEPTED_TYPES.has(file.type)) throw new Error("Only JPG, PNG, and WebP images are supported.");
@@ -95,51 +95,48 @@ export default function CreatePost() {
     const uploadedPaths: string[] = [];
 
     try {
-      const { data: authData } = await supabase.auth.getUser();
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (authError) throw new Error(authError.message);
       const userId = authData.user?.id;
       if (!userId) throw new Error("Your session has expired. Please sign in again.");
 
-      const cleanContent = content.trim();
-      const { data: post, error: postError } = await supabase
-        .from("posts")
-        .insert({
-          user_id: userId,
-          content: cleanContent || null,
-          visibility,
-          status: "PUBLISHED",
-          published_at: new Date().toISOString(),
-        })
-        .select("id")
-        .single();
-      if (postError || !post) throw new Error(postError?.message ?? "Could not create the post.");
-      postId = post.id;
+      postId = crypto.randomUUID();
+      const preparedImages: PreparedImage[] = [];
 
-      for (let index = 0; index < images.length; index += 1) {
-        const prepared = await prepareImage(images[index].file);
+      for (const image of images) {
+        const prepared = await prepareImage(image.file);
         const mediaId = crypto.randomUUID();
-        const storagePath = `${userId}/${post.id}/${mediaId}.webp`;
+        const storagePath = `posts/${userId}/${postId}/${mediaId}.webp`;
+        preparedImages.push({ ...prepared, mediaId, storagePath });
+      }
 
-        const { error: uploadError } = await supabase.storage.from("posts").upload(storagePath, prepared.blob, {
+      for (const prepared of preparedImages) {
+        const { error: uploadError } = await supabase.storage.from("posts").upload(prepared.storagePath, prepared.blob, {
           contentType: "image/webp",
           cacheControl: "3600",
           upsert: false,
         });
         if (uploadError) throw new Error(uploadError.message);
-        uploadedPaths.push(storagePath);
-
-        const { error: mediaError } = await supabase.from("post_media").insert({
-          id: mediaId,
-          post_id: post.id,
-          media_type: "IMAGE",
-          storage_path: storagePath,
-          mime_type: "image/webp",
-          file_size: prepared.blob.size,
-          width: prepared.width,
-          height: prepared.height,
-          display_order: index,
-        });
-        if (mediaError) throw new Error(mediaError.message);
+        uploadedPaths.push(prepared.storagePath);
       }
+
+      const mediaMetadata = preparedImages.map((image) => ({
+        storage_path: image.storagePath,
+        mime_type: "image/webp",
+        file_size: image.blob.size,
+        width: image.width,
+        height: image.height,
+        alt_text: null,
+      }));
+
+      const { data: createdPostId, error: postError } = await supabase.rpc("create_post", {
+        p_post_id: postId,
+        p_content: content.trim(),
+        p_visibility: visibility,
+        p_media: mediaMetadata,
+      });
+      if (postError || !createdPostId) throw new Error(postError?.message ?? "Could not create the post.");
+      if (createdPostId !== postId) throw new Error("The server returned an unexpected post id.");
 
       setContent("");
       setVisibility("PUBLIC");
