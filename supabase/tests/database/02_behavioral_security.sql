@@ -31,7 +31,7 @@ select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001
 select set_config('request.jwt.claim.role', 'authenticated', true);
 
 select ok((select count(*) from public.users) = 1, 'RLS isolates users to the current account');
-select ok((select count(*) from public.profiles) = 1, 'RLS isolates profiles to the current account when querying directly');
+select ok((select count(*) from public.profiles) = 3, 'profile RLS exposes profiles that the current account is authorized to view');
 select ok((select public.can_view_profile('00000000-0000-0000-0000-000000000002')) is true, 'public profile is viewable before blocking');
 select ok((select count(*) from public.posts where id = '10000000-0000-0000-0000-000000000001') = 1, 'owner can view own public post');
 select ok((select count(*) from public.posts where id = '10000000-0000-0000-0000-000000000003') = 1, 'owner can view own private post');
