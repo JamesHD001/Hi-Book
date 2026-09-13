@@ -53,6 +53,11 @@ export default function ConversationView({ conversationId, userId, initialMessag
       {messages.length ? messages.map((message) => <div key={message.id} className={`flex ${message.sender_id === userId ? "justify-end" : "justify-start"}`}><div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-6 ${message.sender_id === userId ? "bg-blue-600 text-white" : "bg-white text-slate-800 shadow-sm"}`}>{message.message_type === "POST_SHARE" && message.shared_post_id ? <Link href={`/community?post=${encodeURIComponent(message.shared_post_id)}`} className="font-semibold underline">Shared a post · View post</Link> : message.content}</div></div>) : <div className="m-auto text-center"><p className="font-semibold">Start the conversation</p><p className="mt-1 text-sm text-slate-500">Messages are delivered only when server-side permission and block checks allow them.</p></div>}
       <div ref={endRef} />
     </div>
-    <MessageComposer conversationId={conversationId} />
+    <MessageComposer
+      conversationId={conversationId}
+      onSent={(message) => {
+        setMessages((current) => current.some((item) => item.id === message.id) ? current : [...current, message]);
+      }}
+    />
   </section>;
 }
