@@ -82,9 +82,9 @@ test.describe("two-user authorization and privacy matrix", () => {
       await expect(publicArticle).toBeVisible();
       await publicArticle.getByRole("button", { name: /Like/ }).click();
       await expect(publicArticle.getByRole("button", { name: /Liked/ })).toBeVisible();
-      await publicArticle.getByRole("button", { name: "Comment" }).click();
+      await publicArticle.getByRole("button", { name: "Comment", exact: true }).click();
       await publicArticle.getByPlaceholder("Write a comment…").fill(commentText);
-      await publicArticle.getByRole("button", { name: "Comment" }).click();
+      await publicArticle.getByRole("button", { name: "Comment", exact: true }).click();
       await expect(publicArticle.getByText(commentText)).toBeVisible();
 
       await pageA.goto("/community");
