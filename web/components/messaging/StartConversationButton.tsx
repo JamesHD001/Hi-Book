@@ -17,7 +17,7 @@ export default function StartConversationButton({ targetUserId }: { targetUserId
     const supabase = createClient();
     const { data, error: rpcError } = await supabase.rpc(
       "get_or_create_direct_conversation",
-      { target_user_id: targetUserId },
+      { p_other_user_id: targetUserId },
     );
 
     if (rpcError) {
