@@ -3,7 +3,16 @@
 import { FormEvent, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-export default function MessageComposer({ conversationId, onSent }: { conversationId: string; onSent?: () => void }) {
+type SentMessage = {
+  id: string;
+  content: string;
+  sender_id: string;
+  message_type: "TEXT";
+  shared_post_id: null;
+  created_at: string;
+};
+
+export default function MessageComposer({ conversationId, onSent }: { conversationId: string; onSent?: (message: SentMessage) => void }) {
   const [content, setContent] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -14,12 +23,33 @@ export default function MessageComposer({ conversationId, onSent }: { conversati
     if (!text || sending) return;
     setSending(true); setError(null);
     const supabase = createClient();
-    const { error: rpcError } = await supabase.rpc("send_message", {
+    const { data, error: rpcError } = await supabase.rpc("send_message", {
       p_conversation_id: conversationId, p_message_type: "TEXT", p_content: text,
       p_shared_post_id: null, p_reply_to_message_id: null, p_media: [],
     });
-    if (rpcError) setError(rpcError.message);
-    else { setContent(""); onSent?.(); }
+    if (rpcError) {
+      setError(rpcError.message);
+    } else {
+      setContent("");
+      const messageId = data as string;
+      const { data: message, error: messageError } = await supabase
+        .from("messages")
+        .select("id, sender_id, message_type, content, shared_post_id, created_at")
+        .eq("id", messageId)
+        .maybeSingle();
+      if (messageError || !message) {
+        setError(messageError?.message ?? "Message was sent but could not be loaded.");
+      } else {
+        onSent?.({
+          id: message.id,
+          content: message.content ?? text,
+          sender_id: message.sender_id,
+          message_type: "TEXT",
+          shared_post_id: null,
+          created_at: message.created_at,
+        });
+      }
+    }
     setSending(false);
   }
 
