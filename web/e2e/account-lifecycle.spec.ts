@@ -27,7 +27,7 @@ test.describe("account lifecycle", () => {
     await expect(page.getByRole("status")).toHaveText(/scheduled for deletion/i);
 
     await page.goto("/account-deletion");
-    await expect(page.getByText(/scheduled for/i)).toBeVisible();
+    await expect(page.getByText(/^Scheduled for /i)).toBeVisible();
     await page.getByRole("button", { name: "Cancel deletion request" }).click();
     await expect(page.getByRole("status")).toHaveText(/cancelled.*active again/i);
 
