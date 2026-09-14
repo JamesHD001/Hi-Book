@@ -94,4 +94,14 @@ test.describe("production readiness: responsive and accessibility", () => {
       expect(imagesWithoutAlt, `Images without alt attributes found on ${path}`).toEqual([]);
     }
   });
+
+  test("production liveness endpoint responds without authentication", async ({ request }) => {
+    const response = await request.get("/api/health");
+    expect(response.status()).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      status: "ok",
+      service: "hibook-web",
+    });
+    expect(response.headers()["cache-control"]).toContain("no-store");
+  });
 });
