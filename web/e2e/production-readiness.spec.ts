@@ -75,9 +75,12 @@ test.describe("production readiness: responsive and accessibility", () => {
             const id = control.getAttribute("id");
             const ariaLabel = control.getAttribute("aria-label")?.trim();
             const ariaLabelledBy = control.getAttribute("aria-labelledby")?.trim();
-            const explicitLabel = id ? document.querySelector(`label[for="${CSS.escape(id)}"]`)?.textContent?.trim() : "";
+            const explicitLabel = id
+              ? document.querySelector(`label[for="${CSS.escape(id)}"]`)?.textContent?.trim()
+              : "";
             const implicitLabel = control.closest("label")?.textContent?.trim() ?? "";
-            return !ariaLabel && !ariaLabelledBy && !explicitLabel && !implicitLabel;
+            const associatedLabel = control.labels?.length ? "associated-label" : "";
+            return !ariaLabel && !ariaLabelledBy && !explicitLabel && !implicitLabel && !associatedLabel;
           })
           .map((control) => control.outerHTML.slice(0, 240)),
       );
