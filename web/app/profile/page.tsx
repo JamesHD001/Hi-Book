@@ -1,4 +1,5 @@
 import { requireActiveUser } from "@/lib/auth/require-active-user";
+import AccountDeletionPanel from "@/components/profile/AccountDeletionPanel";
 import ProfileEditor from "@/components/profile/ProfileEditor";
 
 export const dynamic = "force-dynamic";
@@ -44,23 +45,26 @@ export default async function ProfilePage() {
           {profile?.username && <p className="mt-3 text-sm text-slate-500">Your username: @{profile.username}</p>}
         </div>
 
-        <ProfileEditor
-          userId={user.id}
-          initial={{
-            displayName: profile?.display_name ?? "",
-            bio: profile?.bio ?? "",
-            countryCode: account?.country_code?.trim() ?? "",
-            profileVisibility: privacy?.profile_visibility ?? "PUBLIC",
-            countryVisibility: privacy?.country_visibility ?? "PUBLIC",
-            messagePermission: privacy?.message_permission ?? "FOLLOWERS",
-            discoverable: privacy?.discoverable ?? true,
-            languageIds: userLanguages?.map((item) => item.language_id) ?? [],
-            interestIds: userInterests?.map((item) => item.interest_id) ?? [],
-            avatarUrl,
-          }}
-          languages={languages ?? []}
-          interests={interests ?? []}
-        />
+        <div className="space-y-8">
+          <ProfileEditor
+            userId={user.id}
+            initial={{
+              displayName: profile?.display_name ?? "",
+              bio: profile?.bio ?? "",
+              countryCode: account?.country_code?.trim() ?? "",
+              profileVisibility: privacy?.profile_visibility ?? "PUBLIC",
+              countryVisibility: privacy?.country_visibility ?? "PUBLIC",
+              messagePermission: privacy?.message_permission ?? "FOLLOWERS",
+              discoverable: privacy?.discoverable ?? true,
+              languageIds: userLanguages?.map((item) => item.language_id) ?? [],
+              interestIds: userInterests?.map((item) => item.interest_id) ?? [],
+              avatarUrl,
+            }}
+            languages={languages ?? []}
+            interests={interests ?? []}
+          />
+          <AccountDeletionPanel />
+        </div>
       </section>
     </main>
   );
