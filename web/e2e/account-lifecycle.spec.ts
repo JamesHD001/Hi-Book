@@ -22,7 +22,6 @@ test.describe("account lifecycle", () => {
     }
 
     await page.goto("/profile");
-    await page.getByRole("button", { name: "Schedule account deletion" }).click();
     page.once("dialog", (dialog) => void dialog.accept());
     await page.getByRole("button", { name: "Schedule account deletion" }).click();
     await expect(page.getByRole("status")).toHaveText(/scheduled for deletion/i);
