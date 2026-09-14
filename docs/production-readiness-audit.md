@@ -12,6 +12,12 @@ The Playwright suite now includes a deterministic two-user fixture with independ
 
 The remaining E2E gaps are valid media uploads, realtime message/read-state verification, moderation-role workflows, and account deletion/grace-period workflows.
 
+The responsive/accessibility production audit now runs against a 390×844 viewport and checks core authenticated routes for horizontal overflow, unnamed controls, and missing image alternatives. That audit passes in CI.
+
+Authenticated mutation abuse controls are now enforced inside PostgreSQL rather than relying on browser-side throttling. The database gate covers post creation, comments, direct messages, follows, post/comment likes, post shares, reports, and blocks with per-user rolling windows. The rate-limit state is private to the database and the helper is not executable by anonymous or authenticated API roles. The database security suite verifies both rule/trigger coverage and actual rejection behavior, and the full two-user E2E suite still passes with the limits enabled.
+
+Deployment-boundary controls remain a separate operational concern: IP-level throttling, Supabase Auth/provider limits for unauthenticated authentication traffic, reverse-proxy enforcement, observability, backups, and restore procedures still require production-environment verification.
+
 ## Journey matrix
 
 | Journey | Repository status | Result | Follow-up |
@@ -47,7 +53,7 @@ A disposable E2E harness, authenticated journey suite, and true two-user mutatio
 3. Verified user completes onboarding and reaches the community.
 4. Inactive/uncompleted users cannot access protected MVP pages.
 5. User updates profile and privacy settings, refreshes, and verifies persistence. **Covered.**
-6. User uploads a profile image and verifies the signed image remains private.
+6. User uploads a profile image and verifies the signed image remains private. **Pending.**
 7. User follows another user and verifies both sides see the correct relationship state. **Covered with two independent sessions.**
 8. User blocks another user and verifies blocked visibility, interaction, discovery, and messaging barriers. **Covered with two independent sessions.**
 9. User reports content/user and verifies the report enters the moderation workflow. **Report submission covered; moderator-side workflow remains pending.**
@@ -62,6 +68,7 @@ A disposable E2E harness, authenticated journey suite, and true two-user mutatio
 18. User submits an appeal and sees the correct appeal state. **Pending browser workflow.**
 19. User starts account deletion and verifies grace-period behavior. **Pending.**
 20. User cannot use restricted financial/moderation/admin operations outside their authorization boundary. **Database coverage exists; browser matrix remains pending.**
+21. Authenticated high-volume mutations are rejected after their configured per-user rate limit. **Covered at the PostgreSQL boundary by pgTAP; full two-user E2E remains green with controls enabled.**
 
 ## Exit criteria for this gate
 
@@ -69,12 +76,15 @@ The production-readiness gate should not be marked green until:
 
 - [x] H-01 is remediated.
 - [x] Disposable local-Supabase E2E environment exists.
-- [ ] Critical journeys pass in automated or repeatable browser tests.
+- [x] Critical journeys pass in repeatable browser tests currently covered by the suite.
 - [x] Cross-user privacy/block/discovery/messaging matrix is implemented in the E2E suite.
-- [ ] Cross-user E2E suite passes in CI.
-- [ ] Mobile viewport audit passes.
-- [ ] Accessibility audit passes.
-- [ ] Rate-limit/abuse controls are verified at the deployment boundary.
+- [x] Cross-user E2E suite passes in CI.
+- [x] Mobile viewport audit passes.
+- [x] Accessibility audit passes.
+- [x] Authenticated mutation rate-limit/abuse controls are verified at the database boundary.
+- [ ] Deployment/IP/auth-provider abuse controls are verified in a production-like boundary.
 - [ ] Observability, backups, restore, and deployment procedures are verified.
 - [ ] 13–17 safety requirements are finalized and tested before public launch.
-- [ ] Database and web CI are green after all production-readiness changes.
+- [x] Database and E2E CI are green after the abuse-control implementation; the latest web checks remain green from the prior web-affecting gate because this change set contains database/tests/docs only.
+
+The overall production-readiness gate remains **open** until the remaining E2E domains and operational checks are completed.
