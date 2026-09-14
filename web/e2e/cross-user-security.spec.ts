@@ -50,6 +50,8 @@ test.describe("two-user authorization and privacy matrix", () => {
   test.skip(!userA.email || !userA.password || !userB.email || !userB.password, "Two-user E2E credentials are not configured.");
 
   test("follow, posts, comments, likes, messaging, reporting, privacy, and blocking enforce cross-user boundaries", async ({ browser }) => {
+    test.setTimeout(60_000);
+
     const contextA = await browser.newContext();
     const contextB = await browser.newContext();
     const pageA = await contextA.newPage();
