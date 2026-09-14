@@ -18,6 +18,10 @@ Authenticated mutation abuse controls are now enforced inside PostgreSQL rather 
 
 Deployment-boundary controls remain a separate operational concern: IP-level throttling, Supabase Auth/provider limits for unauthenticated authentication traffic, reverse-proxy enforcement, observability, backups, and restore procedures still require production-environment verification.
 
+A controlled production deployment checklist is now maintained in `docs/production-deployment-checklist.md`. It explicitly separates repository/CI evidence from controls that require the real hosting and Supabase environments.
+
+The repository's Next.js configuration also defines the intended baseline security headers: HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, and disabled DNS prefetching. These are repository configuration facts; actual production delivery of those headers still requires an HTTP-level check against the deployed domain.
+
 ## Journey matrix
 
 | Journey | Repository status | Result | Follow-up |
