@@ -26,7 +26,7 @@
 - [ ] Verify deployment-boundary/IP/auth-provider abuse controls and production observability, error reporting, backups, and deployment configuration.
 - [ ] Fix all production blockers/high-severity findings.
 - [ ] Re-run the full production-readiness CI matrix after the remaining production-readiness fixes.
-- [ ] Prepare a controlled production deployment checklist.
+- [x] Prepare a controlled production deployment checklist.
 
 ## MVP domains implemented
 - [x] Authentication and account lifecycle foundation
@@ -60,4 +60,4 @@
 - [ ] Additional media types
 
 ## Next major gate
-Complete the remaining browser coverage for media uploads, realtime/read state, moderation, and account lifecycle, then perform the operational readiness audit covering deployment-boundary abuse controls, observability, backups, restore procedures, and deployment configuration.
+Complete the remaining browser coverage for media uploads, realtime/read state, moderation, and account lifecycle. In parallel, use `docs/production-deployment-checklist.md` to collect evidence from the real hosting/Supabase environments for deployment-boundary abuse controls, observability, backups, restore procedures, and deployment configuration. Keep the operational gate open until those external controls are actually verified.
