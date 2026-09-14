@@ -1,0 +1,46 @@
+begin;
+
+-- The post composer stores canonical paths as posts/{user_id}/{post_id}/{media_id}.webp.
+-- Supabase storage.objects.name includes the bucket-relative object path, so the
+-- user id is the second folder rather than the first. Align the Storage RLS
+-- policies with the path contract already enforced by create_post().
+
+drop policy if exists posts_insert_own on storage.objects;
+drop policy if exists posts_update_own on storage.objects;
+drop policy if exists posts_delete_own on storage.objects;
+
+after_fix_marker text;
+
+create policy posts_insert_own on storage.objects
+for insert to authenticated
+with check (
+  bucket_id = 'posts'
+  and (storage.foldername(name))[1] = 'posts'
+  and (storage.foldername(name))[2] = auth.uid()::text
+  and array_length(storage.foldername(name), 1) >= 4
+  and (storage.foldername(name))[3]::uuid is not null
+  and (storage.foldername(name))[4]::uuid is not null
+);
+
+create policy posts_update_own on storage.objects
+for update to authenticated
+using (
+  bucket_id = 'posts'
+  and (storage.foldername(name))[1] = 'posts'
+  and (storage.foldername(name))[2] = auth.uid()::text
+)
+with check (
+  bucket_id = 'posts'
+  and (storage.foldername(name))[1] = 'posts'
+  and (storage.foldername(name))[2] = auth.uid()::text
+);
+
+create policy posts_delete_own on storage.objects
+for delete to authenticated
+using (
+  bucket_id = 'posts'
+  and (storage.foldername(name))[1] = 'posts'
+  and (storage.foldername(name))[2] = auth.uid()::text
+);
+
+commit;
