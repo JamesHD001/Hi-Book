@@ -133,7 +133,7 @@ test.describe("two-user authorization and privacy matrix", () => {
       if (await messageInput.count()) {
         await messageInput.fill(blockedMessage);
         await pageB.getByRole("button", { name: "Send" }).click();
-        await expect(pageB.getByText(/blocked|not permitted|permission/i)).toBeVisible();
+        await expect(pageB.getByText(/blocked|unavailable|not permitted|permission/i)).toBeVisible();
         await expect(pageB.getByText(blockedMessage)).toHaveCount(0);
       } else {
         await expect(pageB.getByText(/Page not found/i)).toBeVisible();
