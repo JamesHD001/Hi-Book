@@ -42,8 +42,6 @@ revoke all on schema private from public, anon, authenticated;
 revoke all on all tables in schema private from public, anon, authenticated;
 revoke all on all functions in schema private from public, anon, authenticated;
 
-after begin;
-
 create or replace function private.enforce_user_rate_limit(p_action_key text)
 returns void
 language plpgsql
@@ -52,7 +50,7 @@ set search_path = ''
 as $$
 declare
   v_user_id uuid := auth.uid();
-  v_now timestamptz := clock_timestamp();
+  v_now timestamptz := pg_catalog.clock_timestamp();
   v_limit integer;
   v_window interval;
   v_started_at timestamptz;
@@ -66,7 +64,7 @@ begin
     return;
   end if;
 
-  select r.max_events, make_interval(secs => r.window_seconds)
+  select r.max_events, pg_catalog.make_interval(secs => r.window_seconds)
     into v_limit, v_window
   from private.rate_limit_rules r
   where r.action_key = p_action_key;
@@ -108,8 +106,6 @@ end;
 $$;
 
 revoke all on function private.enforce_user_rate_limit(text) from public, anon, authenticated;
-
-after commit;
 
 create or replace function private.enforce_social_mutation_rate_limit()
 returns trigger
