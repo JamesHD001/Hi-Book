@@ -55,6 +55,7 @@ declare
   v_window interval;
   v_started_at timestamptz;
   v_count integer;
+  v_inserted integer;
 begin
   if v_user_id is null then
     return;
@@ -76,6 +77,11 @@ begin
   insert into private.user_rate_limits (user_id, action_key, window_started_at, event_count)
   values (v_user_id, p_action_key, v_now, 1)
   on conflict (user_id, action_key) do nothing;
+
+  get diagnostics v_inserted = row_count;
+  if v_inserted = 1 then
+    return;
+  end if;
 
   select url.window_started_at, url.event_count
     into v_started_at, v_count
