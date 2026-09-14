@@ -20,12 +20,12 @@
 - [x] Add a deterministic two-user E2E fixture with independent browser sessions.
 - [x] Exercise cross-user follow/unfollow, public and followers-only post visibility, post likes/comments, direct messaging, reporting, and block enforcement through the real UI.
 - [ ] Expand E2E coverage to valid media uploads, realtime message delivery/read state, moderation workflow, and account lifecycle/deletion workflows.
-- [ ] Verify responsive/mobile behavior across core MVP surfaces.
-- [ ] Verify accessibility across core MVP surfaces.
-- [ ] Audit rate limiting and abuse controls.
-- [ ] Audit production observability, error reporting, backups, and deployment configuration.
+- [x] Verify responsive/mobile behavior across core MVP surfaces.
+- [x] Verify accessibility across core MVP surfaces.
+- [x] Audit authenticated mutation rate limiting and abuse controls at the database boundary.
+- [ ] Verify deployment-boundary/IP/auth-provider abuse controls and production observability, error reporting, backups, and deployment configuration.
 - [ ] Fix all production blockers/high-severity findings.
-- [ ] Re-run database and web CI after production-readiness fixes.
+- [ ] Re-run the full production-readiness CI matrix after the remaining production-readiness fixes.
 - [ ] Prepare a controlled production deployment checklist.
 
 ## MVP domains implemented
@@ -43,9 +43,10 @@
 - [x] Atomic profile update workflow
 - [ ] Production-grade integration/e2e test coverage
 - [ ] Minor-safety requirements for ages 13–17 finalized before public production launch
-- [ ] Operational rate limiting/abuse protection verified
+- [x] Database-level authenticated mutation rate limiting verified
+- [ ] Production deployment-boundary abuse protection verified
 - [ ] Production observability and recovery procedures verified
-- [ ] Responsive/accessibility audit completed
+- [x] Responsive/accessibility audit completed
 
 ## Deferred / post-MVP
 - [ ] HBC purchases and creator economy
@@ -59,4 +60,4 @@
 - [ ] Additional media types
 
 ## Next major gate
-Run the completed two-user matrix in CI, then cover media uploads, realtime/read state, moderation, account lifecycle, responsive/mobile behavior, accessibility, abuse controls, and operational readiness.
+Complete the remaining browser coverage for media uploads, realtime/read state, moderation, and account lifecycle, then perform the operational readiness audit covering deployment-boundary abuse controls, observability, backups, restore procedures, and deployment configuration.
