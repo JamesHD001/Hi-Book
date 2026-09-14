@@ -49,7 +49,7 @@ async function ensureFollowing(page: Page) {
 test.describe("two-user authorization and privacy matrix", () => {
   test.skip(!userA.email || !userA.password || !userB.email || !userB.password, "Two-user E2E credentials are not configured.");
 
-  test("follow, posts, comments, likes, messaging, reporting, privacy, and blocking enforce cross-user boundaries", async ({ browser }) => {
+  test("follow, posts, media, comments, likes, realtime messaging, reporting, privacy, and blocking enforce cross-user boundaries", async ({ browser }) => {
     test.setTimeout(60_000);
 
     const contextA = await browser.newContext();
@@ -57,9 +57,10 @@ test.describe("two-user authorization and privacy matrix", () => {
     const pageA = await contextA.newPage();
     const pageB = await contextB.newPage();
     const publicPost = `E2E cross-user public post ${Date.now()}`;
+    const mediaPost = `E2E media post ${Date.now()}`;
     const followerPost = `E2E followers-only post ${Date.now()}`;
     const commentText = `E2E comment ${Date.now()}`;
-    const messageText = `E2E message ${Date.now()}`;
+    const messageText = `E2E realtime message ${Date.now()}`;
     const blockedMessage = `E2E blocked message ${Date.now()}`;
 
     try {
@@ -90,6 +91,24 @@ test.describe("two-user authorization and privacy matrix", () => {
       await expect(publicArticle.getByText(commentText)).toBeVisible();
 
       await pageA.goto("/community");
+      const mediaComposer = pageA.getByRole("region", { name: "Create a post" });
+      await mediaComposer.getByPlaceholder("What would you like to share with the community?").fill(mediaPost);
+      const mediaInput = mediaComposer.getByLabel("Add photos to your post");
+      await mediaInput.setInputFiles({
+        name: "e2e.png",
+        mimeType: "image/png",
+        buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=", "base64"),
+      });
+      await expect(mediaComposer.getByAltText("Selected image 1")).toBeVisible();
+      await mediaComposer.getByRole("button", { name: "Publish post" }).click();
+      await expect(mediaComposer.getByRole("status")).toHaveText(/post has been published/i);
+      await pageB.goto("/community");
+      const mediaArticle = pageB.locator("article").filter({ hasText: mediaPost }).first();
+      await expect(mediaArticle).toBeVisible();
+      await expect(mediaArticle.getByAltText("Post image")).toBeVisible();
+      await expect(mediaArticle.locator("img")).toHaveAttribute("src", /.+/);
+
+      await pageA.goto("/community");
       const followerComposer = pageA.getByRole("region", { name: "Create a post" });
       await followerComposer.getByPlaceholder("What would you like to share with the community?").fill(followerPost);
       await followerComposer.getByLabel("Visibility").selectOption("FOLLOWERS");
@@ -102,12 +121,13 @@ test.describe("two-user authorization and privacy matrix", () => {
       await expect(pageA.getByRole("button", { name: "Message" })).toBeVisible();
       await pageA.getByRole("button", { name: "Message" }).click();
       await expect(pageA).toHaveURL(/\/messages\/[0-9a-f-]+$/i);
+      const conversationUrl = pageA.url();
+      await pageB.goto(conversationUrl);
+      await expect(pageB.getByPlaceholder("Write a message…")).toBeVisible();
       await pageA.getByPlaceholder("Write a message…").fill(messageText);
       await pageA.getByRole("button", { name: "Send" }).click();
       await expect(pageA.getByText(messageText)).toBeVisible();
-      const conversationUrl = pageA.url();
-      await pageB.goto(conversationUrl);
-      await expect(pageB.getByText(messageText)).toBeVisible();
+      await expect(pageB.getByText(messageText)).toBeVisible({ timeout: 10_000 });
 
       await openProfile(pageA, fixtureB.username);
       await pageA.getByRole("button", { name: "Report" }).click();
