@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap;
 
-select plan(17);
+select plan(19);
 
 select ok((select to_regnamespace('private')) is not null, 'private schema exists for abuse-control state');
 select ok((select count(*) from private.rate_limit_rules) = 9, 'all authenticated mutation rate-limit rules are registered');
@@ -53,44 +53,48 @@ where id = '00000000-0000-0000-0000-000000000021';
 update private.rate_limit_rules
 set max_events = 2
 where action_key = 'post_create';
+grant usage on schema private to authenticated;
+grant execute on function private.enforce_user_rate_limit(text) to authenticated;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000021', true);
 select set_config('request.jwt.claim.role', 'authenticated', true);
 
-select lives_ok($post_one$
-  select public.create_post(
-    '21000000-0000-0000-0000-000000000001',
-    'Rate-limit test post one',
-    'PUBLIC',
-    '[]'::jsonb
-  )
-$post_one$, 'first post inside the configured test limit succeeds');
+select lives_ok($limit_one$
+  select private.enforce_user_rate_limit('post_create')
+$limit_one$, 'first event inside the configured test limit succeeds');
+select lives_ok($limit_two$
+  select private.enforce_user_rate_limit('post_create')
+$limit_two$, 'second event inside the configured test limit succeeds');
+select throws_ok($limit_three$
+  select private.enforce_user_rate_limit('post_create')
+$limit_three$, 'P0001', null, 'third event is rejected by the database rate limit');
 
-select lives_ok($post_two$
-  select public.create_post(
-    '21000000-0000-0000-0000-000000000002',
-    'Rate-limit test post two',
-    'PUBLIC',
-    '[]'::jsonb
-  )
-$post_two$, 'second post inside the configured test limit succeeds');
-
-select throws_ok($post_three$
-  select public.create_post(
-    '21000000-0000-0000-0000-000000000003',
-    'Rate-limit test post three',
-    'PUBLIC',
-    '[]'::jsonb
-  )
-$post_three$, 'P0001', null, 'third post is rejected by the database rate limit');
-
+set local role postgres;
 select ok((select count(*) from private.user_rate_limits
   where user_id = '00000000-0000-0000-0000-000000000021'
     and action_key = 'post_create'
-    and event_count = 2) = 1, 'rejected mutation does not consume an additional rate-limit event');
+    and event_count = 2) = 1, 'rejected event does not consume an additional rate-limit event');
 
+update private.rate_limit_rules
+set max_events = 20
+where action_key = 'post_create';
+set local role authenticated;
+
+select lives_ok($post_trigger$
+  select public.create_post(
+    '21000000-0000-0000-0000-000000000001',
+    'Rate-limit trigger integration test',
+    'PUBLIC',
+    '[]'::jsonb
+  )
+$post_trigger$, 'post creation trigger consumes a database rate-limit event');
+
+set local role postgres;
+select ok((select event_count from private.user_rate_limits
+  where user_id = '00000000-0000-0000-0000-000000000021'
+    and action_key = 'post_create') = 3, 'post trigger increments the same per-user rate-limit counter');
 select ok((select count(*) from public.posts
-  where user_id = '00000000-0000-0000-0000-000000000021') = 2, 'rejected mutation does not create a post');
+  where id = '21000000-0000-0000-0000-000000000001') = 1, 'rate-limited post is created when under the configured limit');
 
 select * from finish();
 
