@@ -1,15 +1,13 @@
 begin;
 
 -- The post composer stores canonical paths as posts/{user_id}/{post_id}/{media_id}.webp.
--- Supabase storage.objects.name includes the bucket-relative object path, so the
+-- Supabase storage.objects.name uses that bucket-relative object path, so the
 -- user id is the second folder rather than the first. Align the Storage RLS
 -- policies with the path contract already enforced by create_post().
 
 drop policy if exists posts_insert_own on storage.objects;
 drop policy if exists posts_update_own on storage.objects;
 drop policy if exists posts_delete_own on storage.objects;
-
-after_fix_marker text;
 
 create policy posts_insert_own on storage.objects
 for insert to authenticated
