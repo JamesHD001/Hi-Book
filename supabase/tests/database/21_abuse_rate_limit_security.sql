@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap;
 
-select plan(15);
+select plan(17);
 
 select ok((select to_regnamespace('private')) is not null, 'private schema exists for abuse-control state');
 select ok((select count(*) from private.rate_limit_rules) = 9, 'all authenticated mutation rate-limit rules are registered');
