@@ -1,4 +1,4 @@
-import { test, expect, type Browser, type Page } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
@@ -67,9 +67,8 @@ test.describe("moderation role workflow", () => {
       await signIn(moderatorPage, moderator);
       await moderatorPage.goto("/moderation");
       await expect(moderatorPage.getByRole("heading", { name: "Moderation queue" })).toBeVisible();
-      await expect(moderatorPage.getByText("USER moderation case").first()).toBeVisible();
-
-      const caseCard = moderatorPage.getByText("USER moderation case").first().locator("..\").locator("..");
+      const caseCard = moderatorPage.getByRole("article").filter({ hasText: "USER moderation case" }).first();
+      await expect(caseCard).toBeVisible();
       await caseCard.getByRole("button", { name: "Assign to me" }).click();
       await expect(caseCard.getByText("Assigned")).toBeVisible();
       await caseCard.getByRole("link", { name: "Review" }).click();
