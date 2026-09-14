@@ -163,7 +163,9 @@ export default function CreatePost() {
       </div>
 
       <form className="mt-5" onSubmit={submitPost}>
+        <label htmlFor="post-content" className="sr-only">Post content</label>
         <textarea
+          id="post-content"
           value={content}
           onChange={(event) => setContent(event.target.value.slice(0, 5000))}
           placeholder="What would you like to share with the community?"
@@ -187,13 +189,13 @@ export default function CreatePost() {
 
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-2">
-            <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" multiple hidden onChange={handleImageChange} />
+            <input ref={inputRef} id="post-images" aria-label="Add photos to your post" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden onChange={handleImageChange} />
             <button type="button" onClick={() => inputRef.current?.click()} disabled={remaining === 0 || submitting} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50">
               Add photo{remaining === 1 ? "" : "s"} ({remaining} left)
             </button>
             <label className="flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700">
               <span className="font-medium">Visibility</span>
-              <select value={visibility} onChange={(event) => setVisibility(event.target.value as Visibility)} disabled={submitting} className="bg-transparent font-semibold outline-none">
+              <select aria-label="Post visibility" value={visibility} onChange={(event) => setVisibility(event.target.value as Visibility)} disabled={submitting} className="bg-transparent font-semibold outline-none">
                 <option value="PUBLIC">Everyone</option>
                 <option value="FOLLOWERS">Followers</option>
                 <option value="PRIVATE">Only me</option>
