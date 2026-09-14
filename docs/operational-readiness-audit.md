@@ -9,12 +9,12 @@ This audit separates operational controls that can be verified from the reposito
 | Area | Status | Evidence / action |
 |---|---|---|
 | Application error boundary | 🟢 | `web/app/error.tsx`, `loading.tsx`, and `not-found.tsx` provide user-facing failure/loading boundaries. |
-| Production liveness probe | 🟢 | `GET /api/health` returns a non-cached `200` liveness response without authentication. The Playwright production-readiness suite verifies it. |
+| Production liveness probe | 🟢 | `GET /api/health` returns a non-cached `200` liveness response without authentication. The Playwright production-readiness suite verifies it in E2E run 53. |
 | Authentication secret separation | 🟢 | `web/.env.example` contains only the public Supabase URL and publishable key; service-role credentials are not part of browser configuration. |
 | Server-authoritative authorization | 🟢 | Security-sensitive workflows use PostgreSQL RPCs/RLS; the web README explicitly prohibits client-side reproduction of authorization rules. |
-| Database CI | 🟢 | Local Supabase reset plus the full pgTAP suite passes in GitHub Actions after the abuse-control changes. |
+| Database CI | 🟢 | Local Supabase reset plus the full pgTAP suite passes after the abuse-control implementation. |
 | Browser CI | 🟢 | Disposable local-Supabase Playwright suite passes after the abuse-control and liveness changes. |
-| Web lint/build | 🟢 | Latest web-affecting gate passed lint and production build; the current operational changes require a fresh web check because a web route/test was added. |
+| Web lint/build | 🟢 | Web checks run 136 passed both lint and the production Next.js build for the liveness changes. |
 | Durable error reporting | 🟠 | Current global error boundary logs to the browser console. No external error-reporting sink is configured in the repository. Production deployment must provide durable error collection/alerting. |
 | Backups | 🔴 | Backup configuration and restore evidence are not represented in the repository. Must be verified in the production Supabase project and documented with an actual restore test. |
 | Restore/disaster recovery | 🔴 | No repository-backed restore runbook or verified recovery drill is present. |
