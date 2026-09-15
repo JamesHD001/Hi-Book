@@ -19,7 +19,7 @@ test.describe("security-critical authenticated journeys", () => {
 
   test("authenticated user can navigate between core MVP surfaces", async ({ page }) => {
     await signIn(page);
-    for (const [path, heading] of [["/community", "Your community"], ["/discover", "Meet someone new."], ["/messages", "Your conversations"], ["/notifications", "Notifications"], ["/profile", "Make your profile yours."]] as const) {
+    for (const [path, heading] of [["/community", "Your community"], ["/discover", "Meet someone new."], ["/messages", "Stay close to the people who matter."], ["/notifications", "Your activity"], ["/profile", "Make your profile feel like you."]] as const) {
       await page.goto(path);
       await expect(page.getByText(heading, { exact: true }).first()).toBeVisible();
     }
