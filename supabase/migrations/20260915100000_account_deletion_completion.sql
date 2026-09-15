@@ -14,7 +14,10 @@ as $$
 declare
   v_processed integer := 0;
 begin
-  if coalesce(auth.role(), '') not in ('service_role', 'supabase_admin', 'postgres') then
+  if not (
+    coalesce(auth.role(), '') in ('service_role', 'supabase_admin')
+    or current_user in ('postgres', 'supabase_admin')
+  ) then
     raise exception 'Trusted server role required';
   end if;
 
