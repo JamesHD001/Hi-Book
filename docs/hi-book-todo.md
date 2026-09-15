@@ -40,8 +40,8 @@
 - [x] Application shell/navigation wired into the protected layout.
 - [x] Community/feed repository audit completed.
 - [x] Community/feed responsive controls refined without replacing the existing feed architecture.
-- [ ] Discover repository/UI audit.
-- [ ] Profiles repository/UI audit.
+- [x] Discover repository/UI audit.
+- [x] Profiles repository/UI audit.
 - [ ] Messages repository/UI audit.
 - [ ] Notifications repository/UI audit.
 - [ ] Settings/account repository/UI audit.
