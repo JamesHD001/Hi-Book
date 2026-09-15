@@ -2,15 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Bell, Compass, House, MessageCircle, Network, Settings, UserRound } from "lucide-react";
 import LogoutButton from "@/components/auth/LogoutButton";
 
 const items = [
-  { href: "/community", label: "Community", icon: "⌂" },
-  { href: "/discover", label: "Discover", icon: "◎" },
-  { href: "/network/followers", label: "Network", icon: "◌" },
-  { href: "/messages", label: "Messages", icon: "◇" },
-  { href: "/notifications", label: "Notifications", icon: "!" },
-  { href: "/profile", label: "Profile", icon: "○" },
+  { href: "/community", label: "Community", icon: House },
+  { href: "/discover", label: "Discover", icon: Compass },
+  { href: "/network/followers", label: "Network", icon: Network },
+  { href: "/messages", label: "Messages", icon: MessageCircle },
+  { href: "/notifications", label: "Notifications", icon: Bell },
+  { href: "/profile", label: "Profile", icon: UserRound },
 ];
 
 export default function AppNavigation() {
@@ -30,6 +31,7 @@ export default function AppNavigation() {
           <nav className="ml-auto hidden items-center gap-1 md:flex" aria-label="Main navigation">
             {items.map((item) => {
               const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+              const Icon = item.icon;
               return (
                 <Link
                   key={item.href}
@@ -37,20 +39,35 @@ export default function AppNavigation() {
                   aria-current={active ? "page" : undefined}
                   className={`flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${active ? "bg-[#eef2ff] text-[#315efb]" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"}`}
                 >
-                  <span className="text-base leading-none" aria-hidden="true">{item.icon}</span>
+                  <Icon size={16} strokeWidth={2} aria-hidden="true" />
                   <span>{item.label}</span>
                 </Link>
               );
             })}
+            <Link
+              href="/settings"
+              aria-current={pathname === "/settings" ? "page" : undefined}
+              aria-label="Settings"
+              className={`grid h-10 w-10 place-items-center rounded-xl transition ${pathname === "/settings" ? "bg-[#eef2ff] text-[#315efb]" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"}`}
+            >
+              <Settings size={17} aria-hidden="true" />
+            </Link>
           </nav>
 
           <div className="ml-auto flex items-center gap-2 md:ml-2">
             <Link
               href="/profile"
-              className="grid h-10 w-10 place-items-center rounded-xl border border-slate-200 bg-slate-50 text-xs font-extrabold text-[#315efb] transition hover:border-[#cdd6ff] hover:bg-white"
+              className="grid h-10 w-10 place-items-center rounded-xl border border-slate-200 bg-slate-50 text-[#315efb] transition hover:border-[#cdd6ff] hover:bg-white"
               aria-label="Open your profile"
             >
-              ○
+              <UserRound size={17} aria-hidden="true" />
+            </Link>
+            <Link
+              href="/settings"
+              className="grid h-10 w-10 place-items-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600 transition hover:border-slate-300 hover:bg-white md:hidden"
+              aria-label="Open settings"
+            >
+              <Settings size={17} aria-hidden="true" />
             </Link>
             <div className="hidden md:block">
               <LogoutButton />
@@ -63,6 +80,7 @@ export default function AppNavigation() {
         <div className="mx-auto grid max-w-lg grid-cols-6 gap-1">
           {items.map((item) => {
             const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const Icon = item.icon;
             return (
               <Link
                 key={item.href}
@@ -70,7 +88,7 @@ export default function AppNavigation() {
                 aria-current={active ? "page" : undefined}
                 className={`flex min-h-14 min-w-0 flex-col items-center justify-center rounded-xl px-1 text-[10px] font-semibold transition ${active ? "bg-[#eef2ff] text-[#315efb]" : "text-slate-500 hover:bg-slate-100 hover:text-slate-950"}`}
               >
-                <span className="text-base leading-none" aria-hidden="true">{item.icon}</span>
+                <Icon size={17} strokeWidth={2} aria-hidden="true" />
                 <span className="mt-1 truncate">{item.label}</span>
               </Link>
             );
