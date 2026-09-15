@@ -34,6 +34,7 @@ export default function PostFeed() {
   const [cursor, setCursor] = useState<Cursor>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [likes, setLikes] = useState<Record<string, LikeState>>({});
   const [likeBusy, setLikeBusy] = useState<Record<string, boolean>>({});
@@ -51,12 +52,15 @@ export default function PostFeed() {
     setError(null);
     try {
       const params = new URLSearchParams({ scope: nextScope });
-      if (nextCursor) { params.set("before_created_at", nextCursor.created_at); params.set("before_post_id", nextCursor.post_id); }
+      if (nextCursor) {
+        params.set("before_created_at", nextCursor.created_at);
+        params.set("before_post_id", nextCursor.post_id);
+      }
       const response = await fetch(`/api/feed?${params}`, { cache: "no-store" });
       const payload = (await response.json()) as { posts?: FeedPost[]; next_cursor?: Cursor; error?: string };
       if (!response.ok) throw new Error(payload.error ?? "Could not load the feed.");
       const nextPosts = payload.posts ?? [];
-      setPosts((current) => append ? [...current, ...nextPosts] : nextPosts);
+      setPosts((current) => (append ? [...current, ...nextPosts] : nextPosts));
       setCursor(payload.next_cursor ?? null);
       await hydrateLikes(nextPosts);
     } catch (caught) {
@@ -64,7 +68,14 @@ export default function PostFeed() {
     } finally {
       setLoading(false);
       setLoadingMore(false);
+      setRefreshing(false);
     }
+  }
+
+  async function refresh() {
+    if (loading || loadingMore || refreshing) return;
+    setRefreshing(true);
+    await load(scope);
   }
 
   async function toggleLike(postId: string) {
@@ -85,27 +96,51 @@ export default function PostFeed() {
     }
   }
 
-  useEffect(() => { void load("HOME"); }, []);
   useEffect(() => {
-    const refresh = () => void load(scope);
-    window.addEventListener("hibook:post-created", refresh);
-    return () => window.removeEventListener("hibook:post-created", refresh);
+    void load("HOME");
+  }, []);
+
+  useEffect(() => {
+    const refreshAfterPost = () => void load(scope);
+    window.addEventListener("hibook:post-created", refreshAfterPost);
+    return () => window.removeEventListener("hibook:post-created", refreshAfterPost);
   }, [scope]);
 
   return (
-    <section aria-label="Post feed" className="space-y-5">
+    <section aria-label="Post feed" aria-busy={loading || refreshing} className="space-y-5">
       <div className="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-col gap-3 border-b border-slate-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Community feed</p>
             <p className="mt-1 text-sm text-slate-500">{scopeDescription(scope)}</p>
           </div>
-          <div className="flex gap-1 rounded-xl bg-slate-100 p-1" role="tablist" aria-label="Feed views">
-            {(["HOME", "FOLLOWING", "EXPLORE"] as Scope[]).map((item) => (
-              <button key={item} type="button" role="tab" aria-selected={scope === item} onClick={() => { setScope(item); void load(item); }} className={`rounded-lg px-3 py-2 text-xs font-bold transition sm:px-4 sm:text-sm ${scope === item ? "bg-slate-950 text-white shadow-sm" : "text-slate-500 hover:text-slate-900"}`}>
-                {item === "HOME" ? "Home" : item === "FOLLOWING" ? "Following" : "Explore"}
-              </button>
-            ))}
+          <div className="flex items-center gap-2 self-stretch sm:self-auto">
+            <button
+              type="button"
+              onClick={() => void refresh()}
+              disabled={loading || loadingMore || refreshing}
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
+              aria-label="Refresh community feed"
+            >
+              {refreshing ? "Refreshing…" : "Refresh"}
+            </button>
+            <div className="flex min-w-0 flex-1 gap-1 rounded-xl bg-slate-100 p-1 sm:flex-none" role="tablist" aria-label="Feed views">
+              {(["HOME", "FOLLOWING", "EXPLORE"] as Scope[]).map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  role="tab"
+                  aria-selected={scope === item}
+                  onClick={() => {
+                    setScope(item);
+                    void load(item);
+                  }}
+                  className={`min-w-0 flex-1 rounded-lg px-2 py-2 text-xs font-bold transition sm:flex-none sm:px-4 sm:text-sm ${scope === item ? "bg-slate-950 text-white shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
+                >
+                  {item === "HOME" ? "Home" : item === "FOLLOWING" ? "Following" : "Explore"}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -113,7 +148,18 @@ export default function PostFeed() {
       {error && <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">{error}</p>}
       {loading && (
         <div className="space-y-4" aria-live="polite">
-          {[1, 2].map((item) => <div key={item} className="animate-pulse rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm"><div className="flex gap-3"><div className="h-11 w-11 rounded-2xl bg-slate-200" /><div className="flex-1"><div className="h-4 w-32 rounded bg-slate-200" /><div className="mt-2 h-3 w-20 rounded bg-slate-100" /></div></div><div className="mt-5 h-20 rounded-xl bg-slate-100" /></div>)}
+          {[1, 2].map((item) => (
+            <div key={item} className="animate-pulse rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="flex gap-3">
+                <div className="h-11 w-11 rounded-2xl bg-slate-200" />
+                <div className="flex-1">
+                  <div className="h-4 w-32 rounded bg-slate-200" />
+                  <div className="mt-2 h-3 w-20 rounded bg-slate-100" />
+                </div>
+              </div>
+              <div className="mt-5 h-20 rounded-xl bg-slate-100" />
+            </div>
+          ))}
         </div>
       )}
 
@@ -142,10 +188,27 @@ export default function PostFeed() {
             </header>
 
             {post.content && <p className="whitespace-pre-wrap px-5 pb-5 text-[15px] leading-7 text-slate-800">{post.content}</p>}
-            {post.media.length > 0 && <div className={`grid gap-1 ${post.media.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}>{post.media.map((media) => <img key={media.id} src={media.url} alt={media.alt_text ?? "Post image"} width={media.width ?? undefined} height={media.height ?? undefined} className="max-h-[640px] w-full bg-slate-100 object-cover" loading="lazy" />)}</div>}
+            {post.media.length > 0 && (
+              <div className={`grid gap-1 ${post.media.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}>
+                {post.media.map((media) => (
+                  <img
+                    key={media.id}
+                    src={media.url}
+                    alt={media.alt_text ?? "Post image"}
+                    width={media.width ?? undefined}
+                    height={media.height ?? undefined}
+                    className="max-h-[640px] w-full bg-slate-100 object-cover"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                ))}
+              </div>
+            )}
 
             <footer className="flex flex-wrap items-center gap-2 border-t border-slate-100 px-5 py-3">
-              <button type="button" onClick={() => void toggleLike(post.post_id)} disabled={likeBusy[post.post_id]} aria-pressed={like.liked} className={`rounded-xl px-3 py-2 text-sm font-semibold transition ${like.liked ? "bg-red-50 text-red-700" : "text-slate-600 hover:bg-slate-100"}`}>{like.liked ? "♥ Liked" : "♡ Like"} <span className="ml-1">{like.like_count}</span></button>
+              <button type="button" onClick={() => void toggleLike(post.post_id)} disabled={likeBusy[post.post_id]} aria-pressed={like.liked} className={`rounded-xl px-3 py-2 text-sm font-semibold transition ${like.liked ? "bg-red-50 text-red-700" : "text-slate-600 hover:bg-slate-100"}`}>
+                {like.liked ? "♥ Liked" : "♡ Like"} <span className="ml-1">{like.like_count}</span>
+              </button>
               <PostShareButton postId={post.post_id} />
             </footer>
             <PostComments postId={post.post_id} />
@@ -153,7 +216,11 @@ export default function PostFeed() {
         );
       })}
 
-      {!loading && cursor && <button type="button" onClick={() => void load(scope, cursor, true)} disabled={loadingMore} className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50">{loadingMore ? "Loading more…" : "Load more posts"}</button>}
+      {!loading && cursor && (
+        <button type="button" onClick={() => void load(scope, cursor, true)} disabled={loadingMore} className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50">
+          {loadingMore ? "Loading more…" : "Load more posts"}
+        </button>
+      )}
     </section>
   );
 }
