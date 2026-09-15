@@ -1,50 +1,13 @@
 import Link from "next/link";
+import { ArrowLeft, Flag, HeartHandshake, ShieldAlert } from "lucide-react";
+
+const sections = [
+  ["01", "Treat people with respect", "Hi!Book is intended for genuine human connection. Do not use the platform to harass, threaten, intimidate, or deliberately target other people."],
+  ["02", "Keep interactions safe", "Do not use Hi!Book for harmful, illegal, deceptive, or abusive activity. Respect other users' boundaries, privacy, and consent."],
+  ["03", "Use reporting and blocking tools", "If another user or piece of content violates these guidelines, use the available reporting and blocking controls. Reports may be reviewed through Hi!Book's moderation processes."],
+  ["04", "Moderation", "Hi!Book may remove content or restrict accounts when necessary to protect users, enforce platform rules, or comply with applicable requirements. Moderation decisions may be subject to the platform's appeal process where available."],
+];
 
 export default function CommunityGuidelinesPage() {
-  return (
-    <main className="min-h-screen bg-slate-50 px-6 py-16 text-slate-900">
-      <article className="mx-auto max-w-3xl rounded-3xl border border-slate-200 bg-white p-8 shadow-sm sm:p-12">
-        <Link href="/" className="text-sm font-semibold text-blue-600 hover:text-blue-800">
-          Back to Hi!Book
-        </Link>
-
-        <header className="mt-8 border-b border-slate-200 pb-8">
-          <h1 className="text-4xl font-bold tracking-tight">Community Guidelines</h1>
-          <p className="mt-3 text-sm text-slate-500">Version 1.0 · Initial application draft</p>
-        </header>
-
-        <div className="mt-10 space-y-8 leading-7 text-slate-700">
-          <section>
-            <h2 className="text-xl font-semibold text-slate-950">Treat people with respect</h2>
-            <p className="mt-2">Hi!Book is intended for genuine human connection. Do not use the platform to harass, threaten, intimidate, or deliberately target other people.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-slate-950">Keep interactions safe</h2>
-            <p className="mt-2">Do not use Hi!Book for harmful, illegal, deceptive, or abusive activity. Respect other users&apos; boundaries, privacy, and consent.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-slate-950">Use reporting and blocking tools</h2>
-            <p className="mt-2">If another user or piece of content violates these guidelines, use the available reporting and blocking controls. Reports may be reviewed through Hi!Book&apos;s moderation processes.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-slate-950">Moderation</h2>
-            <p className="mt-2">Hi!Book may remove content or restrict accounts when necessary to protect users, enforce platform rules, or comply with applicable requirements. Moderation decisions may be subject to the platform&apos;s appeal process where available.</p>
-          </section>
-
-          <section className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
-            <h2 className="text-xl font-semibold text-amber-950">Important</h2>
-            <p className="mt-2 text-amber-900">These are the application&apos;s initial community guidelines and require further policy and legal review before production publication.</p>
-          </section>
-        </div>
-
-        <div className="mt-10 flex flex-wrap gap-4 border-t border-slate-200 pt-6 text-sm font-semibold">
-          <Link href="/terms" className="text-blue-600 hover:text-blue-800">Terms of Use</Link>
-          <Link href="/privacy" className="text-blue-600 hover:text-blue-800">Privacy Policy</Link>
-        </div>
-      </article>
-    </main>
-  );
+  return <main className="min-h-screen bg-[#f4f1ea] px-4 py-4 sm:px-6 sm:py-8"><div className="mx-auto max-w-6xl overflow-hidden rounded-[2rem] border border-black/10 bg-[#fbfaf7] shadow-[0_24px_80px_rgba(23,23,23,0.1)]"><header className="border-b border-black/10 bg-[#111827] px-6 py-7 text-white sm:px-10"><div className="flex flex-wrap items-center justify-between gap-5"><Link href="/" className="inline-flex items-center gap-3 text-sm font-extrabold"><span className="grid h-10 w-10 place-items-center rounded-xl bg-white text-xs font-black text-[#111827]">H!</span>Hi!Book</Link><Link href="/" className="inline-flex items-center gap-2 text-xs font-bold text-slate-300 hover:text-white"><ArrowLeft className="h-4 w-4" aria-hidden="true" />Back home</Link></div></header><div className="grid lg:grid-cols-[260px_1fr]"><aside className="border-b border-black/10 bg-[#f0eee8] p-6 lg:border-b-0 lg:border-r sm:p-8"><HeartHandshake className="h-7 w-7 text-emerald-600" aria-hidden="true" /><p className="mt-8 text-[10px] font-extrabold uppercase tracking-[0.2em] text-slate-400">Safety / 01</p><p className="mt-2 text-sm font-bold">Community Guidelines</p><p className="mt-4 text-xs leading-5 text-slate-500">The shared expectations for participating in Hi!Book.</p><div className="mt-8 border-t border-black/10 pt-5 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Version 1.0 · Initial draft</div></aside><article className="px-6 py-10 sm:px-10 sm:py-14 lg:px-16"><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-emerald-600">Community Guidelines</p><h1 className="mt-3 max-w-3xl text-4xl font-extrabold tracking-[-0.06em] sm:text-6xl">A community works when people feel respected.</h1><p className="mt-5 max-w-2xl text-base leading-7 text-slate-500">These guidelines set the baseline for safer interactions and explain the tools available when something goes wrong.</p><div className="mt-12 divide-y divide-black/10 border-y border-black/10">{sections.map(([n,t,p])=><section key={n} className="grid gap-4 py-7 sm:grid-cols-[70px_190px_1fr]"><span className="text-xs font-extrabold text-emerald-600">{n}</span><h2 className="text-lg font-extrabold tracking-tight">{t}</h2><p className="text-sm leading-7 text-slate-600">{p}</p></section>)}</div><div className="mt-8 grid gap-3 sm:grid-cols-2"><div className="rounded-2xl border border-black/10 bg-[#f0eee8] p-5"><Flag className="h-5 w-5 text-emerald-600" aria-hidden="true" /><p className="mt-4 text-sm font-extrabold">See something wrong?</p><p className="mt-1 text-xs leading-5 text-slate-500">Use the reporting and blocking tools available in the product.</p></div><div className="rounded-2xl border border-amber-200 bg-amber-50 p-5"><ShieldAlert className="h-5 w-5 text-amber-700" aria-hidden="true" /><p className="mt-4 text-sm font-extrabold text-amber-950">Draft status</p><p className="mt-1 text-xs leading-5 text-amber-900">These are the application's initial guidelines and require further policy and legal review before production publication.</p></div></div><nav className="mt-8 flex flex-wrap gap-5 text-sm font-bold"><Link href="/terms" className="text-blue-600 hover:text-blue-800">Terms of Use</Link><Link href="/privacy" className="text-blue-600 hover:text-blue-800">Privacy Policy</Link><Link href="/data-protection" className="text-blue-600 hover:text-blue-800">Data Protection</Link></nav></article></div></div></main>;
 }
