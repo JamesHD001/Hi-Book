@@ -8,9 +8,9 @@ This is a repository audit plus an E2E harness definition. The E2E workflow uses
 
 ## E2E progress
 
-The Playwright suite now includes a deterministic two-user fixture with independent browser contexts. The cross-user suite exercises the real UI for follow/unfollow, public and followers-only post visibility, post likes/comments, direct messaging, reporting, discovery, and block enforcement. The fixture resets each test user's owned social/content state before the run so repeated local runs remain deterministic.
+The Playwright suite includes a deterministic two-user fixture with independent browser contexts. The cross-user suite exercises the real UI for follow/unfollow, public and followers-only post visibility, post likes/comments, valid post media upload, direct messaging, realtime message delivery, reporting, discovery, and block enforcement. The moderation workflow has a dedicated moderator fixture and now exercises report review, assignment, internal notes, moderation action execution, and user appeal submission. The account lifecycle suite exercises scheduling and cancelling deletion during the grace period.
 
-The remaining E2E gaps are valid media uploads, realtime message/read-state verification, moderation-role workflows, and account deletion/grace-period workflows.
+The remaining E2E gaps are narrower than the original audit: profile-image upload verification, explicit unread/read-state assertions, and final account-deletion expiry/restricted-state behavior. The existing media-post upload, realtime delivery, moderator-role workflow, and appeal submission are implemented and covered by browser tests.
 
 The responsive/accessibility production audit now runs against a 390×844 viewport and checks core authenticated routes for horizontal overflow, unnamed controls, and missing image alternatives. That audit passes in CI.
 
@@ -31,14 +31,14 @@ The repository's Next.js configuration also defines the intended baseline securi
 | Onboarding | Implemented | 🟢 | Completion is server-side through `complete_registration`; the E2E fixture completes registration for both disposable test users. |
 | Authenticated community | Implemented | 🟢 | Protected by `requireActiveUser`; automated authenticated navigation coverage added. |
 | Profile/privacy | Implemented | 🟢 | Multi-table persistence now uses the transactional `update_profile_atomic` RPC; live persistence testing is covered. |
-| Follow/block/report | Implemented | 🟢 | Two independent browser sessions now exercise follow, unfollow, report, block, discovery, and post/messaging barriers. |
-| Posts/media | Implemented | 🟢 | Cross-user E2E verifies public and followers-only post visibility plus likes/comments; valid media creation remains required. |
-| Feed | Implemented | 🟢 | Batched related reads and server-side authorization are present; cross-user post visibility is now exercised. |
+| Follow/block/report | Implemented | 🟢 | Two independent browser sessions exercise follow, unfollow, report, discovery, and block enforcement. |
+| Posts/media | Implemented | 🟢 | Cross-user E2E verifies public and followers-only post visibility plus valid image-post creation and signed media rendering; profile-image upload remains pending. |
+| Feed | Implemented | 🟢 | Batched related reads and server-side authorization are present; cross-user post visibility is exercised. |
 | Discovery | Implemented | 🟢 | Two-user discovery and post-block disappearance are covered; broader privacy permutations remain required. |
-| Messaging | Implemented | 🟢 | Two-user permitted conversation, message delivery through independent sessions, and blocked-send enforcement are covered; realtime/read-state assertions remain required. |
+| Messaging | Implemented | 🟢 | Two-user permitted conversation, realtime delivery through independent sessions, and blocked-send enforcement are covered; explicit unread/read-state assertions remain required. |
 | Notifications | Implemented | 🟢 | Authenticated notifications surface is covered; live notification delivery remains required. |
-| Moderation | Implemented | 🟢 | Explicit moderation action/appeal permissions are enforced server-side. Human-role testing remains required. |
-| Account lifecycle/deletion | Implemented | 🟠 | Database deletion/retention controls are verified, but the complete user-facing deletion journey needs live verification, including grace-period behavior and restricted account states. |
+| Moderation | Implemented | 🟢 | Explicit moderation action/appeal permissions are enforced server-side, and the browser workflow now covers report review, assignment, action execution, and appeal submission. |
+| Account lifecycle/deletion | Implemented | 🟠 | User-facing scheduling/cancellation during the grace period is covered; deletion expiry and restricted-account behavior still require verification. |
 
 ## High-severity findings
 
@@ -48,7 +48,7 @@ The repository's Next.js configuration also defines the intended baseline securi
 
 ### H-02 — Browser-level verification remains in progress
 
-A disposable E2E harness, authenticated journey suite, and true two-user mutation suite now exist. Remaining high-value coverage is concentrated in media, realtime/read state, moderation, account lifecycle, and operational audits.
+A disposable E2E harness, authenticated journey suite, and true two-user mutation suite now exist. Remaining high-value coverage is concentrated in profile-image upload, explicit realtime/read-state assertions, account-deletion expiry/restricted states, and operational audits.
 
 ## Required E2E scenarios
 
@@ -60,17 +60,17 @@ A disposable E2E harness, authenticated journey suite, and true two-user mutatio
 6. User uploads a profile image and verifies the signed image remains private. **Pending.**
 7. User follows another user and verifies both sides see the correct relationship state. **Covered with two independent sessions.**
 8. User blocks another user and verifies blocked visibility, interaction, discovery, and messaging barriers. **Covered with two independent sessions.**
-9. User reports content/user and verifies the report enters the moderation workflow. **Report submission covered; moderator-side workflow remains pending.**
+9. User reports content/user and verifies the report enters the moderation workflow. **Covered, including moderator-side review and action execution.**
 10. User creates a valid post and verifies feed visibility follows privacy/block rules. **Covered for text posts and followers-only visibility.**
 11. User attempts invalid/empty post content and receives a safe failure. **Covered.**
 12. User comments, likes, and removes allowed interactions. **Comment and post-like creation covered; removal path remains pending.**
 13. User discovers another user according to discoverability/privacy settings. **Cross-user discovery and post-block disappearance covered; broader privacy permutations remain pending.**
 14. User starts a permitted direct conversation and sends a message. **Covered.**
 15. A blocked/disallowed participant cannot access the conversation or send messages. **Blocked send boundary covered.**
-16. User sees unread/read state and notification updates correctly. **Pending realtime/read-state coverage.**
-17. Moderator can perform allowed moderation actions but cannot exceed assigned permissions. **Pending role-based browser workflow.**
-18. User submits an appeal and sees the correct appeal state. **Pending browser workflow.**
-19. User starts account deletion and verifies grace-period behavior. **Pending.**
+16. User sees unread/read state and notification updates correctly. **Realtime message delivery is covered; explicit unread/read-state assertions and live notification delivery remain pending.**
+17. Moderator can perform allowed moderation actions but cannot exceed assigned permissions. **Role-based browser workflow is covered for moderator access, assignment, notes, and action execution.**
+18. User submits an appeal and sees the correct appeal state. **Covered through the real `/appeals` UI after a moderation action is applied.**
+19. User starts account deletion and verifies grace-period behavior. **Scheduling and cancellation during the grace period are covered; expiry/restricted-account behavior remains pending.**
 20. User cannot use restricted financial/moderation/admin operations outside their authorization boundary. **Database coverage exists; browser matrix remains pending.**
 21. Authenticated high-volume mutations are rejected after their configured per-user rate limit. **Covered at the PostgreSQL boundary by pgTAP; full two-user E2E remains green with controls enabled.**
 
@@ -86,9 +86,12 @@ The production-readiness gate should not be marked green until:
 - [x] Mobile viewport audit passes.
 - [x] Accessibility audit passes.
 - [x] Authenticated mutation rate-limit/abuse controls are verified at the database boundary.
+- [ ] Profile-image upload verification is complete.
+- [ ] Explicit unread/read-state assertions are complete.
+- [ ] Account-deletion expiry/restricted-state behavior is verified.
 - [ ] Deployment/IP/auth-provider abuse controls are verified in a production-like boundary.
 - [ ] Observability, backups, restore, and deployment procedures are verified.
 - [ ] 13–17 safety requirements are finalized and tested before public launch.
-- [x] Database and E2E CI are green after the abuse-control implementation; the latest web checks remain green from the prior web-affecting gate because this change set contains database/tests/docs only.
+- [x] Database and E2E CI are green after the abuse-control implementation; current E2E coverage includes media-post upload, realtime delivery, moderator workflow, appeal submission, and account deletion scheduling/cancellation.
 
 The overall production-readiness gate remains **open** until the remaining E2E domains and operational checks are completed.
