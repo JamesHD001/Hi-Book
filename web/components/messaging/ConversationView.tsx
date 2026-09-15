@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import MessageComposer from "@/components/messaging/MessageComposer";
 
@@ -20,6 +20,21 @@ export default function ConversationView({ conversationId, userId, initialMessag
   const [hasOlder, setHasOlder] = useState(initialMessages.length >= 100);
   const [realtimeStatus, setRealtimeStatus] = useState<RealtimeStatus>("CONNECTING");
   const endRef = useRef<HTMLDivElement>(null);
+
+  const refreshMessages = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("messages")
+      .select("id, sender_id, message_type, content, shared_post_id, created_at")
+      .eq("conversation_id", conversationId)
+      .order("created_at", { ascending: true })
+      .limit(100);
+
+    if (!error) {
+      const refreshed = (data ?? []) as Message[];
+      setMessages(refreshed);
+      setHasOlder(refreshed.length >= 100);
+    }
+  }, [conversationId, supabase]);
 
   useEffect(() => {
     void supabase.rpc("mark_conversation_read", { target_conversation_id: conversationId });
@@ -88,7 +103,7 @@ export default function ConversationView({ conversationId, userId, initialMessag
     <MessageComposer
       conversationId={conversationId}
       onSent={(message) => setMessages((current) => current.some((item) => item.id === message.id) ? current : [...current, message])}
-      onSendError={(content) => setMessages((current) => current.filter((message) => !(message.sender_id === userId && message.content === content)))}
+      onSendError={() => { void refreshMessages(); }}
     />
   </section>;
 }
