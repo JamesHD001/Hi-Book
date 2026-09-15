@@ -34,11 +34,11 @@ test.describe("moderation role workflow", () => {
     test.setTimeout(60_000);
 
     const users = await fixtureUsers();
-    const userA = users[0];
-    const userB = users[1];
+    const regularUser = users[0];
+    const reporter = users[1];
     const moderator = users.find((user) => user.role === "MODERATOR");
 
-    if (!userA || !userB || !moderator) {
+    if (!regularUser || !reporter || !moderator) {
       test.skip(true, "Moderator E2E fixture is unavailable.");
       return;
     }
@@ -49,13 +49,15 @@ test.describe("moderation role workflow", () => {
 
     try {
       const regularPage = await regularContext.newPage();
-      await signIn(regularPage, userA);
+      await signIn(regularPage, regularUser);
       await regularPage.goto("/moderation");
       await expect(regularPage.getByText("Moderation access unavailable")).toBeVisible();
 
+      // Use the dedicated moderator fixture as the report target so this workflow
+      // remains independent of the cross-user test's intentional blocking state.
       const reporterPage = await reporterContext.newPage();
-      await signIn(reporterPage, userB);
-      await openProfile(reporterPage, userA.username);
+      await signIn(reporterPage, reporter);
+      await openProfile(reporterPage, moderator.username);
       await reporterPage.getByRole("button", { name: "Report", exact: true }).click();
       await expect(reporterPage.getByRole("heading", { name: "Report", exact: true })).toBeVisible();
       await reporterPage.getByLabel("Reason").selectOption("HARASSMENT");
