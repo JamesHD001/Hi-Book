@@ -54,12 +54,13 @@ export default async function PublicProfilePage({ params }: PageProps) {
   const followStats = Array.isArray(stats) ? stats[0] : stats;
   if (!followStats) notFound();
 
-  const initials = profile.display_name
+  const displayName = String(profile.display_name ?? "");
+  const initials = displayName
     .trim()
     .split(/\s+/)
-    .filter((part): part is string => Boolean(part))
+    .filter(Boolean)
     .slice(0, 2)
-    .map((part) => part[0])
+    .map((part: string) => part[0])
     .join("")
     .toUpperCase();
 
