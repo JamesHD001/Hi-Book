@@ -92,6 +92,6 @@ test.describe("security-critical authenticated journeys", () => {
   test("notifications render the authenticated activity surface", async ({ page }) => {
     await signIn(page);
     await page.goto("/notifications");
-    await expect(page.getByRole("heading", { name: "Your activity" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Stay in the loop." })).toBeVisible();
   });
 });
