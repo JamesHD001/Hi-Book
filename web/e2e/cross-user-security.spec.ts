@@ -28,6 +28,22 @@ async function makeProfilePublic(page: Page) {
   await expect(page.getByRole("status")).toHaveText(/profile has been updated/i);
 }
 
+async function uploadProfileImage(page: Page) {
+  await page.goto("/profile");
+  const avatarInput = page.locator('input[type="file"][accept="image/*"]');
+  await expect(avatarInput).toHaveCount(1);
+  await avatarInput.setInputFiles({
+    name: "e2e-avatar.svg",
+    mimeType: "image/svg+xml",
+    buffer: Buffer.from(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" fill="black"/><circle cx="32" cy="32" r="20" fill="white"/></svg>',
+    ),
+  });
+  await expect(page.getByAltText("Your profile preview")).toBeVisible();
+  await page.getByRole("button", { name: "Save changes" }).click();
+  await expect(page.getByRole("status")).toHaveText(/profile has been updated/i);
+}
+
 async function openProfile(page: Page, username: string) {
   await page.goto(`/u/${username}`);
   await expect(page.locator("main h1").first()).toBeVisible();
@@ -79,11 +95,17 @@ test.describe("two-user authorization and privacy matrix", () => {
 
       await signIn(pageA, userA.email, userA.password);
       await makeProfilePublic(pageA);
+      await uploadProfileImage(pageA);
+      await pageA.reload();
+      await expect(pageA.getByAltText("Your profile preview")).toHaveAttribute("src", /signed-url|token|supabase/i);
       await openProfile(pageA, fixtureB.username);
       await ensureFollowing(pageA);
 
       await openProfile(pageB, fixtureA.username);
       await ensureFollowing(pageB);
+      const profileAvatar = pageB.getByAltText(`${fixtureA.username} profile picture`);
+      await expect(profileAvatar).toBeVisible();
+      await expect(profileAvatar).toHaveAttribute("src", /\/storage\/v1\/object\/sign\/avatars\//i);
 
       await pageA.goto("/community");
       const composerA = pageA.getByRole("region", { name: "Create a post" });
@@ -142,7 +164,6 @@ test.describe("two-user authorization and privacy matrix", () => {
       await expect(pageA.getByText(messageText)).toBeVisible();
       await expect(pageB.getByText(messageText)).toBeVisible({ timeout: 10_000 });
 
-      // Leave the conversation before the next message so the recipient's unread state can be observed.
       await pageB.goto("/messages");
       await expect(pageB).toHaveURL(/\/messages(?:\/)?$/);
       await expect(pageB.locator('[aria-label="Unread"]')).toHaveCount(0);
