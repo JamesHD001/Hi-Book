@@ -43,7 +43,7 @@ export default async function DiscoverPage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.28),transparent_38%),radial-gradient(circle_at_bottom_left,rgba(168,85,247,0.18),transparent_34%)]" />
         <div className="relative mx-auto max-w-6xl px-4 pb-12 pt-8 sm:px-6 lg:px-8 lg:pb-14">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-blue-200">
-            <span className="h-2 w-2 rounded-full bg-blue-400" />
+            <span className="h-2 w-2 rounded-full bg-blue-400" aria-hidden="true" />
             Global discovery
           </div>
           <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
@@ -82,17 +82,28 @@ export default async function DiscoverPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 pt-8 sm:px-6 lg:px-8">
-        <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">Recommended connections</p>
             <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">People you might connect with</h2>
           </div>
-          <p className="text-sm text-slate-500">{people.length} profile{people.length === 1 ? "" : "s"} in this discovery set</p>
+          <div className="flex items-center justify-between gap-3 sm:justify-end">
+            <p className="text-sm text-slate-500" aria-live="polite">
+              {people.length} profile{people.length === 1 ? "" : "s"} in this discovery set
+            </p>
+            <Link
+              href="/profile"
+              className="shrink-0 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+            >
+              Edit profile
+            </Link>
+          </div>
         </div>
 
         {error ? (
-          <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">
-            We couldn’t load discovery right now. Please try again.
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700" role="alert">
+            <p className="font-semibold">Discovery is temporarily unavailable.</p>
+            <p className="mt-1 text-red-600">We couldn’t load recommendations right now. Please refresh the page and try again.</p>
           </div>
         ) : (
           <DiscoverPeopleList people={withAvatars} />
