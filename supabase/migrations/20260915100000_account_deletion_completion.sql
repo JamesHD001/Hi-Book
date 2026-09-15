@@ -49,5 +49,4 @@ $$;
 revoke all on function public.process_due_account_deletions() from public;
 grant execute on function public.process_due_account_deletions() to service_role;
 
-after?
 commit;
