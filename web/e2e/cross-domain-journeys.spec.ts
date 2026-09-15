@@ -33,6 +33,28 @@ test.describe("security-critical authenticated journeys", () => {
     await expect(page.getByText(/two-letter ISO country code/i)).toBeVisible();
   });
 
+  test("profile image upload persists an optimized avatar", async ({ page }) => {
+    await signIn(page);
+    await page.goto("/profile");
+
+    const avatarInput = page.locator('input[type="file"][accept="image/*"]');
+    await expect(avatarInput).toHaveCount(1);
+    await avatarInput.setInputFiles({
+      name: "e2e-avatar.svg",
+      mimeType: "image/svg+xml",
+      buffer: Buffer.from(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" fill="black"/><circle cx="32" cy="32" r="20" fill="white"/></svg>',
+      ),
+    });
+    await expect(page.getByAltText("Your profile preview")).toBeVisible();
+
+    await page.getByRole("button", { name: "Save changes" }).click();
+    await expect(page.getByRole("status")).toHaveText(/profile has been updated/i);
+
+    await page.reload();
+    await expect(page.getByAltText("Your profile preview")).toHaveAttribute("src", /signed-url|token|supabase/i);
+  });
+
   test("profile and privacy settings persist through the atomic save flow", async ({ page }) => {
     await signIn(page);
     await page.goto("/profile");
@@ -64,7 +86,7 @@ test.describe("security-critical authenticated journeys", () => {
     await expect(page.getByRole("status")).toHaveText(/profile has been updated/i);
   });
 
-  test("community exposes post creation and safely disables an empty submission", async ({ page }) => {
+  test("community exposes post creation and safely disables an empty submission", async ({ page }) =>
     await signIn(page);
     await page.goto("/community");
     const composer = page.getByRole("region", { name: "Create a post" });
