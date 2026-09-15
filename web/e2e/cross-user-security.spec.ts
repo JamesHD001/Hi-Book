@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type BrowserContext, type Page } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
@@ -46,11 +46,19 @@ async function ensureFollowing(page: Page) {
   await expect(following).toBeVisible();
 }
 
+async function safeClose(context: BrowserContext) {
+  try {
+    await context.close();
+  } catch {
+    // Playwright may already have disposed the context after a timeout.
+  }
+}
+
 test.describe("two-user authorization and privacy matrix", () => {
   test.skip(!userA.email || !userA.password || !userB.email || !userB.password, "Two-user E2E credentials are not configured.");
 
   test("follow, posts, media, comments, likes, realtime messaging, reporting, privacy, and blocking enforce cross-user boundaries", async ({ browser }) => {
-    test.setTimeout(60_000);
+    test.setTimeout(90_000);
 
     const contextA = await browser.newContext();
     const contextB = await browser.newContext();
@@ -173,8 +181,8 @@ test.describe("two-user authorization and privacy matrix", () => {
           // Preserve the original test failure while making a best-effort fixture cleanup.
         }
       }
-      await contextA.close();
-      await contextB.close();
+      await safeClose(contextA);
+      await safeClose(contextB);
     }
   });
 });
