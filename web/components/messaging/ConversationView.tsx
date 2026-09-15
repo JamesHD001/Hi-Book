@@ -8,20 +8,26 @@ import MessageComposer from "@/components/messaging/MessageComposer";
 type Message = { id: string; sender_id: string; message_type: string; content: string | null; shared_post_id?: string | null; created_at: string };
 type Props = { conversationId: string; userId: string; initialMessages: Message[]; otherProfile?: { username: string; display_name: string; avatar_url: string | null } | null };
 
+type RealtimeStatus = "CONNECTING" | "SUBSCRIBED" | "CHANNEL_ERROR" | "TIMED_OUT";
+
 export default function ConversationView({ conversationId, userId, initialMessages, otherProfile }: Props) {
   const supabase = createClient();
   const [messages, setMessages] = useState(initialMessages);
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [hasOlder, setHasOlder] = useState(initialMessages.length >= 100);
+  const [realtimeStatus, setRealtimeStatus] = useState<RealtimeStatus>("CONNECTING");
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     void supabase.rpc("mark_conversation_read", { target_conversation_id: conversationId });
-    const channel = supabase.channel(`conversation:${conversationId}`).on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${conversationId}` }, (payload) => {
-      const message = payload.new as Message;
-      setMessages((current) => current.some((item) => item.id === message.id) ? current : [...current, message]);
-      if (message.sender_id !== userId) void supabase.rpc("mark_conversation_read", { target_conversation_id: conversationId });
-    }).subscribe();
+    const channel = supabase
+      .channel(`conversation:${conversationId}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${conversationId}` }, (payload) => {
+        const message = payload.new as Message;
+        setMessages((current) => current.some((item) => item.id === message.id) ? current : [...current, message]);
+        if (message.sender_id !== userId) void supabase.rpc("mark_conversation_read", { target_conversation_id: conversationId });
+      })
+      .subscribe((status) => setRealtimeStatus(status as RealtimeStatus));
     return () => { void supabase.removeChannel(channel); };
   }, [conversationId, supabase, userId]);
 
@@ -41,7 +47,7 @@ export default function ConversationView({ conversationId, userId, initialMessag
   }
 
   const name = otherProfile?.display_name ?? "Conversation";
-  return <section className="flex min-h-[70vh] flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-sm">
+  return <section aria-label="Conversation" data-realtime-status={realtimeStatus} className="flex min-h-[70vh] flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-sm">
     <header className="flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-3 sm:px-6">
       <Link href={otherProfile ? `/u/${otherProfile.username}` : "/messages"} className="flex min-w-0 items-center gap-3 rounded-xl p-1 hover:bg-slate-50">
         {otherProfile?.avatar_url ? <img src={otherProfile.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" /> : <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-200 font-bold text-slate-600">{name.charAt(0).toUpperCase()}</div>}
