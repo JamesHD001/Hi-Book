@@ -83,26 +83,88 @@ export default function SignupForm() {
     router.refresh();
   }
 
+  const inputClass = "mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-slate-950 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10";
+  const labelClass = "text-sm font-semibold text-slate-800";
+
   return (
-    <form onSubmit={handleSubmit} className="mt-8 space-y-5">
-      <div className="grid gap-5 sm:grid-cols-2">
-        <label className="block"><span className="text-sm font-medium">First name</span><input required value={form.firstName} onChange={(e) => update("firstName", e.target.value)} className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3" /></label>
-        <label className="block"><span className="text-sm font-medium">Middle name <span className="font-normal text-gray-500">(optional)</span></span><input value={form.middleName} onChange={(e) => update("middleName", e.target.value)} className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3" /></label>
+    <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">About you</p>
+        <div className="mt-3 grid gap-5 sm:grid-cols-2">
+          <label className="block">
+            <span className={labelClass}>First name</span>
+            <input required value={form.firstName} onChange={(e) => update("firstName", e.target.value)} className={inputClass} />
+          </label>
+          <label className="block">
+            <span className={labelClass}>Middle name <span className="font-normal text-slate-400">(optional)</span></span>
+            <input value={form.middleName} onChange={(e) => update("middleName", e.target.value)} className={inputClass} />
+          </label>
+        </div>
       </div>
-      <label className="block"><span className="text-sm font-medium">Last name</span><input required value={form.lastName} onChange={(e) => update("lastName", e.target.value)} className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3" /></label>
+
+      <label className="block">
+        <span className={labelClass}>Last name</span>
+        <input required value={form.lastName} onChange={(e) => update("lastName", e.target.value)} className={inputClass} />
+      </label>
+
       <div className="grid gap-5 sm:grid-cols-2">
-        <label className="block"><span className="text-sm font-medium">Date of birth</span><input required type="date" value={form.dateOfBirth} onChange={(e) => update("dateOfBirth", e.target.value)} className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3" /></label>
-        <label className="block"><span className="text-sm font-medium">Country code</span><input required maxLength={2} placeholder="NG" value={form.countryCode} onChange={(e) => update("countryCode", e.target.value.toUpperCase())} className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3 uppercase" /></label>
+        <label className="block">
+          <span className={labelClass}>Date of birth</span>
+          <input required type="date" value={form.dateOfBirth} onChange={(e) => update("dateOfBirth", e.target.value)} className={inputClass} />
+        </label>
+        <label className="block">
+          <span className={labelClass}>Country / region</span>
+          <input required maxLength={2} placeholder="NG" value={form.countryCode} onChange={(e) => update("countryCode", e.target.value.toUpperCase())} className={`${inputClass} uppercase`} />
+          <span className="mt-1.5 block text-xs leading-5 text-slate-400">Use your two-letter ISO country code.</span>
+        </label>
       </div>
-      <label className="block"><span className="text-sm font-medium">Gender</span><select required value={form.gender} onChange={(e) => update("gender", e.target.value)} className="mt-2 w-full rounded-xl border border-gray-300 bg-white px-4 py-3"><option value="">Select one</option>{GENDERS.map((gender) => <option key={gender.value} value={gender.value}>{gender.label}</option>)}</select></label>
-      <label className="block"><span className="text-sm font-medium">Email</span><input required type="email" autoComplete="email" value={form.email} onChange={(e) => update("email", e.target.value)} className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3" /></label>
-      <label className="block"><span className="text-sm font-medium">Password</span><input required minLength={8} type="password" autoComplete="new-password" value={form.password} onChange={(e) => update("password", e.target.value)} className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3" /><span className="mt-1 block text-xs text-gray-500">At least 8 characters.</span></label>
-      <label className="flex gap-3 text-sm text-gray-700"><input required type="checkbox" checked={form.acceptTerms} onChange={(e) => update("acceptTerms", e.target.checked)} className="mt-1" /><span>I accept the <Link href="/terms" className="font-semibold text-blue-600">Terms of Use</Link>.</span></label>
-      <label className="flex gap-3 text-sm text-gray-700"><input required type="checkbox" checked={form.acceptPrivacy} onChange={(e) => update("acceptPrivacy", e.target.checked)} className="mt-1" /><span>I accept the <Link href="/privacy" className="font-semibold text-blue-600">Privacy Policy</Link>.</span></label>
-      {error && <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
-      {message && <p role="status" className="rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700">{message}</p>}
-      <button type="submit" disabled={loading} className="w-full rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60">{loading ? "Creating account…" : "Create account"}</button>
-      <p className="text-center text-sm text-gray-600">Already have an account? <Link href="/login" className="font-semibold text-blue-600 hover:underline">Sign in</Link></p>
+
+      <label className="block">
+        <span className={labelClass}>Gender</span>
+        <select required value={form.gender} onChange={(e) => update("gender", e.target.value)} className={`${inputClass} bg-slate-50`}>
+          <option value="">Select one</option>
+          {GENDERS.map((gender) => <option key={gender.value} value={gender.value}>{gender.label}</option>)}
+        </select>
+      </label>
+
+      <div className="border-t border-slate-100 pt-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Account details</p>
+        <div className="mt-3 space-y-5">
+          <label className="block">
+            <span className={labelClass}>Email address</span>
+            <input required type="email" autoComplete="email" value={form.email} onChange={(e) => update("email", e.target.value)} className={inputClass} />
+          </label>
+          <label className="block">
+            <span className={labelClass}>Password</span>
+            <input required minLength={8} type="password" autoComplete="new-password" value={form.password} onChange={(e) => update("password", e.target.value)} className={inputClass} />
+            <span className="mt-1.5 block text-xs leading-5 text-slate-400">At least 8 characters.</span>
+          </label>
+        </div>
+      </div>
+
+      <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+        <p className="text-sm font-semibold text-slate-800">Before you join</p>
+        <label className="flex gap-3 text-sm leading-6 text-slate-600">
+          <input required type="checkbox" checked={form.acceptTerms} onChange={(e) => update("acceptTerms", e.target.checked)} className="mt-1 h-4 w-4 rounded border-slate-300" />
+          <span>I accept the <Link href="/terms" className="font-semibold text-slate-950 underline decoration-slate-300 underline-offset-4">Terms of Use</Link>.</span>
+        </label>
+        <label className="flex gap-3 text-sm leading-6 text-slate-600">
+          <input required type="checkbox" checked={form.acceptPrivacy} onChange={(e) => update("acceptPrivacy", e.target.checked)} className="mt-1 h-4 w-4 rounded border-slate-300" />
+          <span>I accept the <Link href="/privacy" className="font-semibold text-slate-950 underline decoration-slate-300 underline-offset-4">Privacy Policy</Link>.</span>
+        </label>
+      </div>
+
+      {error && <p role="alert" className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">{error}</p>}
+      {message && <p role="status" className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-700">{message}</p>}
+
+      <button type="submit" disabled={loading} className="w-full rounded-2xl bg-slate-950 px-5 py-3.5 font-semibold text-white shadow-lg shadow-slate-950/10 transition hover:-translate-y-0.5 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0">
+        {loading ? "Creating account…" : "Create your Hi!Book account"}
+      </button>
+
+      <p className="text-center text-sm leading-6 text-slate-500">
+        Already have an account?{" "}
+        <Link href="/login" className="font-semibold text-slate-950 underline decoration-slate-300 underline-offset-4 transition hover:decoration-slate-950">Sign in</Link>
+      </p>
     </form>
   );
 }
