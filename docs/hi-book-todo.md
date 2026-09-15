@@ -42,7 +42,7 @@
 - [x] Community/feed responsive controls refined without replacing the existing feed architecture.
 - [x] Discover repository/UI audit.
 - [x] Profiles repository/UI audit.
-- [ ] Messages repository/UI audit.
+- [x] Messages repository/UI audit.
 - [ ] Notifications repository/UI audit.
 - [ ] Settings/account repository/UI audit.
 
