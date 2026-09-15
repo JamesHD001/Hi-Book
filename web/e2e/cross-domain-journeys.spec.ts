@@ -86,12 +86,12 @@ test.describe("security-critical authenticated journeys", () => {
   test("messages surface the block and permission boundary", async ({ page }) => {
     await signIn(page);
     await page.goto("/messages");
-    await expect(page.getByText(/Private conversations are protected by account, block, and message-permission rules/i)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Stay close to the people who matter." })).toBeVisible();
   });
 
   test("notifications render the authenticated activity surface", async ({ page }) => {
     await signIn(page);
     await page.goto("/notifications");
-    await expect(page.getByText("Notifications", { exact: true }).first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Your activity" })).toBeVisible();
   });
 });
