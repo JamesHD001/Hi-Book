@@ -29,7 +29,8 @@ This checklist is the release gate for deploying Hi!Book to a real hosting and S
 - [ ] Confirm the production deployment uses the intended Next.js hosting platform.
 - [ ] Configure all required environment variables in the hosting platform; do not place secrets in client-exposed variables.
 - [ ] Confirm the production domain uses HTTPS and valid TLS.
-- [ ] Confirm the deployment serves the application's security headers, including HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, and `Permissions-Policy`.
+- [x] Repository config supplies the application's required security headers, including HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, and `Permissions-Policy`.
+- [x] Repository includes an optional production smoke workflow that checks HTTPS, liveness, cache control, and the required security headers once `PRODUCTION_BASE_URL` is configured as a protected GitHub Actions secret.
 - [ ] Confirm the deployment platform/reverse proxy provides IP-level throttling or an equivalent edge abuse-control mechanism.
 - [ ] Confirm deployment protection, preview access controls, and branch-to-environment mapping.
 - [ ] Confirm the deployment can be rolled back to the previous known-good release.
@@ -38,9 +39,10 @@ This checklist is the release gate for deploying Hi!Book to a real hosting and S
 
 The application exposes `GET /api/health` as a non-cached liveness endpoint. A production monitor should poll this endpoint without authentication.
 
+- [x] Repository implements `/api/health` with HTTP 200, `status: "ok"`, and `Cache-Control: no-store`.
 - [ ] Configure an external/hosting uptime check against `/api/health`.
-- [ ] Confirm a healthy response is HTTP 200 with `status: "ok"`.
-- [ ] Confirm the endpoint is not cached by an intermediary.
+- [ ] Confirm a healthy response is HTTP 200 with `status: "ok"` in production.
+- [ ] Confirm the endpoint is not cached by an intermediary in production.
 - [ ] Confirm application errors are retained in a durable, searchable log sink.
 - [ ] Confirm database/auth/storage failures are observable.
 - [ ] Configure alerts for sustained 5xx responses, authentication failures, database failures, storage failures, and sustained rate-limit rejections.
@@ -79,5 +81,7 @@ Database-level authenticated mutation limits are already covered by the reposito
 ## Current evidence boundary
 
 The repository can verify application behavior, migrations, database security, web lint/build, browser journeys, liveness behavior, and configured application security headers. It cannot verify the actual production Supabase backup/restore state, hosting-provider configuration, external monitoring, IP throttling, authentication-provider limits, or production rollback until those systems are connected and inspected.
+
+The repository now also provides a production smoke workflow, but it remains an evidence-producing control rather than proof of production health until a real production URL is configured and the workflow succeeds against it.
 
 **Do not mark the operational-readiness gate complete without production evidence for those external controls.**
