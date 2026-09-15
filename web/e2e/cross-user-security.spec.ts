@@ -123,7 +123,9 @@ test.describe("two-user authorization and privacy matrix", () => {
       await expect(pageA).toHaveURL(/\/messages\/[0-9a-f-]+$/i);
       const conversationUrl = pageA.url();
       await pageB.goto(conversationUrl);
+      const realtimeConversationB = pageB.locator('section[aria-label="Conversation"]');
       await expect(pageB.getByPlaceholder("Write a message…")).toBeVisible();
+      await expect(realtimeConversationB).toHaveAttribute("data-realtime-status", "SUBSCRIBED", { timeout: 10_000 });
       await pageA.getByPlaceholder("Write a message…").fill(messageText);
       await pageA.getByRole("button", { name: "Send" }).click();
       await expect(pageA.getByText(messageText)).toBeVisible();
