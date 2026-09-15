@@ -5,7 +5,7 @@ const userA = { email: process.env.E2E_TEST_EMAIL!, password: process.env.E2E_TE
 test.describe("account lifecycle", () => {
   test.skip(!userA.email || !userA.password, "E2E credentials are not configured.");
 
-  test("user can schedule and cancel account deletion through the real UI", async ({ page }) => {
+  test("user can schedule, enter restricted grace state, and cancel account deletion through the real UI", async ({ page }) => {
     test.setTimeout(30_000);
 
     await page.goto("/login");
@@ -26,12 +26,16 @@ test.describe("account lifecycle", () => {
     await page.getByRole("button", { name: "Schedule account deletion" }).click();
     await expect(page.getByRole("status")).toHaveText(/scheduled for deletion/i);
 
+    await page.goto("/community");
+    await expect(page).toHaveURL(/\/onboarding(?:\/)?$/);
+
     await page.goto("/account-deletion");
     await expect(page.getByText(/^Scheduled for /i)).toBeVisible();
     await page.getByRole("button", { name: "Cancel deletion request" }).click();
     await expect(page.getByRole("status")).toHaveText(/cancelled.*active again/i);
 
     await page.goto("/community");
+    await expect(page).toHaveURL(/\/community(?:\/)?$/);
     await expect(page.getByRole("heading", { name: /Welcome,/i })).toBeVisible();
   });
 });
