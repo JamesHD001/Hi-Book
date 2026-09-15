@@ -1,9 +1,10 @@
 begin;
 
 -- The post composer stores canonical paths as posts/{user_id}/{post_id}/{media_id}.webp.
--- Supabase storage.objects.name uses that bucket-relative object path, so the
--- user id is the second folder rather than the first. Align the Storage RLS
--- policies with the path contract already enforced by create_post().
+-- storage.foldername(name) returns folder segments only (it excludes the filename),
+-- so the canonical path has three folder segments: posts, user_id, and post_id.
+-- Keep the Storage RLS contract aligned with create_post() while validating the
+-- UUID media filename separately.
 
 drop policy if exists posts_insert_own on storage.objects;
 drop policy if exists posts_update_own on storage.objects;
@@ -15,9 +16,10 @@ with check (
   bucket_id = 'posts'
   and (storage.foldername(name))[1] = 'posts'
   and (storage.foldername(name))[2] = auth.uid()::text
-  and array_length(storage.foldername(name), 1) >= 4
+  and array_length(storage.foldername(name), 1) >= 3
   and (storage.foldername(name))[3]::uuid is not null
-  and (storage.foldername(name))[4]::uuid is not null
+  and storage.filename(name) ~ '^[0-9a-fA-F-]{36}[.]webp$'
+  and split_part(storage.filename(name), '.', 1)::uuid is not null
 );
 
 create policy posts_update_own on storage.objects
