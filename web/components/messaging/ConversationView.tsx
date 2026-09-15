@@ -85,6 +85,10 @@ export default function ConversationView({ conversationId, userId, initialMessag
       <div ref={endRef} />
     </div>
 
-    <MessageComposer conversationId={conversationId} onSent={(message) => setMessages((current) => current.some((item) => item.id === message.id) ? current : [...current, message])} />
+    <MessageComposer
+      conversationId={conversationId}
+      onSent={(message) => setMessages((current) => current.some((item) => item.id === message.id) ? current : [...current, message])}
+      onSendError={(content) => setMessages((current) => current.filter((message) => !(message.sender_id === userId && message.content === content)))}
+    />
   </section>;
 }
