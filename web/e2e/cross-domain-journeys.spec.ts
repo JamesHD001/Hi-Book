@@ -86,7 +86,7 @@ test.describe("security-critical authenticated journeys", () => {
     await expect(page.getByRole("status")).toHaveText(/profile has been updated/i);
   });
 
-  test("community exposes post creation and safely disables an empty submission", async ({ page }) =>
+  test("community exposes post creation and safely disables an empty submission", async ({ page }) => {
     await signIn(page);
     await page.goto("/community");
     const composer = page.getByRole("region", { name: "Create a post" });
