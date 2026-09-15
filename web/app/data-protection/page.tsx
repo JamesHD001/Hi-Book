@@ -1,67 +1,13 @@
 import Link from "next/link";
+import { ArrowLeft, Database, LockKeyhole, ShieldCheck } from "lucide-react";
 
 export default function DataProtectionPage() {
-  return (
-    <main className="min-h-screen bg-slate-50 px-6 py-16 text-slate-900">
-      <article className="mx-auto max-w-3xl rounded-3xl border border-slate-200 bg-white p-8 shadow-sm sm:p-12">
-        <Link href="/" className="text-sm font-semibold text-blue-600 hover:text-blue-800">
-          Back to Hi!Book
-        </Link>
-
-        <header className="mt-8 border-b border-slate-200 pb-8">
-          <h1 className="text-4xl font-bold tracking-tight">Data Protection &amp; Usage</h1>
-          <p className="mt-3 text-sm text-slate-500">Version 1.0 · Initial application draft</p>
-        </header>
-
-        <div className="mt-10 space-y-8 leading-7 text-slate-700">
-          <section>
-            <h2 className="text-xl font-semibold text-slate-950">What this page covers</h2>
-            <p className="mt-2">
-              This page explains at a high level how Hi!Book uses and protects information needed to operate the service. It should be read together with the Privacy Policy and Terms of Use.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-slate-950">How information is used</h2>
-            <p className="mt-2">
-              Hi!Book uses account, profile, social, and security information to provide features such as authentication, profiles, discovery, messaging, notifications, moderation, reporting, and account management. Information is used for the purposes described in the applicable privacy documentation rather than being treated as public by default.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-slate-950">Public and private information</h2>
-            <p className="mt-2">
-              Some profile information may be visible to other users according to your privacy and discovery settings. Authentication credentials and other private account information are not intended to be public profile information.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-slate-950">Your controls</h2>
-            <p className="mt-2">
-              Hi!Book provides controls for profile visibility, country visibility, messaging permissions, discoverability, blocking, reporting, notification preferences, and account deletion. Available controls may depend on the feature and the current state of your account.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-slate-950">Protection and retention</h2>
-            <p className="mt-2">
-              The platform uses authentication, authorization, privacy controls, database security policies, and other safeguards to protect information. Some records may need to be retained for security, moderation, legal, or operational reasons. The applicable retention rules are described in the Privacy Policy and related legal documentation.
-            </p>
-          </section>
-
-          <section className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
-            <h2 className="text-xl font-semibold text-amber-950">Important</h2>
-            <p className="mt-2 text-amber-900">
-              This is the application&apos;s initial policy presentation and requires legal review before production publication. It is not a substitute for jurisdiction-specific legal advice.
-            </p>
-          </section>
-        </div>
-
-        <div className="mt-10 flex flex-wrap gap-4 border-t border-slate-200 pt-6 text-sm font-semibold">
-          <Link href="/privacy" className="text-blue-600 hover:text-blue-800">Privacy Policy</Link>
-          <Link href="/terms" className="text-blue-600 hover:text-blue-800">Terms of Use</Link>
-        </div>
-      </article>
-    </main>
-  );
+  const sections = [
+    ["01", "What this page covers", "This page explains at a high level how Hi!Book uses and protects information needed to operate the service. It should be read together with the Privacy Policy and Terms of Use."],
+    ["02", "How information is used", "Hi!Book uses account, profile, social, and security information to provide features such as authentication, profiles, discovery, messaging, notifications, moderation, reporting, and account management. Information is used for the purposes described in the applicable privacy documentation rather than being treated as public by default."],
+    ["03", "Public and private information", "Some profile information may be visible to other users according to your privacy and discovery settings. Authentication credentials and other private account information are not intended to be public profile information."],
+    ["04", "Your controls", "Hi!Book provides controls for profile visibility, country visibility, messaging permissions, discoverability, blocking, reporting, notification preferences, and account deletion. Available controls may depend on the feature and the current state of your account."],
+    ["05", "Protection and retention", "The platform uses authentication, authorization, privacy controls, database security policies, and other safeguards to protect information. Some records may need to be retained for security, moderation, legal, or operational reasons. The applicable retention rules are described in the Privacy Policy and related legal documentation."],
+  ];
+  return <main className="min-h-screen bg-[#f4f1ea] px-4 py-4 sm:px-6 sm:py-8"><div className="mx-auto max-w-6xl overflow-hidden rounded-[2rem] border border-black/10 bg-[#fbfaf7] shadow-[0_24px_80px_rgba(23,23,23,0.1)]"><header className="border-b border-black/10 bg-[#111827] px-6 py-7 text-white sm:px-10"><div className="flex flex-wrap items-center justify-between gap-5"><Link href="/" className="inline-flex items-center gap-3 text-sm font-extrabold"><span className="grid h-10 w-10 place-items-center rounded-xl bg-white text-xs font-black text-[#111827]">H!</span>Hi!Book</Link><Link href="/" className="inline-flex items-center gap-2 text-xs font-bold text-slate-300 hover:text-white"><ArrowLeft className="h-4 w-4" aria-hidden="true" />Back home</Link></div></header><div className="grid lg:grid-cols-[260px_1fr]"><aside className="border-b border-black/10 bg-[#f0eee8] p-6 lg:border-b-0 lg:border-r sm:p-8"><Database className="h-7 w-7 text-blue-600" aria-hidden="true" /><p className="mt-8 text-[10px] font-extrabold uppercase tracking-[0.2em] text-slate-400">Legal / 03</p><p className="mt-2 text-sm font-bold">Data Protection</p><p className="mt-4 text-xs leading-5 text-slate-500">A plain-language map of how information moves through the service.</p><div className="mt-8 border-t border-black/10 pt-5 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Version 1.0 · Initial draft</div></aside><article className="px-6 py-10 sm:px-10 sm:py-14 lg:px-16"><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-blue-600">Data Protection &amp; Usage</p><h1 className="mt-3 max-w-3xl text-4xl font-extrabold tracking-[-0.06em] sm:text-6xl">Know what happens to your information.</h1><p className="mt-5 max-w-2xl text-base leading-7 text-slate-500">This page gives the high-level product view. The Privacy Policy remains the primary privacy document.</p><div className="mt-12 divide-y divide-black/10 border-y border-black/10">{sections.map(([n,t,p])=><section key={n} className="grid gap-4 py-7 sm:grid-cols-[70px_190px_1fr]"><span className="text-xs font-extrabold text-blue-600">{n}</span><h2 className="text-lg font-extrabold tracking-tight">{t}</h2><p className="text-sm leading-7 text-slate-600">{p}</p></section>)}</div><section className="mt-8 rounded-2xl border border-amber-200 bg-amber-50 p-5"><div className="flex gap-3"><ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" aria-hidden="true" /><div><h2 className="font-extrabold text-amber-950">Draft status</h2><p className="mt-1 text-sm leading-6 text-amber-900">This is the application's initial policy presentation and requires legal review before production publication. It is not a substitute for jurisdiction-specific legal advice.</p></div></div></section><div className="mt-8 flex items-center gap-2 text-xs font-bold text-slate-400"><LockKeyhole className="h-4 w-4" aria-hidden="true" />Privacy controls are part of the product architecture.</div><nav className="mt-7 flex flex-wrap gap-5 text-sm font-bold"><Link href="/privacy" className="text-blue-600 hover:text-blue-800">Privacy Policy</Link><Link href="/terms" className="text-blue-600 hover:text-blue-800">Terms of Use</Link><Link href="/community-guidelines" className="text-blue-600 hover:text-blue-800">Community Guidelines</Link></nav></article></div></div></main>;
 }
