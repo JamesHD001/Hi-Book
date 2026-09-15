@@ -1,53 +1,82 @@
-import { expect, test } from "@playwright/test";
-import { createAdminClient, createTestUser, deleteTestUser, type TestUser } from "./global-setup";
+import { test, expect, type BrowserContext, type Page } from "@playwright/test";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 
-async function makeProfilePublic(page: Parameters<typeof test>[0]["page"]) {
-  await page.goto("/profile/edit");
-  await page.getByRole("tab", { name: /Privacy/i }).click();
-  await page.getByLabel(/Profile visibility/i).selectOption("PUBLIC");
-  await page.getByRole("button", { name: /Save changes/i }).click();
-  await expect(page.getByRole("status")).toHaveText(/saved/i);
+const userA = { email: process.env.E2E_TEST_EMAIL!, password: process.env.E2E_TEST_PASSWORD! };
+const userB = { email: process.env.E2E_TEST_EMAIL_B!, password: process.env.E2E_TEST_PASSWORD_B! };
+type Fixture = { users: { email: string; username: string }[] };
+const fixture = JSON.parse(readFileSync(resolve(process.cwd(), "e2e/.fixture.json"), "utf8")) as Fixture;
+const fixtureA = fixture.users.find((user) => user.email === userA.email)!;
+const fixtureB = fixture.users.find((user) => user.email === userB.email)!;
+
+async function signIn(page: Page, email: string, password: string) {
+  await page.goto("/login");
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Password").fill(password);
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page).toHaveURL(/\/community(?:\/)?$/);
 }
 
-async function openProfile(page: Parameters<typeof test>[0]["page"], username: string) {
+async function makeProfilePublic(page: Page) {
+  await page.goto("/profile");
+  await page.getByLabel("Profile visibility").selectOption("PUBLIC");
+  await page.getByLabel("Country visibility").selectOption("PUBLIC");
+  await page.getByLabel("Who can message you?").selectOption("FOLLOWERS");
+  const discovery = page.getByRole("checkbox", { name: /Appear in global discovery/i });
+  if (!(await discovery.isChecked())) await discovery.check();
+  await page.getByRole("button", { name: "Save changes" }).click();
+  await expect(page.getByRole("status")).toHaveText(/profile has been updated/i);
+}
+
+async function openProfile(page: Page, username: string) {
   await page.goto(`/u/${username}`);
-  await expect(page.getByRole("heading", { name: new RegExp(username, "i") })).toBeVisible();
+  await expect(page.locator("main h1").first()).toBeVisible();
+  await expect(page.locator("main").getByText(`@${username}`, { exact: true })).toBeVisible();
 }
 
-async function ensureFollowing(page: Parameters<typeof test>[0]["page"]) {
-  const followButton = page.getByRole("button", { name: /^(Follow|Following)$/ }).first();
-  if ((await followButton.innerText()).trim() === "Follow") {
-    await followButton.click();
-    await expect(followButton).toHaveText("Following");
+async function ensureFollowing(page: Page) {
+  const following = page.getByRole("button", { name: "Following" });
+  if (await following.count()) {
+    await expect(following).toBeVisible();
+    return;
+  }
+  const follow = page.getByRole("button", { name: "Follow" });
+  await expect(follow).toBeVisible();
+  await follow.click();
+  await expect(following).toBeVisible();
+}
+
+async function safeClose(context: BrowserContext) {
+  try {
+    await context.close();
+  } catch {
+    // Playwright may already have disposed the context after a timeout.
   }
 }
 
 test.describe("two-user authorization and privacy matrix", () => {
+  test.skip(!userA.email || !userA.password || !userB.email || !userB.password, "Two-user E2E credentials are not configured.");
+
   test("follow, posts, media, comments, likes, realtime messaging, reporting, privacy, and blocking enforce cross-user boundaries", async ({ browser }) => {
-    const admin = createAdminClient();
-    const fixtureA = await createTestUser(admin, "A");
-    const fixtureB = await createTestUser(admin, "B");
+    test.setTimeout(90_000);
+
     const contextA = await browser.newContext();
     const contextB = await browser.newContext();
     const pageA = await contextA.newPage();
     const pageB = await contextB.newPage();
     const publicPost = `E2E cross-user public post ${Date.now()}`;
-    const commentText = `E2E cross-user comment ${Date.now()}`;
-    const mediaPost = `E2E cross-user media post ${Date.now()}`;
+    const mediaPost = `E2E media post ${Date.now()}`;
+    const followerPost = `E2E followers-only post ${Date.now()}`;
+    const commentText = `E2E comment ${Date.now()}`;
+    const messageText = `E2E realtime message ${Date.now()}`;
+    const blockedMessage = `E2E blocked message ${Date.now()}`;
+    let blockApplied = false;
 
     try {
-      await pageA.goto("/auth/login");
-      await pageA.getByLabel(/email/i).fill(fixtureA.email);
-      await pageA.getByLabel(/password/i).fill(fixtureA.password);
-      await pageA.getByRole("button", { name: /sign in/i }).click();
-      await expect(pageA).toHaveURL(/\/community/);
+      await signIn(pageB, userB.email, userB.password);
+      await makeProfilePublic(pageB);
 
-      await pageB.goto("/auth/login");
-      await pageB.getByLabel(/email/i).fill(fixtureB.email);
-      await pageB.getByLabel(/password/i).fill(fixtureB.password);
-      await pageB.getByRole("button", { name: /sign in/i }).click();
-      await expect(pageB).toHaveURL(/\/community/);
-
+      await signIn(pageA, userA.email, userA.password);
       await makeProfilePublic(pageA);
       await openProfile(pageA, fixtureB.username);
       await ensureFollowing(pageA);
@@ -84,15 +113,76 @@ test.describe("two-user authorization and privacy matrix", () => {
       await mediaComposer.getByRole("button", { name: "Publish post" }).click();
       await expect(mediaComposer.getByRole("status")).toHaveText(/post has been published/i);
       await pageB.goto("/community");
-
       const mediaArticle = pageB.locator("article").filter({ hasText: mediaPost }).first();
       await expect(mediaArticle).toBeVisible();
       await expect(mediaArticle.getByAltText("Post image")).toBeVisible();
+      await expect(mediaArticle.locator("img")).toHaveAttribute("src", /.+/);
+
+      await pageA.goto("/community");
+      const followerComposer = pageA.getByRole("region", { name: "Create a post" });
+      await followerComposer.getByPlaceholder("What would you like to share with the community?").fill(followerPost);
+      await followerComposer.getByLabel("Visibility").selectOption("FOLLOWERS");
+      await followerComposer.getByRole("button", { name: "Publish post" }).click();
+      await expect(followerComposer.getByRole("status")).toHaveText(/post has been published/i);
+      await pageB.goto("/community");
+      await expect(pageB.locator("article").filter({ hasText: followerPost }).first()).toBeVisible();
+
+      await openProfile(pageA, fixtureB.username);
+      await expect(pageA.getByRole("button", { name: "Message" })).toBeVisible();
+      await pageA.getByRole("button", { name: "Message" }).click();
+      await expect(pageA).toHaveURL(/\/messages\/[0-9a-f-]+$/i);
+      const conversationUrl = pageA.url();
+      await pageB.goto(conversationUrl);
+      const realtimeConversationB = pageB.locator('section[aria-label="Conversation"]');
+      await expect(pageB.getByPlaceholder("Write a message…")).toBeVisible();
+      await expect(realtimeConversationB).toHaveAttribute("data-realtime-status", "SUBSCRIBED", { timeout: 10_000 });
+      await pageA.getByPlaceholder("Write a message…").fill(messageText);
+      await pageA.getByRole("button", { name: "Send" }).click();
+      await expect(pageA.getByText(messageText)).toBeVisible();
+      await expect(pageB.getByText(messageText)).toBeVisible({ timeout: 10_000 });
+
+      await openProfile(pageA, fixtureB.username);
+      await pageA.getByRole("button", { name: "Report" }).click();
+      await pageA.getByLabel("Reason").selectOption("OTHER");
+      await pageA.getByRole("button", { name: "Submit report" }).click();
+      await expect(pageA.getByText(/Report submitted|already submitted/i)).toBeVisible();
+
+      await openProfile(pageB, fixtureA.username);
+      await expect(pageB.getByRole("button", { name: "Following" })).toBeVisible();
+      await pageB.getByRole("button", { name: "Following" }).click();
+      await expect(pageB.getByRole("button", { name: "Follow" })).toBeVisible();
+      await pageB.goto("/community");
+      await expect(pageB.locator("article").filter({ hasText: followerPost })).toHaveCount(0);
+
+      await openProfile(pageA, fixtureB.username);
+      await pageA.getByRole("button", { name: "Block" }).click();
+      blockApplied = true;
+      await expect(pageA).toHaveURL(/\/community(?:\/)?$/);
+      await pageB.goto("/discover");
+      await expect(pageB.locator("article").filter({ hasText: /E2E User A/i })).toHaveCount(0);
+
+      await pageB.goto(conversationUrl);
+      const messageInput = pageB.getByPlaceholder("Write a message…");
+      if (await messageInput.count()) {
+        await messageInput.fill(blockedMessage);
+        await pageB.getByRole("button", { name: "Send" }).click();
+        await expect(pageB.getByRole("alert").filter({ hasText: /Messaging unavailable/i })).toBeVisible();
+        await expect(pageB.locator('[data-message-content]').filter({ hasText: blockedMessage })).toHaveCount(0);
+      } else {
+        await expect(pageB.getByText(/Page not found/i)).toBeVisible();
+      }
     } finally {
-      await contextA.close();
-      await contextB.close();
-      await deleteTestUser(admin, fixtureA as TestUser);
-      await deleteTestUser(admin, fixtureB as TestUser);
+      if (blockApplied) {
+        try {
+          await openProfile(pageA, fixtureB.username);
+          const unblock = pageA.getByRole("button", { name: "Unblock" });
+          if (await unblock.count()) await unblock.click();
+        } catch {
+          // Preserve the original test failure while making a best-effort fixture cleanup.
+        }
+      }
+      await safeClose(contextA);
+      await safeClose(contextB);
     }
   });
 });
