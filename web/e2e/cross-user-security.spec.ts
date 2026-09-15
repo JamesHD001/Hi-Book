@@ -69,6 +69,7 @@ test.describe("two-user authorization and privacy matrix", () => {
     const followerPost = `E2E followers-only post ${Date.now()}`;
     const commentText = `E2E comment ${Date.now()}`;
     const messageText = `E2E realtime message ${Date.now()}`;
+    const unreadMessageText = `E2E unread message ${Date.now()}`;
     const blockedMessage = `E2E blocked message ${Date.now()}`;
     let blockApplied = false;
 
@@ -140,6 +141,28 @@ test.describe("two-user authorization and privacy matrix", () => {
       await pageA.getByRole("button", { name: "Send" }).click();
       await expect(pageA.getByText(messageText)).toBeVisible();
       await expect(pageB.getByText(messageText)).toBeVisible({ timeout: 10_000 });
+
+      // Leave the conversation before the next message so the recipient's unread state can be observed.
+      await pageB.goto("/messages");
+      await expect(pageB).toHaveURL(/\/messages(?:\/)?$/);
+      await expect(pageB.locator('[aria-label="Unread"]')).toHaveCount(0);
+
+      await pageA.getByPlaceholder("Write a message…").fill(unreadMessageText);
+      await pageA.getByRole("button", { name: "Send" }).click();
+      await expect(pageA.getByText(unreadMessageText)).toBeVisible();
+
+      await pageB.reload();
+      const unreadConversation = pageB.locator('a[href*="/messages/"]').filter({ hasText: unreadMessageText }).first();
+      await expect(unreadConversation).toBeVisible();
+      await expect(unreadConversation.getByLabel("Unread")).toBeVisible();
+
+      await unreadConversation.click();
+      await expect(pageB).toHaveURL(conversationUrl);
+      await expect(pageB.getByText(unreadMessageText)).toBeVisible();
+      await pageB.goto("/messages");
+      const readConversation = pageB.locator('a[href*="/messages/"]').filter({ hasText: unreadMessageText }).first();
+      await expect(readConversation).toBeVisible();
+      await expect(readConversation.getByLabel("Unread")).toHaveCount(0);
 
       await openProfile(pageA, fixtureB.username);
       await pageA.getByRole("button", { name: "Report" }).click();
