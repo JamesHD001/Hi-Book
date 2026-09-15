@@ -30,7 +30,7 @@ async function openProfile(page: Page, username: string) {
 }
 
 test.describe("moderation role workflow", () => {
-  test("report creates a case that a moderator can review, assign, note, and resolve", async ({ browser }) => {
+  test("report creates a case that a moderator can review, assign, note, resolve, and appeal", async ({ browser }) => {
     test.setTimeout(60_000);
 
     const users = await fixtureUsers();
@@ -88,6 +88,15 @@ test.describe("moderation role workflow", () => {
       await expect(moderatorPage.getByText("RESOLVED")).toBeVisible();
       await expect(moderatorPage.getByText("WARNING", { exact: true }).last()).toBeVisible();
       await expect(moderatorPage.getByText("E2E moderation warning after review.")).toBeVisible();
+
+      await moderatorPage.goto("/appeals");
+      const appealAction = moderatorPage.getByRole("article").filter({ hasText: "WARNING" }).first();
+      await expect(appealAction).toBeVisible();
+      await expect(appealAction.getByText(/Severity: LOW/i)).toBeVisible();
+      await appealAction.getByLabel(/Appeal this action/i).fill("I am submitting this appeal as part of the E2E moderation workflow.");
+      await appealAction.getByRole("button", { name: "Submit appeal" }).click();
+      await expect(appealAction.getByText(/Your appeal has been submitted for review/i)).toBeVisible();
+      await expect(appealAction.getByRole("button", { name: "Submitted" })).toBeDisabled();
     } finally {
       await Promise.all([regularContext.close(), reporterContext.close(), moderatorContext.close()]);
     }
