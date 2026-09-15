@@ -68,6 +68,7 @@ test.describe("two-user authorization and privacy matrix", () => {
       await makeProfilePublic(pageB);
 
       await signIn(pageA, userA.email, userA.password);
+      await makeProfilePublic(pageA);
       await openProfile(pageA, fixtureB.username);
       await ensureFollowing(pageA);
 
