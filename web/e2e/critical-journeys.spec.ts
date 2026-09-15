@@ -6,7 +6,7 @@ const password = process.env.E2E_TEST_PASSWORD!;
 test.describe("critical public and authentication journeys", () => {
   test("home page exposes the primary account journeys", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: "Connect beyond distance." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Meet people beyond your usual circle\./i })).toBeVisible();
     await expect(page.getByRole("link", { name: "Create your account" })).toHaveAttribute("href", "/signup");
     await expect(page.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/login");
   });
