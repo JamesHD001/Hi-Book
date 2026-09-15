@@ -37,16 +37,16 @@ test.describe("production readiness: responsive and accessibility", () => {
     await signIn(page);
 
     const routes = [
-      ["/community", "Your community"],
-      ["/discover", "Meet someone new."],
-      ["/messages", "Stay close to the people who matter."],
-      ["/notifications", "Your activity"],
-      ["/profile", "Make your profile feel like you."],
+      ["/community", /Welcome,/i],
+      ["/discover", /Meet someone new\./i],
+      ["/messages", /Stay close to the people who matter\./i],
+      ["/notifications", /Stay in the loop\./i],
+      ["/profile", /Make your profile feel like you\./i],
     ] as const;
 
     for (const [path, heading] of routes) {
       await page.goto(path);
-      await expect(page.getByRole("heading", { name: heading })).toBeVisible();
+      await expect(page.getByRole("heading", { name: heading }).first()).toBeVisible();
       await assertNoHorizontalOverflow(page);
     }
   });
