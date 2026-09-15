@@ -43,7 +43,7 @@
 - [x] Discover repository/UI audit.
 - [x] Profiles repository/UI audit.
 - [x] Messages repository/UI audit.
-- [ ] Notifications repository/UI audit.
+- [x] Notifications repository/UI audit.
 - [ ] Settings/account repository/UI audit.
 
 ## MVP domains implemented
