@@ -12,7 +12,7 @@ type SentMessage = {
   created_at: string;
 };
 
-export default function MessageComposer({ conversationId, onSent }: { conversationId: string; onSent?: (message: SentMessage) => void }) {
+export default function MessageComposer({ conversationId, onSent, onSendError }: { conversationId: string; onSent?: (message: SentMessage) => void; onSendError?: (content: string) => void }) {
   const [content, setContent] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,6 +28,7 @@ export default function MessageComposer({ conversationId, onSent }: { conversati
       p_shared_post_id: null, p_reply_to_message_id: null, p_media: [],
     });
     if (rpcError) {
+      onSendError?.(text);
       setError(`Messaging unavailable: ${rpcError.message}`);
     } else {
       setContent("");
@@ -38,6 +39,7 @@ export default function MessageComposer({ conversationId, onSent }: { conversati
         .eq("id", messageId)
         .maybeSingle();
       if (messageError || !message) {
+        onSendError?.(text);
         setError(messageError?.message ?? "Message was sent but could not be loaded.");
       } else {
         onSent?.({
