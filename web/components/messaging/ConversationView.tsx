@@ -20,6 +20,9 @@ export default function ConversationView({ conversationId, userId, initialMessag
   const [hasOlder, setHasOlder] = useState(initialMessages.length >= 100);
   const [realtimeStatus, setRealtimeStatus] = useState<RealtimeStatus>("CONNECTING");
   const endRef = useRef<HTMLDivElement>(null);
+  const messageListRef = useRef<HTMLDivElement>(null);
+  const shouldScrollToLatestRef = useRef(true);
+  const previousMessageCountRef = useRef(initialMessages.length);
 
   const refreshMessages = useCallback(async () => {
     const { data, error } = await supabase
@@ -31,6 +34,7 @@ export default function ConversationView({ conversationId, userId, initialMessag
 
     if (!error) {
       const refreshed = (data ?? []) as Message[];
+      shouldScrollToLatestRef.current = true;
       setMessages(refreshed);
       setHasOlder(refreshed.length >= 100);
     }
@@ -42,6 +46,7 @@ export default function ConversationView({ conversationId, userId, initialMessag
       .channel(`conversation:${conversationId}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${conversationId}` }, (payload) => {
         const message = payload.new as Message;
+        shouldScrollToLatestRef.current = true;
         setMessages((current) => current.some((item) => item.id === message.id) ? current : [...current, message]);
         if (message.sender_id !== userId) void supabase.rpc("mark_conversation_read", { target_conversation_id: conversationId });
       })
@@ -49,17 +54,31 @@ export default function ConversationView({ conversationId, userId, initialMessag
     return () => { void supabase.removeChannel(channel); };
   }, [conversationId, supabase, userId]);
 
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages.length]);
+  useEffect(() => {
+    if (messages.length <= previousMessageCountRef.current && !shouldScrollToLatestRef.current) return;
+    if (shouldScrollToLatestRef.current) {
+      endRef.current?.scrollIntoView({ behavior: previousMessageCountRef.current ? "smooth" : "auto" });
+      shouldScrollToLatestRef.current = false;
+    }
+    previousMessageCountRef.current = messages.length;
+  }, [messages.length]);
 
   async function loadOlder() {
     const oldest = messages[0];
-    if (!oldest || loadingOlder) return;
+    const list = messageListRef.current;
+    if (!oldest || loadingOlder || !list) return;
     setLoadingOlder(true);
+    const previousScrollHeight = list.scrollHeight;
+    const previousScrollTop = list.scrollTop;
     const { data, error } = await supabase.from("messages").select("id, sender_id, message_type, content, shared_post_id, created_at").eq("conversation_id", conversationId).lt("created_at", oldest.created_at).order("created_at", { ascending: false }).limit(100);
     if (!error) {
       const older = ((data ?? []) as Message[]).reverse();
       setMessages((current) => [...older, ...current]);
       setHasOlder(older.length >= 100);
+      requestAnimationFrame(() => {
+        const currentList = messageListRef.current;
+        if (currentList) currentList.scrollTop = previousScrollTop + (currentList.scrollHeight - previousScrollHeight);
+      });
     }
     setLoadingOlder(false);
   }
@@ -74,13 +93,13 @@ export default function ConversationView({ conversationId, userId, initialMessag
         {otherProfile?.avatar_url ? <img src={otherProfile.avatar_url} alt="" className="h-11 w-11 rounded-2xl object-cover shadow-sm" /> : <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-950 font-bold text-white">{name.charAt(0).toUpperCase()}</div>}
         <div className="min-w-0 text-left"><p className="truncate font-bold text-slate-950">{name}</p>{otherProfile?.username && <p className="truncate text-xs text-slate-500">@{otherProfile.username}</p>}</div>
       </Link>
-      <div className="flex shrink-0 items-center gap-2 rounded-full bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-500" title="Realtime message connection status">
+      <div className="flex shrink-0 items-center gap-2 rounded-full bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-500" title="Realtime message connection status" aria-live="polite">
         <span className={`h-2 w-2 rounded-full ${realtimeTone}`} aria-hidden="true" />
         <span className="hidden sm:inline">{realtimeLabel}</span>
       </div>
     </header>
 
-    <div className="flex-1 space-y-3 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6">
+    <div ref={messageListRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6" role="log" aria-label={`Messages with ${name}`} aria-live="polite" aria-relevant="additions">
       {hasOlder && <button type="button" onClick={() => void loadOlder()} disabled={loadingOlder} className="mx-auto flex rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50">{loadingOlder ? "Loading messages…" : "Load older messages"}</button>}
       {messages.length ? messages.map((message) => {
         const own = message.sender_id === userId;
@@ -102,7 +121,7 @@ export default function ConversationView({ conversationId, userId, initialMessag
 
     <MessageComposer
       conversationId={conversationId}
-      onSent={(message) => setMessages((current) => current.some((item) => item.id === message.id) ? current : [...current, message])}
+      onSent={(message) => { shouldScrollToLatestRef.current = true; setMessages((current) => current.some((item) => item.id === message.id) ? current : [...current, message]); }}
       onSendError={() => { void refreshMessages(); }}
     />
   </section>;
