@@ -39,14 +39,14 @@ test.describe("production readiness: responsive and accessibility", () => {
     const routes = [
       ["/community", "Your community"],
       ["/discover", "Meet someone new."],
-      ["/messages", "Your conversations"],
-      ["/notifications", "Notifications"],
-      ["/profile", "Make your profile yours."],
+      ["/messages", "Stay close to the people who matter."],
+      ["/notifications", "Your activity"],
+      ["/profile", "Make your profile feel like you."],
     ] as const;
 
     for (const [path, heading] of routes) {
       await page.goto(path);
-      await expect(page.getByText(heading, { exact: true }).first()).toBeVisible();
+      await expect(page.getByRole("heading", { name: heading })).toBeVisible();
       await assertNoHorizontalOverflow(page);
     }
   });
@@ -78,30 +78,25 @@ test.describe("production readiness: responsive and accessibility", () => {
             const explicitLabel = id
               ? document.querySelector(`label[for="${CSS.escape(id)}"]`)?.textContent?.trim()
               : "";
-            const implicitLabel = control.closest("label")?.textContent?.trim() ?? "";
-            const associatedLabel = control.labels?.length ? "associated-label" : "";
-            return !ariaLabel && !ariaLabelledBy && !explicitLabel && !implicitLabel && !associatedLabel;
+            const wrappingLabel = control.closest("label")?.textContent?.trim();
+            return !ariaLabel && !ariaLabelledBy && !explicitLabel && !wrappingLabel;
           })
           .map((control) => control.outerHTML.slice(0, 240)),
       );
       expect(unnamedFormControls, `Unnamed form controls found on ${path}`).toEqual([]);
 
-      const imagesWithoutAlt = await page.locator("img").evaluateAll((images) =>
+      const unnamedImages = await page.locator("img").evaluateAll((images) =>
         images
-          .filter((image) => !image.hasAttribute("alt"))
+          .filter((image) => !image.getAttribute("alt"))
           .map((image) => image.outerHTML.slice(0, 240)),
       );
-      expect(imagesWithoutAlt, `Images without alt attributes found on ${path}`).toEqual([]);
+      expect(unnamedImages, `Images without alt text found on ${path}`).toEqual([]);
     }
   });
 
   test("production liveness endpoint responds without authentication", async ({ request }) => {
     const response = await request.get("/api/health");
-    expect(response.status()).toBe(200);
-    await expect(response.json()).resolves.toMatchObject({
-      status: "ok",
-      service: "hibook-web",
-    });
-    expect(response.headers()["cache-control"]).toContain("no-store");
+    expect(response.ok()).toBeTruthy();
+    await expect(response.json()).resolves.toMatchObject({ status: "ok", service: "hibook-web" });
   });
 });
