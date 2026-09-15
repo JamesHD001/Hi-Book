@@ -1,22 +1,22 @@
 export default function MessagesLoading() {
   return (
-    <main className="min-h-screen bg-[#090a0d] px-4 py-6 text-white sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl animate-pulse">
-        <div className="h-44 rounded-[2rem] bg-white/[0.06]" />
-        <section className="mt-6 overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04]">
-          <div className="border-b border-white/10 px-5 py-5 sm:px-6">
-            <div className="h-5 w-32 rounded-full bg-white/10" />
-            <div className="mt-3 h-3 w-64 rounded-full bg-white/[0.06]" />
+    <main className="min-h-[calc(100vh-4rem)] bg-slate-50/70 px-4 py-6 sm:px-6 lg:py-10">
+      <div className="mx-auto max-w-5xl animate-pulse">
+        <div className="h-48 rounded-[2rem] bg-slate-950/10" />
+        <section className="mt-6 overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-100 px-5 py-4 sm:px-6">
+            <div className="h-5 w-24 rounded-full bg-slate-200" />
+            <div className="mt-2 h-3 w-44 rounded-full bg-slate-100" />
           </div>
-          <div className="divide-y divide-white/5">
+          <div className="divide-y divide-slate-100">
             {[1, 2, 3, 4].map((item) => (
-              <div key={item} className="flex items-center gap-4 px-5 py-5 sm:px-6">
-                <div className="h-12 w-12 shrink-0 rounded-2xl bg-white/10" />
+              <div key={item} className="flex items-center gap-4 px-5 py-4 sm:px-6 sm:py-5">
+                <div className="h-14 w-14 shrink-0 rounded-2xl bg-slate-200" />
                 <div className="min-w-0 flex-1 space-y-2">
-                  <div className="h-4 w-36 rounded-full bg-white/10" />
-                  <div className="h-3 w-56 max-w-full rounded-full bg-white/[0.06]" />
+                  <div className="h-4 w-36 rounded-full bg-slate-200" />
+                  <div className="h-3 w-56 max-w-full rounded-full bg-slate-100" />
                 </div>
-                <div className="h-3 w-12 rounded-full bg-white/[0.06]" />
+                <div className="h-3 w-12 rounded-full bg-slate-100" />
               </div>
             ))}
           </div>
