@@ -8,7 +8,7 @@ test.describe("critical public and authentication journeys", () => {
     await page.goto("/");
     await expect(page.getByRole("heading", { name: /Meet people beyond your usual circle\./i })).toBeVisible();
     await expect(page.getByRole("link", { name: "Create your account" })).toHaveAttribute("href", "/signup");
-    await expect(page.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/login");
+    await expect(page.getByRole("navigation", { name: "Primary navigation" }).getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/login");
   });
 
   test("registration validates minimum age, country code, password, and consent", async ({ page }) => {
