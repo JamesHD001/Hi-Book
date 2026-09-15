@@ -180,56 +180,93 @@ export default function HomePage() {
         </div>
       </section>
 
-      <footer className="hb-footer">
-        <div className="grid gap-8 border-b border-slate-200 pb-8 sm:grid-cols-3">
-          <div>
-            <Link href="/" className="text-base font-extrabold tracking-tight text-slate-900">
-              Hi!Book
-            </Link>
-            <p className="mt-2 max-w-xs text-sm leading-6 text-slate-500">
-              A social network built around genuine human connection, discovery,
-              and user control.
-            </p>
+      <footer className="relative mt-8 overflow-hidden bg-slate-950 text-slate-300">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_0%,rgba(49,94,251,0.24),transparent_32%),radial-gradient(circle_at_85%_20%,rgba(139,92,246,0.2),transparent_28%)]"
+        />
+
+        <div className="relative mx-auto w-[min(1180px,calc(100%-40px))] py-14 sm:py-16">
+          <div className="grid gap-12 lg:grid-cols-[1.5fr_1fr_1fr_1.15fr]">
+            <div className="max-w-sm">
+              <Link href="/" className="inline-flex items-center gap-3" aria-label="Hi!Book home">
+                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-blue-500 to-violet-500 text-sm font-black text-white shadow-lg shadow-blue-950/40">
+                  H!
+                </span>
+                <span className="text-xl font-extrabold tracking-tight text-white">Hi!Book</span>
+              </Link>
+              <p className="mt-5 text-sm leading-7 text-slate-400">
+                A social network built around genuine human connection,
+                discovery, and user control.
+              </p>
+              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                Connect beyond distance.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-xs font-extrabold uppercase tracking-[0.16em] text-white">
+                Explore
+              </h2>
+              <nav className="mt-5 flex flex-col items-start gap-3" aria-label="Explore links">
+                <a className="text-sm text-slate-400 transition hover:text-white" href="#why-hibook">
+                  Why Hi!Book
+                </a>
+                <a className="text-sm text-slate-400 transition hover:text-white" href="#community">
+                  Community
+                </a>
+                <Link className="text-sm text-slate-400 transition hover:text-white" href="/signup">
+                  Create an account
+                </Link>
+                <Link className="text-sm text-slate-400 transition hover:text-white" href="/login">
+                  Sign in
+                </Link>
+              </nav>
+            </div>
+
+            <div>
+              <h2 className="text-xs font-extrabold uppercase tracking-[0.16em] text-white">
+                Safety &amp; legal
+              </h2>
+              <nav className="mt-5 flex flex-col items-start gap-3" aria-label="Safety and legal links">
+                <Link className="text-sm text-slate-400 transition hover:text-white" href="/community-guidelines">
+                  Community Guidelines
+                </Link>
+                <Link className="text-sm text-slate-400 transition hover:text-white" href="/terms">
+                  Terms of Use
+                </Link>
+                <Link className="text-sm text-slate-400 transition hover:text-white" href="/privacy">
+                  Privacy Policy
+                </Link>
+                <Link className="text-sm text-slate-400 transition hover:text-white" href="/data-protection">
+                  Data Protection &amp; Usage
+                </Link>
+              </nav>
+            </div>
+
+            <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-5 shadow-2xl shadow-black/20 backdrop-blur-sm">
+              <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-blue-300">
+                Ready to connect?
+              </p>
+              <h2 className="mt-3 text-lg font-extrabold tracking-tight text-white">
+                Build your corner of the community.
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-slate-400">
+                Create your profile and start discovering people beyond your usual circle.
+              </p>
+              <Link
+                href="/signup"
+                className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-white px-4 text-sm font-extrabold text-slate-950 transition hover:-translate-y-0.5 hover:bg-slate-100"
+              >
+                Join Hi!Book
+              </Link>
+            </div>
           </div>
 
-          <div>
-            <h2 className="text-xs font-extrabold uppercase tracking-[0.14em] text-slate-500">
-              Legal &amp; privacy
-            </h2>
-            <nav className="mt-3 flex flex-col items-start gap-2" aria-label="Legal and privacy">
-              <Link className="text-sm font-semibold text-slate-600 transition hover:text-slate-950" href="/terms">
-                Terms of Use
-              </Link>
-              <Link className="text-sm font-semibold text-slate-600 transition hover:text-slate-950" href="/privacy">
-                Privacy Policy
-              </Link>
-              <Link className="text-sm font-semibold text-slate-600 transition hover:text-slate-950" href="/data-protection">
-                Data Protection &amp; Usage
-              </Link>
-            </nav>
+          <div className="mt-12 flex flex-col gap-3 border-t border-white/10 pt-6 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+            <span>© {new Date().getFullYear()} Hi!Book. All rights reserved.</span>
+            <span>Designed for people, privacy, and meaningful connection.</span>
           </div>
-
-          <div>
-            <h2 className="text-xs font-extrabold uppercase tracking-[0.14em] text-slate-500">
-              Safety &amp; account
-            </h2>
-            <nav className="mt-3 flex flex-col items-start gap-2" aria-label="Safety and account">
-              <Link className="text-sm font-semibold text-slate-600 transition hover:text-slate-950" href="/community-guidelines">
-                Community Guidelines
-              </Link>
-              <Link className="text-sm font-semibold text-slate-600 transition hover:text-slate-950" href="/login">
-                Sign in
-              </Link>
-              <Link className="text-sm font-semibold text-slate-600 transition hover:text-slate-950" href="/signup">
-                Create an account
-              </Link>
-            </nav>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-2 pt-5 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-          <span>© {new Date().getFullYear()} Hi!Book. All rights reserved.</span>
-          <span>Connect beyond distance.</span>
         </div>
       </footer>
     </main>
