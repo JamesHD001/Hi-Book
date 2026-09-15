@@ -30,6 +30,7 @@
 - [x] Verify responsive/mobile behavior across core MVP surfaces.
 - [x] Verify accessibility across core MVP surfaces.
 - [x] Audit authenticated mutation rate limiting and abuse controls at the database boundary.
+- [x] Add a manual/scheduled production smoke workflow for `/api/health`, HTTPS, cache control, and application security headers.
 - [ ] Verify deployment-boundary/IP/auth-provider abuse controls and production observability, error reporting, backups, and deployment configuration.
 - [ ] Fix all production blockers/high-severity findings.
 - [ ] Re-run the full production-readiness CI matrix after the remaining production-readiness fixes.
@@ -67,4 +68,4 @@
 - [ ] Additional media types
 
 ## Next major gate
-Verify the production scheduler/worker for due-account-deletion processing and exercise post-expiry browser behavior against the deployed environment. In parallel, use `docs/production-deployment-checklist.md` to collect evidence from the real hosting/Supabase environments for deployment-boundary abuse controls, observability, backups, restore procedures, and deployment configuration. Keep the operational gate open until those external controls are actually verified.
+Verify the production scheduler/worker for due-account-deletion processing and exercise post-expiry browser behavior against the deployed environment. In parallel, use `docs/production-deployment-checklist.md` to collect evidence from the real hosting/Supabase environments for deployment-boundary abuse controls, observability, backups, restore procedures, and deployment configuration. The repository now has an optional manual/hourly production smoke check, but the operational gate remains open until the real production URL is configured and the external controls are actually verified.
