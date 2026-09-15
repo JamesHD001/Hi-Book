@@ -57,7 +57,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
   const initials = profile.display_name
     .trim()
     .split(/\s+/)
-    .filter(Boolean)
+    .filter((part): part is string => Boolean(part))
     .slice(0, 2)
     .map((part) => part[0])
     .join("")
