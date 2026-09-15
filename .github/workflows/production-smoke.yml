@@ -1,0 +1,44 @@
+name: Hi!Book production smoke check
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 * * * *"
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Validate production URL secret
+        env:
+          PRODUCTION_BASE_URL: ${{ secrets.PRODUCTION_BASE_URL }}
+        run: |
+          test -n "$PRODUCTION_BASE_URL"
+          case "$PRODUCTION_BASE_URL" in
+            https://*) ;;
+            *) echo "PRODUCTION_BASE_URL must use HTTPS" >&2; exit 1 ;;
+          esac
+
+      - name: Check liveness and security headers
+        env:
+          PRODUCTION_BASE_URL: ${{ secrets.PRODUCTION_BASE_URL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="${PRODUCTION_BASE_URL%/}/api/health"
+          headers="$(mktemp)"
+          body="$(mktemp)"
+          trap 'rm -f "$headers" "$body"' EXIT
+
+          status="$(curl --fail-with-body --silent --show-error --location \
+            --dump-header "$headers" --output "$body" --write-out '%{http_code}' "$url")"
+
+          test "$status" = "200"
+          grep -q '"status":"ok"' "$body"
+          grep -qi '^cache-control:.*no-store' "$headers"
+          grep -qi '^strict-transport-security:' "$headers"
+          grep -qi '^x-content-type-options:.*nosniff' "$headers"
+          grep -qi '^x-frame-options:.*DENY' "$headers"
+          grep -qi '^referrer-policy:' "$headers"
+          grep -qi '^permissions-policy:' "$headers"
