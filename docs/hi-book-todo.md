@@ -19,7 +19,12 @@
 - [x] Expand E2E coverage with authenticated profile/privacy, core navigation, post-composer failure, discovery safety controls, messaging boundaries, and notifications checks.
 - [x] Add a deterministic two-user E2E fixture with independent browser sessions.
 - [x] Exercise cross-user follow/unfollow, public and followers-only post visibility, post likes/comments, direct messaging, reporting, and block enforcement through the real UI.
-- [ ] Expand E2E coverage to valid media uploads, realtime message delivery/read state, moderation workflow, and account lifecycle/deletion workflows.
+- [x] Verify valid post media upload and realtime message delivery through independent browser sessions.
+- [x] Verify moderator-role browser workflow, moderation action execution, and user appeal submission.
+- [x] Verify account-deletion scheduling and cancellation during the grace period.
+- [ ] Add explicit profile-image upload/privacy verification.
+- [ ] Add explicit unread/read-state E2E assertions.
+- [ ] Verify account-deletion expiry and restricted-account behavior.
 - [x] Verify responsive/mobile behavior across core MVP surfaces.
 - [x] Verify accessibility across core MVP surfaces.
 - [x] Audit authenticated mutation rate limiting and abuse controls at the database boundary.
@@ -60,4 +65,4 @@
 - [ ] Additional media types
 
 ## Next major gate
-Complete the remaining browser coverage for media uploads, realtime/read state, moderation, and account lifecycle. In parallel, use `docs/production-deployment-checklist.md` to collect evidence from the real hosting/Supabase environments for deployment-boundary abuse controls, observability, backups, restore procedures, and deployment configuration. Keep the operational gate open until those external controls are actually verified.
+Complete the remaining browser coverage for profile-image privacy, explicit unread/read state, and account-deletion expiry/restricted states. In parallel, use `docs/production-deployment-checklist.md` to collect evidence from the real hosting/Supabase environments for deployment-boundary abuse controls, observability, backups, restore procedures, and deployment configuration. Keep the operational gate open until those external controls are actually verified.
