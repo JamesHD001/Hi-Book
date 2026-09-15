@@ -9,7 +9,7 @@ export default function NotFound() {
           404
         </div>
         <p className="mt-6 text-xs font-semibold uppercase tracking-[0.24em] text-white/40">Hi!Book</p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white">This page took a wrong turn.</h1>
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white">Page not found.</h1>
         <p className="mx-auto mt-4 max-w-md text-sm leading-7 text-white/55">
           The page you are looking for does not exist, may have moved, or is not available from this account.
         </p>
