@@ -39,7 +39,7 @@ export default async function ProfilePage() {
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2)
-    .map((part) => part[0])
+    .map((part: string) => part[0])
     .join("")
     .toUpperCase();
   const visibilityLabel = privacy?.profile_visibility === "PRIVATE" ? "Private profile" : "Public profile";
