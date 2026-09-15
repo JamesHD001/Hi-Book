@@ -3,6 +3,8 @@
 
 begin;
 
+create extension if not exists pg_cron with schema extensions;
+
 create or replace function public.process_due_account_deletions()
 returns integer
 language plpgsql
@@ -12,7 +14,7 @@ as $$
 declare
   v_processed integer := 0;
 begin
-  if coalesce(auth.role(), '') not in ('service_role', 'supabase_admin') then
+  if coalesce(auth.role(), '') not in ('service_role', 'supabase_admin', 'postgres') then
     raise exception 'Trusted server role required';
   end if;
 
@@ -48,5 +50,19 @@ $$;
 
 revoke all on function public.process_due_account_deletions() from public;
 grant execute on function public.process_due_account_deletions() to service_role;
+
+do $$
+begin
+  perform cron.unschedule(jobid)
+  from cron.job
+  where jobname = 'hibook-account-deletion-completion';
+
+  perform cron.schedule(
+    'hibook-account-deletion-completion',
+    '*/15 * * * *',
+    'select public.process_due_account_deletions();'
+  );
+end;
+$$;
 
 commit;
