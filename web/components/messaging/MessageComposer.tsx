@@ -53,11 +53,13 @@ export default function MessageComposer({ conversationId, onSent }: { conversati
     setSending(false);
   }
 
-  return <form onSubmit={submit} className="border-t border-slate-200 bg-white p-4">
-    {error && <p role="alert" className="mb-2 text-sm text-red-600">{error}</p>}
-    <div className="flex gap-2">
-      <input value={content} onChange={(e) => setContent(e.target.value)} maxLength={4000} placeholder="Write a message…" className="min-w-0 flex-1 rounded-full border border-slate-300 px-4 py-3 text-sm outline-none focus:border-blue-500" />
-      <button disabled={!content.trim() || sending} className="rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">{sending ? "Sending…" : "Send"}</button>
+  return <form onSubmit={submit} className="border-t border-slate-200 bg-white p-3 sm:p-4">
+    {error && <div role="alert" className="mb-3 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
+    <div className="flex items-end gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-1.5 shadow-sm transition focus-within:border-slate-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-slate-100">
+      <label htmlFor="message-content" className="sr-only">Write a message</label>
+      <textarea id="message-content" value={content} onChange={(e) => setContent(e.target.value)} maxLength={4000} rows={1} placeholder="Write a message…" className="max-h-32 min-h-11 min-w-0 flex-1 resize-none bg-transparent px-3 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400" />
+      <button type="submit" disabled={!content.trim() || sending} className="shrink-0 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40">{sending ? "Sending…" : "Send"}</button>
     </div>
+    <div className="flex items-center justify-between px-2 pt-2 text-[11px] text-slate-400"><span>Private &amp; protected</span><span>{content.length}/4000</span></div>
   </form>;
 }
