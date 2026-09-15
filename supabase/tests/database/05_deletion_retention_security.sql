@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap;
-select plan(23);
+select plan(27);
 
 -- Deterministic deletion fixtures. Registration creates the identity/profile/privacy
 -- rows; trusted setup promotes these test accounts to ACTIVE.
@@ -46,6 +46,19 @@ select is((select status from public.account_deletion_request where user_id='500
 select lives_ok($i$ select public.request_account_deletion() $i$,'a new deletion request can be made after cancellation');
 select is((select count(*) from public.account_deletion_request where user_id='50000000-0000-0000-0000-000000000011'),2::bigint,'cancelled history is retained and new request is separate');
 select is((select count(*) from public.account_deletion_request where user_id='50000000-0000-0000-0000-000000000011' and status='SCHEDULED'),1::bigint,'only one active deletion schedule exists');
+
+-- 24-27: a trusted worker completes an expired schedule and permanently
+-- restricts application access at the account boundary.
+set local role postgres;
+update public.account_deletion_request
+   set scheduled_for = now() - interval '1 minute'
+ where user_id='50000000-0000-0000-0000-000000000011'
+   and status='SCHEDULED';
+select set_config('request.jwt.claim.role','service_role',true);
+select is(public.process_due_account_deletions(),1,'trusted worker processes one expired deletion');
+select is((select status from public.account_deletion_request where user_id='50000000-0000-0000-0000-000000000011' order by requested_at desc limit 1),'COMPLETED'::deletion_status,'expired deletion request is completed');
+select is((select account_status from public.users where id='50000000-0000-0000-0000-000000000011'),'DELETED'::account_status,'expired account becomes deleted');
+select ok((select deleted_at is not null from public.users where id='50000000-0000-0000-0000-000000000011'),'deleted account records deletion timestamp');
 
 select * from finish();
 rollback;
