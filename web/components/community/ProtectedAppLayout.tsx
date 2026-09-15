@@ -1,4 +1,4 @@
-import CommunityNav from "@/components/community/CommunityNav";
+import AppNavigation from "@/components/navigation/AppNavigation";
 import { requireActiveUser } from "@/lib/auth/require-active-user";
 
 export default async function ProtectedAppLayout({
@@ -9,9 +9,9 @@ export default async function ProtectedAppLayout({
   await requireActiveUser();
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-950">
-      <CommunityNav />
-      {children}
+    <div className="min-h-screen bg-[#f7f8fc] text-slate-950">
+      <AppNavigation />
+      <div className="pb-20 md:pb-0">{children}</div>
     </div>
   );
 }
