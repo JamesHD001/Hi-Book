@@ -24,7 +24,9 @@
 - [x] Verify account-deletion scheduling and cancellation during the grace period.
 - [x] Verify profile-image upload persistence and private signed-URL delivery through independent browser sessions.
 - [x] Add explicit unread/read-state E2E assertions.
-- [ ] Verify account-deletion expiry and restricted-account behavior.
+- [x] Verify that a scheduled deletion places the account into the restricted/deactivated application state and that cancellation restores active access.
+- [x] Add a server-only due-deletion completion RPC and database security coverage proving expired schedules transition to `COMPLETED` / `DELETED` with `deleted_at` recorded.
+- [ ] Verify the production scheduler/worker actually invokes due-deletion completion and prove post-expiry browser behavior against the deployed environment.
 - [x] Verify responsive/mobile behavior across core MVP surfaces.
 - [x] Verify accessibility across core MVP surfaces.
 - [x] Audit authenticated mutation rate limiting and abuse controls at the database boundary.
@@ -65,4 +67,4 @@
 - [ ] Additional media types
 
 ## Next major gate
-Complete the remaining browser coverage for account-deletion expiry/restricted states. In parallel, use `docs/production-deployment-checklist.md` to collect evidence from the real hosting/Supabase environments for deployment-boundary abuse controls, observability, backups, restore procedures, and deployment configuration. Keep the operational gate open until those external controls are actually verified.
+Verify the production scheduler/worker for due-account-deletion processing and exercise post-expiry browser behavior against the deployed environment. In parallel, use `docs/production-deployment-checklist.md` to collect evidence from the real hosting/Supabase environments for deployment-boundary abuse controls, observability, backups, restore procedures, and deployment configuration. Keep the operational gate open until those external controls are actually verified.
