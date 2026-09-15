@@ -181,7 +181,56 @@ export default function HomePage() {
       </section>
 
       <footer className="hb-footer">
-        <span>© {new Date().getFullYear()} Hi!Book. Connect beyond distance.</span>
+        <div className="grid gap-8 border-b border-slate-200 pb-8 sm:grid-cols-3">
+          <div>
+            <Link href="/" className="text-base font-extrabold tracking-tight text-slate-900">
+              Hi!Book
+            </Link>
+            <p className="mt-2 max-w-xs text-sm leading-6 text-slate-500">
+              A social network built around genuine human connection, discovery,
+              and user control.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-xs font-extrabold uppercase tracking-[0.14em] text-slate-500">
+              Legal &amp; privacy
+            </h2>
+            <nav className="mt-3 flex flex-col items-start gap-2" aria-label="Legal and privacy">
+              <Link className="text-sm font-semibold text-slate-600 transition hover:text-slate-950" href="/terms">
+                Terms of Use
+              </Link>
+              <Link className="text-sm font-semibold text-slate-600 transition hover:text-slate-950" href="/privacy">
+                Privacy Policy
+              </Link>
+              <Link className="text-sm font-semibold text-slate-600 transition hover:text-slate-950" href="/data-protection">
+                Data Protection &amp; Usage
+              </Link>
+            </nav>
+          </div>
+
+          <div>
+            <h2 className="text-xs font-extrabold uppercase tracking-[0.14em] text-slate-500">
+              Safety &amp; account
+            </h2>
+            <nav className="mt-3 flex flex-col items-start gap-2" aria-label="Safety and account">
+              <Link className="text-sm font-semibold text-slate-600 transition hover:text-slate-950" href="/community-guidelines">
+                Community Guidelines
+              </Link>
+              <Link className="text-sm font-semibold text-slate-600 transition hover:text-slate-950" href="/login">
+                Sign in
+              </Link>
+              <Link className="text-sm font-semibold text-slate-600 transition hover:text-slate-950" href="/signup">
+                Create an account
+              </Link>
+            </nav>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2 pt-5 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+          <span>© {new Date().getFullYear()} Hi!Book. All rights reserved.</span>
+          <span>Connect beyond distance.</span>
+        </div>
       </footer>
     </main>
   );
