@@ -44,7 +44,7 @@
 - [x] Profiles repository/UI audit.
 - [x] Messages repository/UI audit.
 - [x] Notifications repository/UI audit.
-- [ ] Settings/account repository/UI audit.
+- [x] Settings/account repository/UI audit.
 
 ## MVP domains implemented
 - [x] Authentication and account lifecycle foundation
