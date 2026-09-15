@@ -36,6 +36,16 @@
 - [ ] Re-run the full production-readiness CI matrix after the remaining production-readiness fixes.
 - [x] Prepare a controlled production deployment checklist.
 
+## Authenticated UI sequence
+- [x] Application shell/navigation wired into the protected layout.
+- [x] Community/feed repository audit completed.
+- [x] Community/feed responsive controls refined without replacing the existing feed architecture.
+- [ ] Discover repository/UI audit.
+- [ ] Profiles repository/UI audit.
+- [ ] Messages repository/UI audit.
+- [ ] Notifications repository/UI audit.
+- [ ] Settings/account repository/UI audit.
+
 ## MVP domains implemented
 - [x] Authentication and account lifecycle foundation
 - [x] Profiles and privacy settings
