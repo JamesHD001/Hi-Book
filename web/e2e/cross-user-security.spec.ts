@@ -62,6 +62,7 @@ test.describe("two-user authorization and privacy matrix", () => {
     const commentText = `E2E comment ${Date.now()}`;
     const messageText = `E2E realtime message ${Date.now()}`;
     const blockedMessage = `E2E blocked message ${Date.now()}`;
+    let blockApplied = false;
 
     try {
       await signIn(pageB, userB.email, userB.password);
@@ -147,6 +148,7 @@ test.describe("two-user authorization and privacy matrix", () => {
 
       await openProfile(pageA, fixtureB.username);
       await pageA.getByRole("button", { name: "Block" }).click();
+      blockApplied = true;
       await expect(pageA).toHaveURL(/\/community(?:\/)?$/);
       await pageB.goto("/discover");
       await expect(pageB.locator("article").filter({ hasText: /E2E User A/i })).toHaveCount(0);
@@ -156,12 +158,21 @@ test.describe("two-user authorization and privacy matrix", () => {
       if (await messageInput.count()) {
         await messageInput.fill(blockedMessage);
         await pageB.getByRole("button", { name: "Send" }).click();
-        await expect(pageB.getByText(/blocked|unavailable|not permitted|permission/i)).toBeVisible();
-        await expect(pageB.getByText(blockedMessage)).toHaveCount(0);
+        await expect(pageB.getByRole("alert").filter({ hasText: /Messaging unavailable/i })).toBeVisible();
+        await expect(pageB.locator('[data-message-content]').filter({ hasText: blockedMessage })).toHaveCount(0);
       } else {
         await expect(pageB.getByText(/Page not found/i)).toBeVisible();
       }
     } finally {
+      if (blockApplied) {
+        try {
+          await openProfile(pageA, fixtureB.username);
+          const unblock = pageA.getByRole("button", { name: "Unblock" });
+          if (await unblock.count()) await unblock.click();
+        } catch {
+          // Preserve the original test failure while making a best-effort fixture cleanup.
+        }
+      }
       await contextA.close();
       await contextB.close();
     }

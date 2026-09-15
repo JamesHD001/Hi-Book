@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import MessageComposer from "@/components/messaging/MessageComposer";
 
@@ -20,6 +20,21 @@ export default function ConversationView({ conversationId, userId, initialMessag
   const [hasOlder, setHasOlder] = useState(initialMessages.length >= 100);
   const [realtimeStatus, setRealtimeStatus] = useState<RealtimeStatus>("CONNECTING");
   const endRef = useRef<HTMLDivElement>(null);
+
+  const refreshMessages = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("messages")
+      .select("id, sender_id, message_type, content, shared_post_id, created_at")
+      .eq("conversation_id", conversationId)
+      .order("created_at", { ascending: true })
+      .limit(100);
+
+    if (!error) {
+      const refreshed = (data ?? []) as Message[];
+      setMessages(refreshed);
+      setHasOlder(refreshed.length >= 100);
+    }
+  }, [conversationId, supabase]);
 
   useEffect(() => {
     void supabase.rpc("mark_conversation_read", { target_conversation_id: conversationId });
@@ -71,7 +86,7 @@ export default function ConversationView({ conversationId, userId, initialMessag
         const own = message.sender_id === userId;
         return <div key={message.id} className={`flex ${own ? "justify-end" : "justify-start"}`}>
           <div className={`max-w-[82%] sm:max-w-[70%] ${own ? "items-end" : "items-start"}`}>
-            <div className={`rounded-2xl px-4 py-3 text-sm leading-6 ${own ? "rounded-br-md bg-slate-950 text-white shadow-md shadow-slate-300/40" : "rounded-bl-md border border-slate-200 bg-white text-slate-800 shadow-sm"}`}>
+            <div data-message-content={message.content ?? undefined} className={`rounded-2xl px-4 py-3 text-sm leading-6 ${own ? "rounded-br-md bg-slate-950 text-white shadow-md shadow-slate-300/40" : "rounded-bl-md border border-slate-200 bg-white text-slate-800 shadow-sm"}`}>
               {message.message_type === "POST_SHARE" && message.shared_post_id ? <Link href={`/community?post=${encodeURIComponent(message.shared_post_id)}`} className="font-semibold underline underline-offset-2">Shared a post · View post</Link> : message.content}
             </div>
             <p className={`mt-1 px-1 text-[10px] text-slate-400 ${own ? "text-right" : "text-left"}`}>{formatTime(message.created_at)}</p>
@@ -88,7 +103,7 @@ export default function ConversationView({ conversationId, userId, initialMessag
     <MessageComposer
       conversationId={conversationId}
       onSent={(message) => setMessages((current) => current.some((item) => item.id === message.id) ? current : [...current, message])}
-      onSendError={(content) => setMessages((current) => current.filter((message) => !(message.sender_id === userId && message.content === content)))}
+      onSendError={() => { void refreshMessages(); }}
     />
   </section>;
 }
