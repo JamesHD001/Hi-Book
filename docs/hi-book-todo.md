@@ -23,7 +23,7 @@
 - [x] Verify moderator-role browser workflow, moderation action execution, and user appeal submission.
 - [x] Verify account-deletion scheduling and cancellation during the grace period.
 - [ ] Add explicit profile-image upload/privacy verification.
-- [ ] Add explicit unread/read-state E2E assertions.
+- [x] Add explicit unread/read-state E2E assertions.
 - [ ] Verify account-deletion expiry and restricted-account behavior.
 - [x] Verify responsive/mobile behavior across core MVP surfaces.
 - [x] Verify accessibility across core MVP surfaces.
@@ -65,4 +65,4 @@
 - [ ] Additional media types
 
 ## Next major gate
-Complete the remaining browser coverage for profile-image privacy, explicit unread/read state, and account-deletion expiry/restricted states. In parallel, use `docs/production-deployment-checklist.md` to collect evidence from the real hosting/Supabase environments for deployment-boundary abuse controls, observability, backups, restore procedures, and deployment configuration. Keep the operational gate open until those external controls are actually verified.
+Complete the remaining browser coverage for profile-image privacy and account-deletion expiry/restricted states. In parallel, use `docs/production-deployment-checklist.md` to collect evidence from the real hosting/Supabase environments for deployment-boundary abuse controls, observability, backups, restore procedures, and deployment configuration. Keep the operational gate open until those external controls are actually verified.
