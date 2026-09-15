@@ -86,7 +86,7 @@ export default function ConversationView({ conversationId, userId, initialMessag
         const own = message.sender_id === userId;
         return <div key={message.id} className={`flex ${own ? "justify-end" : "justify-start"}`}>
           <div className={`max-w-[82%] sm:max-w-[70%] ${own ? "items-end" : "items-start"}`}>
-            <div className={`rounded-2xl px-4 py-3 text-sm leading-6 ${own ? "rounded-br-md bg-slate-950 text-white shadow-md shadow-slate-300/40" : "rounded-bl-md border border-slate-200 bg-white text-slate-800 shadow-sm"}`}>
+            <div data-message-content={message.content ?? undefined} className={`rounded-2xl px-4 py-3 text-sm leading-6 ${own ? "rounded-br-md bg-slate-950 text-white shadow-md shadow-slate-300/40" : "rounded-bl-md border border-slate-200 bg-white text-slate-800 shadow-sm"}`}>
               {message.message_type === "POST_SHARE" && message.shared_post_id ? <Link href={`/community?post=${encodeURIComponent(message.shared_post_id)}`} className="font-semibold underline underline-offset-2">Shared a post · View post</Link> : message.content}
             </div>
             <p className={`mt-1 px-1 text-[10px] text-slate-400 ${own ? "text-right" : "text-left"}`}>{formatTime(message.created_at)}</p>
