@@ -26,8 +26,14 @@ export default async function ConversationPage({ params }: { params: Promise<{ c
     if (profile) otherProfile = { ...profile, avatar_url };
   }
   const { data: messages } = await supabase.from("messages").select("id, sender_id, message_type, content, shared_post_id, created_at").eq("conversation_id", conversationId).order("created_at", { ascending: true }).limit(100);
-  return <main className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-3xl flex-col px-4 py-6 sm:px-6">
-    <div className="mb-4 flex items-center gap-3"><Link href="/messages" className="rounded-full border border-slate-200 px-3 py-2 text-sm">← Back</Link><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-600">Private message</p><h1 className="font-bold">Conversation</h1></div></div>
-    <ConversationView conversationId={conversationId} userId={user.id} initialMessages={(messages ?? []) as MessageRow[]} otherProfile={otherProfile} />
+  const name = otherProfile?.display_name ?? "Conversation";
+  return <main className="min-h-[calc(100vh-4rem)] bg-slate-50/70">
+    <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-5xl flex-col px-4 py-5 sm:px-6 lg:py-8">
+      <div className="mb-5 flex items-center justify-between gap-4">
+        <Link href="/messages" className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">← <span className="hidden sm:inline">Back to inbox</span><span className="sm:hidden">Inbox</span></Link>
+        <div className="text-right"><p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-blue-600">Private message</p><p className="mt-1 text-xs text-slate-500">Only you and {name}</p></div>
+      </div>
+      <ConversationView conversationId={conversationId} userId={user.id} initialMessages={(messages ?? []) as MessageRow[]} otherProfile={otherProfile} />
+    </div>
   </main>;
 }
