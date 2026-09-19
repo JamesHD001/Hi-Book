@@ -28,13 +28,14 @@
 - [x] Add a server-only due-deletion completion RPC and database security coverage proving expired schedules transition to `COMPLETED` / `DELETED` with `deleted_at` recorded.
 - [x] Verify the production scheduler/worker actually invokes due-deletion completion in the production Supabase project.
 - [ ] Prove post-expiry browser behavior against the deployed environment with a controlled test account.
+- [x] Verify the current production deployment serves `/api/health` with HTTP 200, `status: "ok"`, `Cache-Control: no-store`, and the configured security headers; Vercel reported no runtime error clusters in the preceding 24 hours.
 - [x] Verify responsive/mobile behavior across core MVP surfaces.
 - [x] Verify accessibility across core MVP surfaces.
 - [x] Audit authenticated mutation rate limiting and abuse controls at the database boundary.
 - [x] Add a manual/scheduled production smoke workflow for `/api/health`, HTTPS, cache control, and application security headers.
 - [ ] Verify deployment-boundary/IP/auth-provider abuse controls and production observability, error reporting, backups, and deployment configuration.
 - [x] Remediate confirmed production Supabase RLS/search_path/trigger-RPC exposure findings and remove confirmed duplicate indexes.
-- [ ] Re-run the full production-readiness CI matrix after the remaining production-readiness fixes.
+- [ ] Re-run the full production-readiness CI matrix after the remaining production-readiness fixes. The latest E2E attempt exposed a shared Playwright password-field selector regression; the affected journey specs have now been normalized to the deterministic `autocomplete="current-password"` selector. Web lint/build remained green.
 - [x] Fix the current CI migration blocker caused by revoking a non-existent `rls_auto_enable()` function in the portable migration chain.
 - [x] Prepare a controlled production deployment checklist.
 
@@ -80,4 +81,4 @@
 - [ ] Additional media types
 
 ## Next major gate
-Verify the production scheduler/worker for due-account-deletion processing and exercise post-expiry browser behavior against the deployed environment. In parallel, use `docs/production-deployment-checklist.md` to collect evidence from the real hosting/Supabase environments for deployment-boundary abuse controls, observability, backups, restore procedures, and deployment configuration. The repository now has an optional manual/hourly production smoke check, but the operational gate remains open until the real production URL is configured and the external controls are actually verified.
+Verify the production scheduler/worker for due-account-deletion processing and exercise post-expiry browser behavior against the deployed environment. The scheduler invocation and production liveness/security-header checks are verified; the disposable E2E gate still needs a fresh green run after the selector fixes. In parallel, use `docs/production-deployment-checklist.md` to collect evidence from the real hosting/Supabase environments for deployment-boundary abuse controls, observability, backups, restore procedures, and deployment configuration. The repository now has an optional manual/hourly production smoke check, but the operational gate remains open until the real production URL is configured and the external controls are actually verified.
