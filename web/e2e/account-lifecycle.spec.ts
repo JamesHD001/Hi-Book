@@ -10,7 +10,7 @@ test.describe("account lifecycle", () => {
 
     await page.goto("/login");
     await page.getByLabel("Email").fill(userA.email);
-    await page.getByLabel("Password").fill(userA.password);
+    await page.locator('input[autocomplete="current-password"]').fill(userA.password);
     await page.getByRole("button", { name: "Sign in" }).click();
     await expect(page).toHaveURL(/\/community(?:\/)?$/);
 
