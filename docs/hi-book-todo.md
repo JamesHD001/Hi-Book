@@ -26,7 +26,8 @@
 - [x] Add explicit unread/read-state E2E assertions.
 - [x] Verify that a scheduled deletion places the account into the restricted/deactivated application state and that cancellation restores active access.
 - [x] Add a server-only due-deletion completion RPC and database security coverage proving expired schedules transition to `COMPLETED` / `DELETED` with `deleted_at` recorded.
-- [ ] Verify the production scheduler/worker actually invokes due-deletion completion and prove post-expiry browser behavior against the deployed environment.
+- [x] Verify the production scheduler/worker actually invokes due-deletion completion in the production Supabase project.
+- [ ] Prove post-expiry browser behavior against the deployed environment with a controlled test account.
 - [x] Verify responsive/mobile behavior across core MVP surfaces.
 - [x] Verify accessibility across core MVP surfaces.
 - [x] Audit authenticated mutation rate limiting and abuse controls at the database boundary.
@@ -34,6 +35,7 @@
 - [ ] Verify deployment-boundary/IP/auth-provider abuse controls and production observability, error reporting, backups, and deployment configuration.
 - [x] Remediate confirmed production Supabase RLS/search_path/trigger-RPC exposure findings and remove confirmed duplicate indexes.
 - [ ] Re-run the full production-readiness CI matrix after the remaining production-readiness fixes.
+- [x] Fix the current CI migration blocker caused by revoking a non-existent `rls_auto_enable()` function in the portable migration chain.
 - [x] Prepare a controlled production deployment checklist.
 
 ## Authenticated UI sequence
