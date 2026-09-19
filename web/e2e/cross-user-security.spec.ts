@@ -12,7 +12,7 @@ const fixtureB = fixture.users.find((user) => user.email === userB.email)!;
 async function signIn(page: Page, email: string, password: string) {
   await page.goto("/login");
   await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password").fill(password);
+  await page.locator('input[autocomplete="current-password"]').fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
   await expect(page).toHaveURL(/\/community(?:\/)?$/);
 }
