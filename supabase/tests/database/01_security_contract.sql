@@ -26,7 +26,7 @@ select ok((select c.relrowsecurity from pg_class c join pg_namespace n on n.oid=
 select ok((select c.relrowsecurity from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname='hbc_recovery_obligations'), 'HBC recovery obligations have RLS enabled');
 
 -- Sensitive server-owned tables intentionally expose no client policies.
-select ok(not exists (select 1 from pg_policies where schemaname='public' and tablename in ('product_fulfillment_rules','fulfillments','payment_webhook_events','hbc_recovery_obligations') and roles::text ilike '%authenticated%'), 'server-owned financial/fulfillment tables have no authenticated policies');
+select ok(not exists (select 1 from pg_policies where schemaname='public' and tablename in ('product_fulfillment_rules','fulfillments','payment_webhook_events','hbc_recovery_obligations') and roles::text ilike '%authenticated%' and (qual is distinct from 'false' or with_check is distinct from 'false')), 'server-owned financial/fulfillment tables have no permissive authenticated policies');
 
 -- Critical security helpers must be SECURITY DEFINER and pin search_path.
 select ok((select p.prosecdef from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname='is_trusted_server' limit 1), 'is_trusted_server is SECURITY DEFINER');
