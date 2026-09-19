@@ -18,7 +18,7 @@ async function fixtureUsers(): Promise<FixtureUser[]> {
 async function signIn(page: Page, user: FixtureUser) {
   await page.goto("/login");
   await page.getByLabel("Email").fill(user.email);
-  await page.getByLabel("Password").fill(user.password);
+  await page.locator('input[autocomplete="current-password"]').fill(user.password);
   await page.getByRole("button", { name: "Sign in" }).click();
   await expect(page).toHaveURL(/\/community(?:\/)?$/);
 }
