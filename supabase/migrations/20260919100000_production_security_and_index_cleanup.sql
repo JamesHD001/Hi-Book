@@ -87,7 +87,6 @@ $function$;
 revoke all on function public.prevent_client_account_status_mutation() from public, anon, authenticated;
 revoke all on function public.protect_financial_ledger_entry() from public, anon, authenticated;
 revoke all on function public.remove_follows_on_block() from public, anon, authenticated;
-revoke all on function public.rls_auto_enable() from public, anon, authenticated;
 revoke all on function public.sync_direct_pair_key() from public, anon, authenticated;
 revoke all on function public.validate_financial_ledger_entry() from public, anon, authenticated;
 revoke all on function public.validate_financial_ledger_group() from public, anon, authenticated;
