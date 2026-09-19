@@ -20,7 +20,7 @@ test.describe("critical public and authentication journeys", () => {
     await page.getByLabel("Country code").fill("NG");
     await page.getByLabel("Gender").selectOption("UNDISCLOSED");
     await page.getByLabel("Email").fill(`invalid-${Date.now()}@example.test`);
-    await page.getByLabel("Password").fill("password123");
+    await page.locator('input[autocomplete="current-password"]').fill("password123");
     await page.getByRole("checkbox", { name: /Terms of Use/ }).check();
     await page.getByRole("checkbox", { name: /Privacy Policy/ }).check();
     await page.getByRole("button", { name: "Create account" }).click();
@@ -31,7 +31,7 @@ test.describe("critical public and authentication journeys", () => {
   test("login rejects invalid credentials without leaving the login page", async ({ page }) => {
     await page.goto("/login");
     await page.getByLabel("Email").fill("not-a-real-user@example.test");
-    await page.getByLabel("Password").fill("wrong-password");
+    await page.locator('input[autocomplete="current-password"]').fill("wrong-password");
     await page.getByRole("button", { name: "Sign in" }).click();
 
     await expect(page.getByText(/invalid|incorrect|unable to sign in/i).first()).toBeVisible();
@@ -43,7 +43,7 @@ test.describe("critical public and authentication journeys", () => {
 
     await page.goto("/login");
     await page.getByLabel("Email").fill(email);
-    await page.getByLabel("Password").fill(password);
+    await page.locator('input[autocomplete="current-password"]').fill(password);
     await page.getByRole("button", { name: "Sign in" }).click();
 
     await expect(page).toHaveURL(/\/community(?:\/)?$/);
