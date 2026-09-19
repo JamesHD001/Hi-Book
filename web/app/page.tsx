@@ -83,7 +83,7 @@ export default function HomePage() {
                 Create your account <ArrowRight size={18} aria-hidden="true" />
               </Link>
               <Link href="/login" className="hb-text-link">
-                I already have an account <ArrowUpRight size={15} aria-hidden="true" />
+                Already a member? Log back in <ArrowUpRight size={15} aria-hidden="true" />
               </Link>
             </div>
 
