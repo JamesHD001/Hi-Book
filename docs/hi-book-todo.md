@@ -32,7 +32,7 @@
 - [x] Audit authenticated mutation rate limiting and abuse controls at the database boundary.
 - [x] Add a manual/scheduled production smoke workflow for `/api/health`, HTTPS, cache control, and application security headers.
 - [ ] Verify deployment-boundary/IP/auth-provider abuse controls and production observability, error reporting, backups, and deployment configuration.
-- [ ] Fix all production blockers/high-severity findings.
+- [x] Remediate confirmed production Supabase RLS/search_path/trigger-RPC exposure findings and remove confirmed duplicate indexes.
 - [ ] Re-run the full production-readiness CI matrix after the remaining production-readiness fixes.
 - [x] Prepare a controlled production deployment checklist.
 
