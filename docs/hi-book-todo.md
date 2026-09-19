@@ -69,6 +69,17 @@
 - [ ] Production observability and recovery procedures verified
 - [x] Responsive/accessibility audit completed
 
+## UI/UX refinement — current pass
+- [x] Confirm existing visual hierarchy as the baseline rather than replacing the established design.
+- [x] Tighten landing-page typography, spacing, CTA hierarchy, and interaction treatment.
+- [x] Make the landing-page header persistent/sticky with consistent spacing and backdrop treatment.
+- [x] Keep sign-in discoverable from the landing experience, including a clear "Already a member? Log back in" path.
+- [x] Align authenticated navigation header controls with the shared Hi!Book visual hierarchy.
+- [x] Align browser theme color with the current Hi!Book editorial palette.
+- [ ] Continue applying the shared hierarchy to remaining authenticated surfaces where inconsistencies remain.
+- [ ] Complete a page-by-page responsive/mobile consistency pass after the shared hierarchy changes.
+- [ ] Complete a final accessibility/interaction-state pass for the refined navigation and landing header.
+
 ## Deferred / post-MVP
 - [ ] HBC purchases and creator economy
 - [ ] Gifts
