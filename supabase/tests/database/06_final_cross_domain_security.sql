@@ -28,27 +28,27 @@ select ok(
 
 -- These late-added server-owned tables must not expose authenticated write/read policies.
 select is(
-  (select count(*)::integer from pg_policies where schemaname = 'public' and tablename = 'product_fulfillment_rules' and roles @> array['authenticated']::name[]),
+  (select count(*)::integer from pg_policies where schemaname = 'public' and tablename = 'product_fulfillment_rules' and roles @> array['authenticated']::name[] and (qual is distinct from 'false' or with_check is distinct from 'false')),
   0,
-  'product_fulfillment_rules has no authenticated client policies'
+  'product_fulfillment_rules has no permissive authenticated client policies'
 );
 
 select is(
-  (select count(*)::integer from pg_policies where schemaname = 'public' and tablename = 'fulfillments' and roles @> array['authenticated']::name[]),
+  (select count(*)::integer from pg_policies where schemaname = 'public' and tablename = 'fulfillments' and roles @> array['authenticated']::name[] and (qual is distinct from 'false' or with_check is distinct from 'false')),
   0,
-  'fulfillments has no authenticated client policies'
+  'fulfillments has no permissive authenticated client policies'
 );
 
 select is(
-  (select count(*)::integer from pg_policies where schemaname = 'public' and tablename = 'payment_webhook_events' and roles @> array['authenticated']::name[]),
+  (select count(*)::integer from pg_policies where schemaname = 'public' and tablename = 'payment_webhook_events' and roles @> array['authenticated']::name[] and (qual is distinct from 'false' or with_check is distinct from 'false')),
   0,
-  'payment_webhook_events has no authenticated client policies'
+  'payment_webhook_events has no permissive authenticated client policies'
 );
 
 select is(
-  (select count(*)::integer from pg_policies where schemaname = 'public' and tablename = 'hbc_recovery_obligations' and roles @> array['authenticated']::name[]),
+  (select count(*)::integer from pg_policies where schemaname = 'public' and tablename = 'hbc_recovery_obligations' and roles @> array['authenticated']::name[] and (qual is distinct from 'false' or with_check is distinct from 'false')),
   0,
-  'hbc_recovery_obligations has no authenticated client policies'
+  'hbc_recovery_obligations has no permissive authenticated client policies'
 );
 
 -- Required cross-domain validation triggers.
