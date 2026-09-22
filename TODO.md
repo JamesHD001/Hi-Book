@@ -39,3 +39,19 @@
 - [ ] Final responsive QA across desktop/mobile
 - [ ] Final light/dark QA
 - [ ] Accessibility QA
+
+## Authentication — Sign In & Registration
+- [x] Apply Hi!Book visual identity to sign-in
+- [x] Apply Hi!Book visual identity to registration
+- [x] Connect sign-in to Supabase password authentication
+- [x] Connect registration to Supabase account creation
+- [x] Validate registration age, country code, password, and policy acceptance
+- [x] Support email confirmation callback
+- [x] Add password recovery request flow
+- [x] Add password reset flow
+- [x] Show sign-in states for confirmation errors and successful password reset
+- [ ] Verify Supabase email-confirmation templates and redirect URLs
+- [ ] Verify registration completion RPC and onboarding handoff
+- [ ] Test duplicate-email and invalid-credential messaging
+- [ ] End-to-end test sign-in, registration, confirmation, and recovery
+- [ ] Review authentication accessibility on desktop and mobile
