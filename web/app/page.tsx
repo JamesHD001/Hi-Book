@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
+import HiBookLogo from "@/components/brand/HiBookLogo";
 
 const features = [
   {
@@ -42,7 +43,7 @@ export default function HomePage() {
     <main className="hb-page">
       <nav className="hb-nav" aria-label="Primary navigation">
         <Link href="/" className="hb-brand" aria-label="Hi!Book home">
-          <span className="hb-brand-mark" aria-hidden="true">H!</span>
+          <HiBookLogo className="hb-brand-mark" compact aria-hidden="true" />
           <span>Hi!Book</span>
         </Link>
 
