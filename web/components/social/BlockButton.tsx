@@ -73,7 +73,7 @@ export default function BlockButton({
       type="button"
       onClick={toggleBlock}
       disabled={pending}
-      className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+      className="hb-button hb-button--secondary min-h-10 px-4 text-sm disabled:opacity-60"
     >
       {pending ? "Working…" : blocked ? "Unblock" : "Block"}
     </button>

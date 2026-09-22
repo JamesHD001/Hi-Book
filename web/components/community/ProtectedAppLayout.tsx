@@ -9,7 +9,7 @@ export default async function ProtectedAppLayout({
   await requireActiveUser();
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+    <div className="hb-app-shell">
       <AppNavigation />
       <div className="pb-20 md:pb-0">{children}</div>
     </div>

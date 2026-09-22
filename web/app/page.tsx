@@ -210,7 +210,7 @@ export default function HomePage() {
         <div className="hb-footer-grid">
           <div className="hb-footer-brand">
             <Link href="/" className="hb-brand" aria-label="Hi!Book home">
-              <span className="hb-brand-mark" aria-hidden="true">H!</span>
+              <HiBookLogo className="hb-brand-mark" compact aria-hidden="true" />
               <span>Hi!Book</span>
             </Link>
             <p>A social network built around genuine human connection, discovery, and user control.</p>

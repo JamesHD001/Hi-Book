@@ -75,7 +75,7 @@ export default function ReportDialog({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+        className="hb-button hb-button--secondary min-h-10 px-4 text-sm"
       >
         Report
       </button>
@@ -83,8 +83,8 @@ export default function ReportDialog({
       {message && <p className="mt-2 text-xs text-slate-600">{message}</p>}
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[color-mix(in_srgb,var(--surface-inverse)_48%,transparent)] p-4">
+          <div className="hb-card w-full max-w-lg p-6 shadow-[var(--shadow-lg)]">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2 className="text-xl font-bold text-slate-950">Report</h2>
@@ -95,7 +95,7 @@ export default function ReportDialog({
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="text-sm text-slate-500 hover:text-slate-950"
+                className="text-sm text-[var(--muted)] hover:text-[var(--foreground)]"
               >
                 Close
               </button>
@@ -107,7 +107,7 @@ export default function ReportDialog({
                 <select
                   value={reason}
                   onChange={(event) => setReason(event.target.value as typeof reason)}
-                  className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-slate-500"
+                  className="mt-2 w-full rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 outline-none focus:border-[var(--brand-primary)]"
                 >
                   {reasons.map(([value, label]) => (
                     <option key={value} value={value}>
@@ -124,7 +124,7 @@ export default function ReportDialog({
                   onChange={(event) => setDescription(event.target.value.slice(0, 2000))}
                   rows={5}
                   maxLength={2000}
-                  className="mt-2 w-full resize-y rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:border-slate-500"
+                  className="mt-2 w-full resize-y rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 outline-none focus:border-[var(--brand-primary)]"
                   placeholder="Tell the safety team what happened."
                 />
               </label>
@@ -132,7 +132,7 @@ export default function ReportDialog({
               <button
                 type="submit"
                 disabled={pending}
-                className="w-full rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+                className="hb-button hb-button--primary w-full disabled:opacity-60"
               >
                 {pending ? "Submitting…" : "Submit report"}
               </button>

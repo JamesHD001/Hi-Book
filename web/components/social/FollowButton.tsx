@@ -59,10 +59,10 @@ export default function FollowButton({
         type="button"
         onClick={toggleFollow}
         disabled={pending}
-        className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
+        className={`hb-button min-h-10 px-5 text-sm disabled:cursor-not-allowed disabled:opacity-60 ${
           following
-            ? "border border-slate-300 bg-white text-slate-800 hover:bg-slate-50"
-            : "bg-slate-950 text-white hover:bg-slate-800"
+            ? "hb-button--secondary"
+            : "hb-button--primary"
         }`}
       >
         {pending ? "Working…" : following ? "Following" : "Follow"}
