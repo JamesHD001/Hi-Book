@@ -50,8 +50,8 @@
 - [x] Add password recovery request flow
 - [x] Add password reset flow
 - [x] Show sign-in states for confirmation errors and successful password reset
-- [ ] Verify Supabase email-confirmation templates and redirect URLs
-- [ ] Verify registration completion RPC and onboarding handoff
-- [ ] Test duplicate-email and invalid-credential messaging
-- [ ] End-to-end test sign-in, registration, confirmation, and recovery
+- [ ] Verify Supabase email-confirmation templates and redirect URLs (requires hosted Auth configuration/email test)
+- [x] Verify registration completion RPC and onboarding handoff
+- [ ] Test duplicate-email and invalid-credential messaging (requires a live auth test account)
+- [ ] End-to-end test sign-in, registration, confirmation, and recovery (requires live email delivery)
 - [ ] Review authentication accessibility on desktop and mobile
