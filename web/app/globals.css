@@ -99,7 +99,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   max-width: 760px; margin: 25px 0 0; font-size: clamp(3.6rem, 7.2vw, 7.2rem); font-weight: 900;
   letter-spacing: -.075em; line-height: .86;
 }
-.hb-hero-title em, .hb-section-title em, .hb-community h2 em { color: var(--brand-primary-dark); font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
+.hb-hero-title em, .hb-section-title em, .hb-community h2 em { color: var(--brand-primary-dark); font-family: var(--font-hibook), Arial, Helvetica, sans-serif; font-style: italic; font-weight: 700; }
 .hb-hero-copy { max-width: 620px; margin: 30px 0 0; color: var(--muted); font-size: 1.02rem; line-height: 1.8; }
  .hb-hero-actions {
   display: flex;
@@ -341,3 +341,17 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .hb-button-light { background: #FFFFFF; color: var(--ink); border-color: #FFFFFF; }
 .hb-button-light:hover { color: var(--brand-primary-dark); }
 .hb-focus-ring:focus-visible, button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 3px solid color-mix(in srgb, var(--brand-primary) 45%, transparent); outline-offset: 3px; }
+
+
+[data-theme="dark"] {
+  --background: #0B1220;
+  --foreground: #F8FAFC;
+  --muted: #CBD5E1;
+  --subtle: #94A3B8;
+  --border: #273548;
+  --surface: #121C2B;
+  --surface-secondary: #182536;
+  --ink: #F8FAFC;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.24);
+}
