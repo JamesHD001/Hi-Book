@@ -77,6 +77,7 @@
 - [x] Align authenticated navigation header controls with the shared Hi!Book visual hierarchy.
 - [x] Align browser theme color with the current Hi!Book editorial palette.
 - [x] Apply the shared hierarchy to the community feed surface.
+- [x] Align the public profile surface and profile loading state with the shared hierarchy.
 - [ ] Continue applying the shared hierarchy to remaining authenticated surfaces where inconsistencies remain.
 - [ ] Complete a page-by-page responsive/mobile consistency pass after the shared hierarchy changes.
 - [ ] Complete a final accessibility/interaction-state pass for the refined navigation and landing header.
