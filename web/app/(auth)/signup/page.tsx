@@ -70,7 +70,6 @@ export default function SignupPage() {
             </div>
             <SignupForm />
             <Link href="/login" className="group mt-8 inline-flex items-center gap-2 text-xs font-bold text-[var(--muted)] transition hover:text-[var(--foreground)]">
-              Already a member? Sign in
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
             </Link>
           </div>
