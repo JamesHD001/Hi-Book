@@ -4,6 +4,8 @@ import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import HBButton from "@/components/ui/HBButton";
+import HBInput from "@/components/ui/HBInput";
 
 const GENDERS = [
   { value: "MALE", label: "Male" },
@@ -93,11 +95,11 @@ export default function SignupForm() {
         <div className="mt-3 grid gap-5 sm:grid-cols-2">
           <label className="block">
             <span className={labelClass}>First name</span>
-            <input required value={form.firstName} onChange={(e) => update("firstName", e.target.value)} className={inputClass} />
+            <HBInput required value={form.firstName} onChange={(e) => update("firstName", e.target.value)} className={inputClass} autoComplete="given-name" />
           </label>
           <label className="block">
             <span className={labelClass}>Middle name <span className="font-normal text-[var(--muted)]">(optional)</span></span>
-            <input value={form.middleName} onChange={(e) => update("middleName", e.target.value)} className={inputClass} />
+            <HBInput value={form.middleName} onChange={(e) => update("middleName", e.target.value)} className={inputClass} autoComplete="additional-name" />
           </label>
         </div>
       </div>
@@ -132,11 +134,11 @@ export default function SignupForm() {
         <div className="mt-3 space-y-5">
           <label className="block">
             <span className={labelClass}>Email address</span>
-            <input required type="email" autoComplete="email" value={form.email} onChange={(e) => update("email", e.target.value)} className={inputClass} />
+            <HBInput required type="email" autoComplete="email" value={form.email} onChange={(e) => update("email", e.target.value)} className={inputClass} />
           </label>
           <label className="block">
             <span className={labelClass}>Password</span>
-            <input required minLength={8} type="password" autoComplete="new-password" value={form.password} onChange={(e) => update("password", e.target.value)} className={inputClass} />
+            <HBInput required minLength={8} type="password" autoComplete="new-password" value={form.password} onChange={(e) => update("password", e.target.value)} className={inputClass} />
             <span className="mt-1.5 block text-xs leading-5 text-[var(--muted)]">At least 8 characters.</span>
           </label>
         </div>
