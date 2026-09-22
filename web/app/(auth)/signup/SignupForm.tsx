@@ -4,7 +4,6 @@ import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import HBButton from "@/components/ui/HBButton";
 import HBInput from "@/components/ui/HBInput";
 
 const GENDERS = [
