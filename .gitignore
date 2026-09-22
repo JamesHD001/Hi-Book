@@ -2,3 +2,6 @@ AGENTS.MD
 /web/node_modules
 node_modules
 .env
+web/.next/
+supabase/.temp/
+.vscode/settings.json
