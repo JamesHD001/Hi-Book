@@ -355,3 +355,25 @@ button, a { -webkit-tap-highlight-color: transparent; }
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.24);
 }
+
+
+/* Hi!Book component primitives */
+.hb-button { min-height: 44px; padding: 0 16px; border: 1px solid transparent; border-radius: var(--radius-lg); font: inherit; font-weight: 700; cursor: pointer; transition: transform .15s ease, background-color .15s ease, border-color .15s ease, box-shadow .15s ease; }
+.hb-button:hover { transform: translateY(-1px); }
+.hb-button:active { transform: translateY(0); }
+.hb-button--primary { background: var(--brand-primary); color: #fff; }
+.hb-button--primary:hover { background: var(--brand-primary-dark); }
+.hb-button--secondary { background: var(--surface); color: var(--foreground); border-color: var(--border); }
+.hb-button--secondary:hover { background: var(--surface-secondary); }
+.hb-button--tertiary { background: transparent; color: var(--brand-primary-dark); }
+.hb-button--destructive { background: var(--error); color: #fff; }
+.hb-button--brand { background: var(--brand-accent); color: #0F172A; }
+.hb-input { width: 100%; min-height: 44px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); color: var(--foreground); font: inherit; }
+.hb-input::placeholder { color: var(--subtle); }
+.hb-input:focus { border-color: var(--brand-primary); }
+.hb-card { border: 1px solid var(--border); border-radius: var(--radius-xl); background: var(--surface); box-shadow: var(--shadow-sm); }
+.hb-avatar { display: inline-grid; place-items: center; flex: 0 0 auto; border-radius: var(--radius-full); object-fit: cover; background: var(--brand-primary-soft); color: var(--brand-primary-dark); font-weight: 800; }
+@media (prefers-reduced-motion: reduce) {
+  .hb-button { transition: none; }
+  .hb-button:hover { transform: none; }
+}
