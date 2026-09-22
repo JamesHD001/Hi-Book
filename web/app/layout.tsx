@@ -1,5 +1,12 @@
 import type { Metadata, Viewport } from "next";
+import { Figtree } from "next/font/google";
 import "./globals.css";
+
+const figtree = Figtree({
+  subsets: ["latin"],
+  variable: "--font-hibook",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -11,8 +18,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f7f3ea",
-  colorScheme: "light",
+  themeColor: "#00B8A9",
+  colorScheme: "light dark",
 };
 
 export default function RootLayout({
@@ -22,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className={figtree.variable}>{children}</body>
     </html>
   );
 }
