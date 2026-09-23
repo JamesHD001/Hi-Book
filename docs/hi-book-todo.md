@@ -82,7 +82,7 @@
 - [x] Align the authenticated onboarding surface with the shared hierarchy.
 - [x] Align account deletion and moderation/appeal safety surfaces with the shared hierarchy.
 - [x] Align settings and discovery surfaces with the shared hierarchy.
-- [ ] Continue applying the shared hierarchy to remaining authenticated surfaces where inconsistencies remain.
+- [x] Apply the shared hierarchy to the landing, authentication, navigation, community/feed, and discovery surfaces; remaining authenticated screens are still being migrated.
 - [ ] Complete a page-by-page responsive/mobile consistency pass after the shared hierarchy changes.
 - [ ] Complete a final accessibility/interaction-state pass for the refined navigation and landing header.
 
@@ -99,3 +99,24 @@
 
 ## Next major gate
 Verify the production scheduler/worker for due-account-deletion processing and exercise post-expiry browser behavior against the deployed environment. The scheduler invocation and production liveness/security-header checks are verified; the disposable E2E gate still needs a fresh green run after the selector fixes. In parallel, use `docs/production-deployment-checklist.md` to collect evidence from the real hosting/Supabase environments for deployment-boundary abuse controls, observability, backups, restore procedures, and deployment configuration. The repository now has an optional manual/hourly production smoke check, but the operational gate remains open until the real production URL is configured and the external controls are actually verified.
+
+
+## Project-wide visual hierarchy pass — 2026-09-23
+
+### Audit findings
+- The repository already contained a substantial Hi!Book token/primitives layer, but several pages were still using independent Tailwind utility palettes and hard-coded editorial colors.
+- Tailwind v4 was present as a dependency but was not imported by the global stylesheet, so utility-driven screens were not consistently backed by the declared styling architecture.
+- Public landing-page classes had a component implementation but lacked the corresponding stylesheet layer.
+- Authentication forms mixed shared primitives with repeated utility declarations.
+- Community/feed/discovery surfaces used multiple competing color systems, weakening the established teal/yellow Hi!Book identity.
+
+### Implemented in this pass
+- Restored the existing Tailwind v4 stylesheet integration and mapped common neutral/blue utility tokens to the established Hi!Book palette.
+- Added responsive landing-page styles and preserved the sticky public navigation.
+- Standardized authenticated navigation, authentication forms, community/feed, and discovery around the shared hierarchy primitives.
+- Preserved existing routes, IDs, feature behavior, and the established product direction.
+
+### Remaining UI gate
+- Migrate the remaining authenticated screens onto the shared primitives.
+- Run page-by-page desktop/tablet/mobile visual QA.
+- Run final accessibility, focus, disabled/loading, and reduced-motion checks.
