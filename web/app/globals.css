@@ -2479,3 +2479,111 @@ blockquote {
     animation-iteration-count: 1 !important;
   }
 }
+
+
+.hb-auth-form {
+  display: grid;
+  gap: var(--space-5);
+  margin-top: var(--space-8);
+}
+
+.hb-field__label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.hb-form-link {
+  color: var(--brand-primary-dark);
+  font-size: 0.8125rem;
+  font-weight: 650;
+  text-decoration: underline;
+  text-decoration-color: var(--brand-primary-soft);
+  text-underline-offset: 4px;
+}
+
+.hb-form-link:hover {
+  text-decoration-color: var(--brand-primary);
+}
+
+.hb-form-link--strong {
+  font-weight: 700;
+}
+
+.hb-input-wrap {
+  position: relative;
+  margin-top: var(--space-2);
+}
+
+.hb-input-icon {
+  position: absolute;
+  top: 50%;
+  left: var(--space-4);
+  z-index: 1;
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.hb-input--with-leading-icon {
+  padding-left: 44px;
+}
+
+.hb-input--with-trailing-icon {
+  padding-right: 48px;
+}
+
+.hb-input-action {
+  position: absolute;
+  top: 50%;
+  right: var(--space-2);
+  display: inline-grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.hb-input-action:hover {
+  background: var(--surface-secondary);
+  color: var(--foreground);
+}
+
+.hb-auth-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-block: var(--space-1);
+}
+
+.hb-auth-divider__line {
+  height: 1px;
+  flex: 1;
+  background: var(--divider);
+}
+
+.hb-auth-divider__label {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.hb-auth-switch {
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  text-align: center;
+}
