@@ -103,28 +103,31 @@ export default function PostFeed() {
   useEffect(() => {
     const refreshAfterPost = () => void load(scope);
     window.addEventListener("hibook:post-created", refreshAfterPost);
-    return () => window.removeEventListener("hibook:post-created", refreshAfterPost);
-  }, [scope]);
-
-  return (
-    <section aria-label="Post feed" aria-busy={loading || refreshing} className="space-y-5">
-      <div className="overflow-hidden rounded-[1.25rem] border border-[#d8d2c6] bg-[#fffdf8] shadow-none">
-        <div className="flex flex-col gap-3 border-b border-[#d8d2c6] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+    return (
+    <section
+      aria-label="Post feed"
+      aria-busy={loading || refreshing}
+      className="hb-feed"
+    >
+      <header className="hb-card hb-feed__controls">
+        <div className="hb-card__header">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#858983]">Community feed</p>
-            <p className="mt-1 text-sm text-[#5d625f]">{scopeDescription(scope)}</p>
+            <p className="hb-eyebrow hb-eyebrow--muted">Community feed</p>
+            <p className="hb-feed__description">{scopeDescription(scope)}</p>
           </div>
-          <div className="flex items-center gap-2 self-stretch sm:self-auto">
+
+          <div className="hb-feed__actions">
             <button
               type="button"
               onClick={() => void refresh()}
               disabled={loading || loadingMore || refreshing}
-              className="rounded-xl border border-[#d8d2c6] bg-[#fffdf8] px-3 py-2 text-xs font-bold text-[#5d625f] transition hover:border-[#111827] hover:bg-[#f7f3ea] hover:text-[#111827] disabled:cursor-not-allowed disabled:opacity-50"
+              className="hb-button hb-button--secondary hb-button--sm"
               aria-label="Refresh community feed"
             >
               {refreshing ? "Refreshing…" : "Refresh"}
             </button>
-            <div className="flex min-w-0 flex-1 gap-1 rounded-xl bg-[#f0ece3] p-1 sm:flex-none" role="tablist" aria-label="Feed views">
+
+            <div className="hb-segmented" role="tablist" aria-label="Feed views">
               {(["HOME", "FOLLOWING", "EXPLORE"] as Scope[]).map((item) => (
                 <button
                   key={item}
@@ -135,89 +138,165 @@ export default function PostFeed() {
                     setScope(item);
                     void load(item);
                   }}
-                  className={`min-w-0 flex-1 rounded-lg px-2 py-2 text-xs font-bold transition sm:flex-none sm:px-4 sm:text-sm ${scope === item ? "bg-slate-950 text-white shadow-sm" : "text-[#5d625f] hover:text-slate-900"}`}
+                  className="hb-segmented__item"
                 >
-                  {item === "HOME" ? "Home" : item === "FOLLOWING" ? "Following" : "Explore"}
+                  {item === "HOME"
+                    ? "Home"
+                    : item === "FOLLOWING"
+                      ? "Following"
+                      : "Explore"}
                 </button>
               ))}
             </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      {error && <p className="rounded-xl border border-[#f0b5a7] bg-[#fff0ec] px-4 py-3 text-sm text-[#9f3d2b]" role="alert">{error}</p>}
+      {error && (
+        <p className="hb-status hb-status--error" role="alert">
+          {error}
+        </p>
+      )}
+
       {loading && (
-        <div className="space-y-4" aria-live="polite">
+        <div className="hb-feed__loading" aria-live="polite">
           {[1, 2].map((item) => (
-            <div key={item} className="animate-pulse rounded-[1.25rem] border border-[#d8d2c6] bg-[#fffdf8] p-5 shadow-none">
-              <div className="flex gap-3">
-                <div className="h-11 w-11 rounded-2xl bg-[#e4dfd4]" />
-                <div className="flex-1">
-                  <div className="h-4 w-32 rounded bg-[#e4dfd4]" />
-                  <div className="mt-2 h-3 w-20 rounded bg-[#f0ece3]" />
+            <div key={item} className="hb-card hb-feed-skeleton">
+              <div className="hb-feed-skeleton__head">
+                <div className="hb-skeleton hb-avatar hb-avatar--44" />
+                <div className="hb-feed-skeleton__copy">
+                  <div className="hb-skeleton hb-feed-skeleton__title" />
+                  <div className="hb-skeleton hb-feed-skeleton__meta" />
                 </div>
               </div>
-              <div className="mt-5 h-20 rounded-xl bg-[#f0ece3]" />
+              <div className="hb-skeleton hb-feed-skeleton__body" />
             </div>
           ))}
         </div>
       )}
 
       {!loading && posts.length === 0 && (
-        <div className="rounded-[1.5rem] border border-dashed border-[#bcb5a7] bg-[#fffdf8] px-6 py-14 text-center shadow-none">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#111827] font-black text-[#f7f3ea]">H!</div>
-          <h2 className="mt-5 font-bold text-[#111827]">Your feed is ready for something new.</h2>
-          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#5d625f]">Follow people you connect with or share your first post. Your feed will grow with you.</p>
-          <Link href="/discover" className="mt-6 inline-flex rounded-full bg-[#111827] px-5 py-2.5 text-sm font-semibold text-[#f7f3ea] transition hover:bg-[#c94d35]">Discover people</Link>
+        <div className="hb-empty">
+          <div className="hb-empty__icon" aria-hidden="true">H!</div>
+          <h2 className="hb-empty__title">
+            Your feed is ready for something new.
+          </h2>
+          <p className="hb-empty__text">
+            Follow people you connect with or share your first post. Your feed
+            will grow with you.
+          </p>
+          <div className="hb-empty__actions">
+            <Link href="/discover" className="hb-button hb-button--primary">
+              Discover people
+            </Link>
+          </div>
         </div>
       )}
 
-      {!loading && posts.map((post) => {
-        const like = likes[post.post_id] ?? { liked: false, like_count: 0 };
-        return (
-          <article key={post.post_id} className="overflow-hidden rounded-[1.25rem] border border-[#d8d2c6] bg-[#fffdf8] shadow-none transition hover:shadow-md">
-            <header className="flex items-center gap-3 px-5 py-5">
-              <Link href={`/u/${post.username}`} className="h-11 w-11 shrink-0 overflow-hidden rounded-2xl bg-[#f0ece3]" aria-label={`View ${post.display_name} profile`}>
-                {post.avatar_url ? <img src={post.avatar_url} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-900 to-slate-700 font-bold text-white">{post.display_name.charAt(0).toUpperCase()}</div>}
-              </Link>
-              <div className="min-w-0 flex-1">
-                <Link href={`/u/${post.username}`} className="font-bold text-[#111827] hover:underline">{post.display_name}</Link>
-                <p className="truncate text-sm text-[#5d625f]">@{post.username} · {timeAgo(post.created_at)}</p>
-              </div>
-              <span className="rounded-full bg-[#f0ece3] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#5d625f]">{post.visibility === "FOLLOWERS" ? "Followers" : post.visibility === "PRIVATE" ? "Private" : "Public"}</span>
-            </header>
+      {!loading &&
+        posts.map((post) => {
+          const like = likes[post.post_id] ?? {
+            liked: false,
+            like_count: 0,
+          };
 
-            {post.content && <p className="whitespace-pre-wrap px-5 pb-5 text-[15px] leading-7 text-[#111827]">{post.content}</p>}
-            {post.media.length > 0 && (
-              <div className={`grid gap-1 ${post.media.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}>
-                {post.media.map((media) => (
-                  <img
-                    key={media.id}
-                    src={media.url}
-                    alt={media.alt_text ?? "Post image"}
-                    width={media.width ?? undefined}
-                    height={media.height ?? undefined}
-                    className="max-h-[640px] w-full bg-[#f0ece3] object-cover"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                ))}
-              </div>
-            )}
+          return (
+            <article key={post.post_id} className="hb-card hb-post">
+              <header className="hb-post__header">
+                <Link
+                  href={`/u/${post.username}`}
+                  className="hb-avatar hb-avatar--48 hb-avatar--square hb-post__avatar"
+                  aria-label={`View ${post.display_name} profile`}
+                >
+                  {post.avatar_url ? (
+                    <img
+                      src={post.avatar_url}
+                      alt=""
+                      className="hb-post__avatar-image"
+                    />
+                  ) : (
+                    post.display_name.charAt(0).toUpperCase()
+                  )}
+                </Link>
 
-            <footer className="flex flex-wrap items-center gap-2 border-t border-[#d8d2c6] px-5 py-3">
-              <button type="button" onClick={() => void toggleLike(post.post_id)} disabled={likeBusy[post.post_id]} aria-pressed={like.liked} className={`rounded-xl px-3 py-2 text-sm font-semibold transition ${like.liked ? "bg-red-50 text-red-700" : "text-slate-600 hover:bg-[#f0ece3]"}`}>
-                {like.liked ? "♥ Liked" : "♡ Like"} <span className="ml-1">{like.like_count}</span>
-              </button>
-              <PostShareButton postId={post.post_id} />
-            </footer>
-            <PostComments postId={post.post_id} />
-          </article>
-        );
-      })}
+                <div className="hb-post__identity">
+                  <Link
+                    href={`/u/${post.username}`}
+                    className="hb-post__name"
+                  >
+                    {post.display_name}
+                  </Link>
+                  <p className="hb-post__meta">
+                    @{post.username} · {timeAgo(post.created_at)}
+                  </p>
+                </div>
+
+                <span className="hb-badge">
+                  {post.visibility === "FOLLOWERS"
+                    ? "Followers"
+                    : post.visibility === "PRIVATE"
+                      ? "Private"
+                      : "Public"}
+                </span>
+              </header>
+
+              {post.content && (
+                <p className="hb-post__content">{post.content}</p>
+              )}
+
+              {post.media.length > 0 && (
+                <div
+                  className={
+                    post.media.length === 1
+                      ? "hb-post__media hb-post__media--single"
+                      : "hb-post__media hb-post__media--grid"
+                  }
+                >
+                  {post.media.map((media) => (
+                    <img
+                      key={media.id}
+                      src={media.url}
+                      alt={media.alt_text ?? "Post image"}
+                      width={media.width ?? undefined}
+                      height={media.height ?? undefined}
+                      className="hb-post__media-image"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ))}
+                </div>
+              )}
+
+              <footer className="hb-post__footer">
+                <button
+                  type="button"
+                  onClick={() => void toggleLike(post.post_id)}
+                  disabled={likeBusy[post.post_id]}
+                  aria-pressed={like.liked}
+                  className={
+                    like.liked
+                      ? "hb-post__action hb-post__action--liked"
+                      : "hb-post__action"
+                  }
+                >
+                  {like.liked ? "♥ Liked" : "♡ Like"}{" "}
+                  <span>{like.like_count}</span>
+                </button>
+                <PostShareButton postId={post.post_id} />
+              </footer>
+
+              <PostComments postId={post.post_id} />
+            </article>
+          );
+        })}
 
       {!loading && cursor && (
-        <button type="button" onClick={() => void load(scope, cursor, true)} disabled={loadingMore} className="w-full rounded-xl border border-[#d8d2c6] bg-[#fffdf8] px-4 py-3 text-sm font-semibold text-[#5d625f] shadow-none transition hover:bg-[#f0ece3] disabled:opacity-50">
+        <button
+          type="button"
+          onClick={() => void load(scope, cursor, true)}
+          disabled={loadingMore}
+          className="hb-button hb-button--secondary hb-button--block"
+        >
           {loadingMore ? "Loading more…" : "Load more posts"}
         </button>
       )}

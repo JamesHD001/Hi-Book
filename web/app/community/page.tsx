@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Compass, MessageCircle, Bell, UserRound, ArrowUpRight } from "lucide-react";
 import { requireActiveUser } from "@/lib/auth/require-active-user";
 import CreatePost from "@/components/community/CreatePost";
 import PostFeed from "@/components/feed/PostFeed";
@@ -16,108 +17,151 @@ export default async function CommunityPage() {
   const displayName = profile?.display_name ?? "friend";
 
   return (
-    <main>
-      <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8 overflow-hidden rounded-[28px] border border-[#dce3ff] bg-[linear-gradient(135deg,#ffffff_0%,#f5f7ff_58%,#f8f3ff_100%)] p-6 shadow-sm sm:p-8 lg:p-10">
-          <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-3xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[#dce3ff] bg-white/80 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-[#3150c9]">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#12b76a]" aria-hidden="true" />
-                Your community
-              </div>
-              <h1 className="mt-5 text-3xl font-extrabold tracking-[-0.045em] text-slate-950 sm:text-4xl lg:text-5xl">
-                Welcome, {displayName}.
-              </h1>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-                This is your space to share what matters, discover different perspectives, and build genuine connections across the world.
+    <main className="hb-community-page">
+      <section className="hb-community-hero" aria-labelledby="community-page-title">
+        <div className="hb-community-hero__inner">
+          <div className="hb-community-hero__copy">
+            <p className="hb-eyebrow">
+              <span className="hb-status-dot" aria-hidden="true" />
+              Your community
+            </p>
+            <h1 id="community-page-title" className="hb-title-1">
+              Welcome, {displayName}.
+            </h1>
+            <p className="hb-lede">
+              Share what matters, discover different perspectives, and build
+              genuine connections across the world.
+            </p>
+            {profile?.username && (
+              <p className="hb-badge hb-badge--brand">
+                @{profile.username}
               </p>
-              {profile?.username && (
-                <p className="mt-5 inline-flex rounded-full bg-white/80 px-3 py-1.5 text-sm font-semibold text-slate-600 shadow-sm">
-                  @{profile.username}
-                </p>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:w-[360px]">
-              <Link href="/discover" className="rounded-2xl border border-white/90 bg-white/75 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-                <span className="text-xl" aria-hidden="true">◎</span>
-                <span className="mt-2 block text-sm font-bold text-slate-950">Discover</span>
-                <span className="mt-1 block text-xs leading-5 text-slate-500">Meet new people</span>
-              </Link>
-              <Link href="/messages" className="rounded-2xl border border-white/90 bg-white/75 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-                <span className="text-xl" aria-hidden="true">◇</span>
-                <span className="mt-2 block text-sm font-bold text-slate-950">Messages</span>
-                <span className="mt-1 block text-xs leading-5 text-slate-500">Keep conversations going</span>
-              </Link>
-              <Link href="/profile" className="rounded-2xl border border-white/90 bg-white/75 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md col-span-2 sm:col-span-1">
-                <span className="text-xl" aria-hidden="true">◌</span>
-                <span className="mt-2 block text-sm font-bold text-slate-950">Profile</span>
-                <span className="mt-1 block text-xs leading-5 text-slate-500">Shape your presence</span>
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="min-w-0 space-y-6">
-            <CreatePost />
-            <PostFeed />
+            )}
           </div>
 
-          <aside className="space-y-6">
-            <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#315efb]">Stay connected</p>
-                  <h2 className="mt-2 text-lg font-extrabold tracking-tight text-slate-950">Your Hi!Book shortcuts</h2>
-                </div>
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#eef2ff] font-bold text-[#315efb]" aria-hidden="true">→</span>
-              </div>
+          <nav className="hb-shortcut-grid" aria-label="Community shortcuts">
+            <Link href="/discover" className="hb-shortcut">
+              <span className="hb-tile hb-tile--brand" aria-hidden="true">
+                <Compass size={18} />
+              </span>
+              <span className="hb-shortcut__body">
+                <strong>Discover</strong>
+                <span>Meet new people</span>
+              </span>
+              <ArrowUpRight size={16} aria-hidden="true" />
+            </Link>
 
-              <div className="mt-5 space-y-2">
-                <Link href="/discover" className="group flex items-center gap-3 rounded-2xl border border-transparent p-3 transition hover:border-slate-200 hover:bg-slate-50">
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#eef2ff] font-bold text-[#315efb]" aria-hidden="true">◎</span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-bold text-slate-950">Discover people</span>
-                    <span className="mt-0.5 block text-xs leading-5 text-slate-500">Explore languages, interests, and perspectives.</span>
-                  </span>
-                  <span className="text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-slate-500" aria-hidden="true">→</span>
-                </Link>
-                <Link href="/messages" className="group flex items-center gap-3 rounded-2xl border border-transparent p-3 transition hover:border-slate-200 hover:bg-slate-50">
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#f4ebff] font-bold text-[#8b5cf6]" aria-hidden="true">◇</span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-bold text-slate-950">Private messages</span>
-                    <span className="mt-0.5 block text-xs leading-5 text-slate-500">Have one-to-one conversations with your connections.</span>
-                  </span>
-                  <span className="text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-slate-500" aria-hidden="true">→</span>
-                </Link>
-                <Link href="/notifications" className="group flex items-center gap-3 rounded-2xl border border-transparent p-3 transition hover:border-slate-200 hover:bg-slate-50">
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#ecfdf3] font-bold text-[#12b76a]" aria-hidden="true">!</span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-bold text-slate-950">Notifications</span>
-                    <span className="mt-0.5 block text-xs leading-5 text-slate-500">Keep up with activity and account updates.</span>
-                  </span>
-                  <span className="text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-slate-500" aria-hidden="true">→</span>
-                </Link>
-                <Link href="/profile" className="group flex items-center gap-3 rounded-2xl border border-transparent p-3 transition hover:border-slate-200 hover:bg-slate-50">
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-slate-100 font-bold text-slate-600" aria-hidden="true">◌</span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-bold text-slate-950">Your profile</span>
-                    <span className="mt-0.5 block text-xs leading-5 text-slate-500">Manage what you choose to share.</span>
-                  </span>
-                  <span className="text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-slate-500" aria-hidden="true">→</span>
-                </Link>
-              </div>
-            </div>
+            <Link href="/messages" className="hb-shortcut">
+              <span className="hb-tile" aria-hidden="true">
+                <MessageCircle size={18} />
+              </span>
+              <span className="hb-shortcut__body">
+                <strong>Messages</strong>
+                <span>Keep conversations going</span>
+              </span>
+              <ArrowUpRight size={16} aria-hidden="true" />
+            </Link>
 
-            <div className="rounded-3xl border border-slate-200 bg-slate-950 p-6 text-white shadow-sm">
-              <p className="text-xs font-bold uppercase tracking-[0.12em] text-indigo-200">A better way to connect</p>
-              <h2 className="mt-3 text-xl font-extrabold tracking-tight">Different backgrounds. Shared humanity.</h2>
-              <p className="mt-3 text-sm leading-6 text-slate-300">Hi!Book is designed to help people discover one another without asking everyone to be the same.</p>
-            </div>
-          </aside>
+            <Link href="/profile" className="hb-shortcut">
+              <span className="hb-tile" aria-hidden="true">
+                <UserRound size={18} />
+              </span>
+              <span className="hb-shortcut__body">
+                <strong>Profile</strong>
+                <span>Shape your presence</span>
+              </span>
+              <ArrowUpRight size={16} aria-hidden="true" />
+            </Link>
+          </nav>
         </div>
       </section>
+
+      <div className="hb-page-shell hb-page-shell--wide hb-community-layout">
+        <div className="hb-community-main">
+          <CreatePost />
+          <PostFeed />
+        </div>
+
+        <aside className="hb-community-sidebar">
+          <section className="hb-card">
+            <div className="hb-card__header">
+              <div>
+                <p className="hb-eyebrow hb-eyebrow--muted">Stay connected</p>
+                <h2 className="hb-title-3">Your Hi!Book shortcuts</h2>
+              </div>
+              <span className="hb-tile hb-tile--brand" aria-hidden="true">
+                <ArrowUpRight size={17} />
+              </span>
+            </div>
+
+            <div className="hb-card__body hb-shortcut-list">
+              <Link href="/discover" className="hb-list__row hb-list__row--link">
+                <span className="hb-tile hb-tile--brand" aria-hidden="true">
+                  <Compass size={17} />
+                </span>
+                <span className="hb-list__body">
+                  <span className="hb-list__title">Discover people</span>
+                  <span className="hb-list__meta">
+                    Explore languages, interests, and perspectives.
+                  </span>
+                </span>
+              </Link>
+
+              <Link href="/messages" className="hb-list__row hb-list__row--link">
+                <span className="hb-tile" aria-hidden="true">
+                  <MessageCircle size={17} />
+                </span>
+                <span className="hb-list__body">
+                  <span className="hb-list__title">Private messages</span>
+                  <span className="hb-list__meta">
+                    Have one-to-one conversations with your connections.
+                  </span>
+                </span>
+              </Link>
+
+              <Link
+                href="/notifications"
+                className="hb-list__row hb-list__row--link"
+              >
+                <span className="hb-tile hb-tile--success" aria-hidden="true">
+                  <Bell size={17} />
+                </span>
+                <span className="hb-list__body">
+                  <span className="hb-list__title">Notifications</span>
+                  <span className="hb-list__meta">
+                    Keep up with activity and account updates.
+                  </span>
+                </span>
+              </Link>
+
+              <Link href="/profile" className="hb-list__row hb-list__row--link">
+                <span className="hb-tile" aria-hidden="true">
+                  <UserRound size={17} />
+                </span>
+                <span className="hb-list__body">
+                  <span className="hb-list__title">Your profile</span>
+                  <span className="hb-list__meta">
+                    Manage what you choose to share.
+                  </span>
+                </span>
+              </Link>
+            </div>
+          </section>
+
+          <section className="hb-panel hb-panel--inverse">
+            <p className="hb-eyebrow hb-eyebrow--on-inverse">
+              A better way to connect
+            </p>
+            <h2 className="hb-title-3 hb-on-inverse">
+              Different backgrounds. Shared humanity.
+            </h2>
+            <p className="hb-lede">
+              Hi!Book is designed to help people discover one another without
+              asking everyone to be the same.
+            </p>
+          </section>
+        </aside>
+      </div>
     </main>
   );
 }
