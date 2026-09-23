@@ -1993,7 +1993,7 @@ blockquote {
   border-radius: var(--radius-2xl);
 }
 
-.hb-avatar {
+.hb-profile-card .hb-avatar {
   width: 44px;
   height: 44px;
   font-size: 0.8125rem;
