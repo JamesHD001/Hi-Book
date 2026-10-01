@@ -1,8 +1,8 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowRight,
   ArrowUpRight,
-  Compass,
   Globe2,
   HeartHandshake,
   MessageCircle,
@@ -95,51 +95,39 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="hb-hero-art" aria-label="Illustration of the Hi!Book experience">
-            <div className="hb-art-ring hb-art-ring-one" aria-hidden="true" />
-            <div className="hb-art-ring hb-art-ring-two" aria-hidden="true" />
-            <div className="hb-art-dot hb-art-dot-one" aria-hidden="true" />
-            <div className="hb-art-dot hb-art-dot-two" aria-hidden="true" />
-
-            <div className="hb-world-card">
-              <div className="hb-world-topline">
-                <span>01 / DISCOVER</span>
-                <Compass size={17} aria-hidden="true" />
-              </div>
-              <div className="hb-world-title">Different places.<br />Shared interests.</div>
-              <div className="hb-world-map" aria-hidden="true">
-                <span className="hb-map-orbit hb-map-orbit-a" />
-                <span className="hb-map-orbit hb-map-orbit-b" />
-                <span className="hb-map-point hb-map-point-a" />
-                <span className="hb-map-point hb-map-point-b" />
-                <span className="hb-map-point hb-map-point-c" />
-                <span className="hb-map-point hb-map-point-d" />
-              </div>
-              <div className="hb-world-footer">
-                <span>People are not places on a map.</span>
-                <strong>They&apos;re stories.</strong>
-              </div>
-            </div>
-
-            <div className="hb-profile-card">
-              <div className="hb-profile-head">
-                <div className="hb-avatar" aria-hidden="true">AM</div>
-                <div>
-                  <div className="hb-profile-name">Amina M.</div>
-                  <div className="hb-profile-meta">Lagos · Exploring the world</div>
-                </div>
-              </div>
-              <p className="hb-profile-quote">
-                “There is always something new to learn from another person.”
-              </p>
-              <div className="hb-tags" aria-label="Interests">
-                <span>Photography</span><span>Languages</span><span>Travel</span>
-              </div>
-            </div>
-
-            <div className="hb-connection-note">
-              <HeartHandshake size={18} aria-hidden="true" />
-              <span>Make room for people.</span>
+          <div className="hb-hero-art" aria-label="People connecting across different communities">
+            <figure className="hb-photo-main">
+              <Image
+                src="/media/hibook-community-01.jpg"
+                alt="Friends sitting together and looking out across the water"
+                fill
+                priority
+                sizes="(max-width: 760px) 100vw, 58vw"
+              />
+              <figcaption className="hb-photo-caption">
+                <span>Different lives.</span>
+                <strong>More in common.</strong>
+              </figcaption>
+            </figure>
+            <figure className="hb-photo-portrait hb-photo-portrait-one">
+              <Image
+                src="/media/hibook-community-02.jpg"
+                alt="A woman smiling in a city neighborhood"
+                fill
+                sizes="(max-width: 760px) 30vw, 18vw"
+              />
+            </figure>
+            <figure className="hb-photo-portrait hb-photo-portrait-two">
+              <Image
+                src="/media/hibook-community-03.jpg"
+                alt="A person looking directly toward the camera"
+                fill
+                sizes="(max-width: 760px) 24vw, 14vw"
+              />
+            </figure>
+            <div className="hb-photo-note" aria-hidden="true">
+              <HeartHandshake size={18} />
+              <span>Connection has no borders</span>
             </div>
           </div>
         </div>

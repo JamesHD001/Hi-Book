@@ -99,25 +99,25 @@ export default function AccountDeletionPage() {
 
               {loading ? (
                 <div className="mt-8 space-y-3" aria-label="Loading deletion status">
-                  <div className="h-5 w-40 animate-pulse rounded-full bg-[#e7e1d7]" />
-                  <div className="h-20 animate-pulse rounded-2xl bg-[#f1ede5]" />
-                  <div className="h-12 w-52 animate-pulse rounded-xl bg-[#e7e1d7]" />
+                  <div className="h-5 w-40 animate-pulse rounded-full bg-[var(--border)]" />
+                  <div className="h-20 animate-pulse rounded-lg bg-[var(--surface-secondary)]" />
+                  <div className="h-12 w-52 animate-pulse rounded-md bg-[var(--border)]" />
                 </div>
               ) : scheduled ? (
                 <div className="mt-8">
-                  <div className="rounded-2xl border border-[#e6c9bf] bg-[#fbebe6] p-5">
+                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-5">
                     <div className="flex items-start gap-3">
                       <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 text-sm font-bold text-amber-800" aria-hidden="true">
                         !
                       </span>
                       <div>
-                        <p className="font-semibold text-[#6f3024]">Deletion is scheduled</p>
-                        <p className="mt-1 text-sm leading-6 text-[#8f4d40]">
+                        <p className="font-semibold text-amber-950">Deletion is scheduled</p>
+                        <p className="mt-1 text-sm leading-6 text-amber-900">
                           Your account is currently in its deletion grace period. You can cancel this request before the scheduled date.
                         </p>
                       </div>
                     </div>
-                    <p className="mt-4 rounded-xl bg-[#fffdf8]/70 px-4 py-3 text-sm font-semibold text-[#6f3024]">
+                    <p className="mt-4 rounded-md bg-white/70 px-4 py-3 text-sm font-semibold text-amber-950">
                       Scheduled for {new Date(scheduled).toLocaleString()}
                     </p>
                   </div>
@@ -148,12 +148,12 @@ export default function AccountDeletionPage() {
               )}
 
               {error && (
-                <p role="alert" className="mt-5 rounded-xl border border-[#e6c9bf] bg-[#fbebe6] px-4 py-3 text-sm leading-6 text-[#8f3d2d]">
+                <p role="alert" className="mt-5 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">
                   {error}
                 </p>
               )}
               {success && (
-                <p role="status" className="mt-5 rounded-xl border border-[#cbd8cf] bg-[#eef5f0] px-4 py-3 text-sm leading-6 text-[#42634d]">
+                <p role="status" className="mt-5 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-800">
                   {success}
                 </p>
               )}

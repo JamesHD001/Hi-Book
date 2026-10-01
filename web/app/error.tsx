@@ -14,7 +14,7 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#090a0d] px-6 py-12 text-white">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--surface-inverse)] px-6 py-12 text-white">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(49,94,251,0.16),transparent_32%),radial-gradient(circle_at_82%_82%,rgba(139,92,246,0.12),transparent_30%)]" aria-hidden="true" />
       <section className="relative w-full max-w-xl rounded-[2rem] border border-white/10 bg-white/[0.045] p-8 text-center shadow-2xl shadow-black/25 backdrop-blur-xl sm:p-10">
         <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl border border-white/10 bg-white/[0.06] text-lg font-bold text-white/80" aria-hidden="true">

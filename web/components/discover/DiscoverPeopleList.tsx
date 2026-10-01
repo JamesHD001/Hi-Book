@@ -52,16 +52,15 @@ export default function DiscoverPeopleList({ people }: { people: Person[] }) {
         return (
           <article
             key={person.user_id}
-            className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg sm:p-6"
+            className="group relative overflow-hidden rounded-lg border border-(--border) bg-(--surface) p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-(--brand-primary) hover:shadow-md sm:p-6"
           >
-            <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-blue-50 blur-2xl transition group-hover:bg-violet-50" />
             <div className="relative flex items-start gap-4">
-              <Link href={`/u/${person.username}`} className="shrink-0 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+              <Link href={`/u/${person.username}`} className="shrink-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-(--brand-primary) focus:ring-offset-2">
                 {person.avatar_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={person.avatar_url} alt={`${person.display_name} profile`} className="h-16 w-16 rounded-2xl object-cover shadow-sm" />
                 ) : (
-                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-100 to-violet-100 text-lg font-bold text-slate-700 shadow-sm">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-(--brand-primary-soft) text-lg font-bold text-(--brand-primary-dark) shadow-sm">
                     {initials(person.display_name) || "?"}
                   </div>
                 )}
@@ -69,39 +68,39 @@ export default function DiscoverPeopleList({ people }: { people: Person[] }) {
               <div className="min-w-0 flex-1 pt-0.5">
                 <Link
                   href={`/u/${person.username}`}
-                  className="block truncate text-lg font-semibold tracking-tight text-slate-950 hover:text-blue-700"
+                  className="block truncate text-lg font-semibold tracking-tight text-(--foreground) hover:text-(--brand-primary-dark)"
                 >
                   {person.display_name}
                 </Link>
-                <p className="mt-0.5 truncate text-sm text-slate-500">@{person.username}</p>
+                <p className="mt-0.5 truncate text-sm text-(--muted)">@{person.username}</p>
                 {person.country_code && (
-                  <span className="mt-2 inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                  <span className="mt-2 inline-flex rounded-sm bg-(--surface-secondary) px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-(--text-secondary)">
                     {person.country_code}
                   </span>
                 )}
               </div>
             </div>
 
-            <p className="relative mt-5 min-h-12 line-clamp-2 text-sm leading-6 text-slate-600">
+            <p className="relative mt-5 min-h-12 line-clamp-2 text-sm leading-6 text-(--text-secondary)">
               {person.bio || "Open to a new connection on Hi!Book."}
             </p>
 
             <div className="relative mt-5 flex min-h-8 flex-wrap items-center gap-2">
               {person.shared_interest_count > 0 && (
-                <span className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
+                <span className="rounded-sm border border-(--brand-primary-soft) bg-(--brand-primary-soft) px-3 py-1.5 text-xs font-semibold text-(--brand-primary-dark)">
                   {person.shared_interest_count} shared interest{person.shared_interest_count === 1 ? "" : "s"}
                 </span>
               )}
               {person.shared_language_count > 0 && (
-                <span className="rounded-full border border-violet-100 bg-violet-50 px-3 py-1.5 text-xs font-semibold text-violet-700">
+                <span className="rounded-sm border border-(--brand-accent-soft) bg-(--brand-accent-soft) px-3 py-1.5 text-xs font-semibold text-(--foreground)">
                   {person.shared_language_count} shared language{person.shared_language_count === 1 ? "" : "s"}
                 </span>
               )}
-              {shared === 0 && <span className="text-xs font-medium text-slate-400">A fresh connection</span>}
+              {shared === 0 && <span className="text-xs font-medium text-(--muted)">A fresh connection</span>}
             </div>
 
-            <div className="relative mt-6 flex items-center justify-between gap-3 border-t border-slate-100 pt-5">
-              <Link href={`/u/${person.username}`} className="text-sm font-semibold text-slate-700 transition hover:text-blue-700">
+            <div className="relative mt-6 flex items-center justify-between gap-3 border-t border-(--divider) pt-5">
+              <Link href={`/u/${person.username}`} className="text-sm font-semibold text-(--text-secondary) transition hover:text-(--brand-primary-dark)">
                 View profile <span aria-hidden="true">→</span>
               </Link>
               <FollowButton targetUserId={person.user_id} initialFollowing={false} />

@@ -18,7 +18,7 @@ export default async function CommunityPage() {
   return (
     <main className="min-h-screen bg-[var(--background)]">
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8 overflow-hidden rounded-[28px] border border-[var(--border)] bg-[linear-gradient(135deg,var(--surface)_0%,var(--surface-secondary)_58%,#f5f7ff_100%)] p-6 shadow-[var(--shadow-sm)] sm:p-8 lg:p-10">
+        <div className="mb-8 overflow-hidden rounded-lg border border-[var(--border)] bg-[linear-gradient(135deg,var(--surface)_0%,var(--surface-secondary)_58%,var(--brand-accent-soft)_100%)] p-6 shadow-[var(--shadow-sm)] sm:p-8 lg:p-10">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-3xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)]/80 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-[var(--brand-primary-dark)]">
@@ -84,7 +84,7 @@ export default async function CommunityPage() {
                   <span className="text-[var(--subtle)] transition group-hover:translate-x-0.5 group-hover:text-[var(--text-secondary)]" aria-hidden="true">→</span>
                 </Link>
                 <Link href="/messages" className="group flex items-center gap-3 rounded-2xl border border-transparent p-3 transition hover:border-[var(--border)] hover:bg-[var(--surface-secondary)]">
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#eef3ff] font-bold text-[#2563eb]" aria-hidden="true">◇</span>
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-[var(--brand-primary-soft)] font-bold text-[var(--brand-primary-dark)]" aria-hidden="true">◇</span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-bold text-[var(--foreground)]">Private messages</span>
                     <span className="mt-0.5 block text-xs leading-5 text-[var(--text-secondary)]">Have one-to-one conversations with your connections.</span>
@@ -92,7 +92,7 @@ export default async function CommunityPage() {
                   <span className="text-[var(--subtle)] transition group-hover:translate-x-0.5 group-hover:text-[var(--text-secondary)]" aria-hidden="true">→</span>
                 </Link>
                 <Link href="/notifications" className="group flex items-center gap-3 rounded-2xl border border-transparent p-3 transition hover:border-[var(--border)] hover:bg-[var(--surface-secondary)]">
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#ecfdf5] font-bold text-[var(--success)]" aria-hidden="true">!</span>
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-emerald-50 font-bold text-emerald-700" aria-hidden="true">!</span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-bold text-[var(--foreground)]">Notifications</span>
                     <span className="mt-0.5 block text-xs leading-5 text-[var(--text-secondary)]">Keep up with activity and account updates.</span>

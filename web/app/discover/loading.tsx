@@ -1,6 +1,6 @@
 export default function DiscoverLoading() {
   return (
-    <main className="min-h-screen bg-[#090a0d] px-4 py-6 text-white sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-[var(--surface-inverse)] px-4 py-6 text-white sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl animate-pulse">
         <div className="h-52 rounded-[2rem] bg-white/[0.06]" />
         <div className="mt-8 grid gap-4 sm:grid-cols-3">

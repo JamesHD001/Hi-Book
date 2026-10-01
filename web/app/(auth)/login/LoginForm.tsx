@@ -66,7 +66,7 @@ export default function LoginForm() {
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             placeholder="you@example.com"
-            className="pl-11"
+            className="auth-icon-input"
           />
         </div>
       </label>
@@ -87,7 +87,7 @@ export default function LoginForm() {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             placeholder="Enter your password"
-            className="pl-11 pr-12"
+            className="auth-icon-input auth-icon-input--password"
           />
           <button
             type="button"

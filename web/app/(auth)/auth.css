@@ -18,7 +18,7 @@
   flex-direction: column;
   overflow: hidden;
   padding: 2.25rem 2.5rem 2rem;
-  background: linear-gradient(135deg, var(--brand-primary-dark), #006e66 58%, var(--brand-primary));
+  background: linear-gradient(135deg, var(--surface-inverse), #223a2f 58%, var(--brand-primary-dark));
   color: var(--on-inverse);
 }
 

@@ -1,16 +1,16 @@
-# Hi!Book Design System — V1.0 Foundation
+# Hi!Book Design System — Connected Social
 
-The implementation follows the “Connected Social” visual direction.
+The product-wide visual direction pairs human connection and social discovery with an editorial, entertainment-rich presentation.
 
 ## Brand
 
-- Primary: Hi!Book teal #00B8A9
-- Primary dark: #008F84
-- Primary soft: #D9F7F4
-- Accent: #FFC800
-- Accent soft: #FFF4C2
+- Primary: Coral #C74634
+- Primary dark: #A33829
+- Primary soft: #FFE2DC
+- Accent: Acid lime #D9FA58
+- Accent soft: #F3FACD
 
-Yellow is reserved for brand personality and emphasis. Functional states use semantic colors instead.
+Coral drives primary actions and lime is reserved for brand personality and emphasis. Functional states use semantic colors instead.
 
 ## Semantic colors
 
@@ -21,25 +21,25 @@ Yellow is reserved for brand personality and emphasis. Functional states use sem
 
 ## Light surfaces
 
-- Canvas: #F7F9FA
+- Canvas: #F5F7F3
 - Surface: #FFFFFF
-- Secondary surface: #F1F5F5
-- Primary text: #0F172A
-- Secondary text: #64748B
-- Muted text: #94A3B8
-- Border: #E2E8F0
-- Divider: #E8EEF0
+- Secondary surface: #EAF0EB
+- Primary text: #15211F
+- Secondary text: #586660
+- Muted text: #89958E
+- Border: #D7E0D9
+- Divider: #DCE4DE
 
 ## Dark surfaces
 
-- Canvas: #0B1220
-- Surface: #121C2B
-- Secondary surface: #182536
-- Primary text: #F8FAFC
-- Secondary text: #CBD5E1
-- Muted text: #94A3B8
-- Border: #273548
-- Divider: #223044
+- Canvas: #111914
+- Surface: #1A241E
+- Secondary surface: #222F26
+- Primary text: #F2F5EF
+- Secondary text: #C1CBC2
+- Muted text: #89958E
+- Border: #3A483E
+- Divider: #303D34
 
 ## Typography
 
@@ -48,11 +48,11 @@ Figtree is the primary testing candidate. The interface uses one type family acr
 ## Radius
 
 - sm: 4px
-- md: 8px
-- lg: 12px
-- xl: 16px
-- 2xl: 20px
-- 3xl: 24px
+- md: 6px
+- lg: 8px
+- xl: 10px
+- 2xl: 12px
+- 3xl: 16px
 - full: 999px
 
 ## Spacing
@@ -64,3 +64,7 @@ The first implementation uses a 4px base scale: 4, 8, 12, 16, 20, 24, 32, 40, 48
 Hi!Book should look like a place where people connect — not a place where books live.
 
 Avoid literal book/page/paper/library metaphors in primary UI.
+
+## Product-wide visual system
+
+Use coral, acid lime, evergreen ink, and green-neutral surfaces consistently across the landing page, authentication, discovery, community, profiles, messaging, and utility screens. Keep the hierarchy editorial and expressive without turning operational views into marketing layouts. Use real, locally served people imagery where it helps users inspect content; never imply that stock subjects are Hi!Book members.

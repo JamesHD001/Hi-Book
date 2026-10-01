@@ -28,8 +28,8 @@ export default function AppealForm({ actionId }: { actionId: string }) {
   }
 
   return (
-    <div className="mt-4 rounded-xl border border-[#d8d2c6] bg-[#f6f2ea] p-4">
-      <label className="text-sm font-medium text-[#171717]" htmlFor={`appeal-${actionId}`}>
+    <div className="mt-4 rounded-md border border-(--border) bg-(--surface-secondary) p-4">
+      <label className="text-sm font-medium text-(--foreground)" htmlFor={`appeal-${actionId}`}>
         Appeal this action
       </label>
       <textarea
@@ -40,21 +40,21 @@ export default function AppealForm({ actionId }: { actionId: string }) {
         rows={4}
         disabled={state === "submitting" || state === "success"}
         placeholder="Explain why you believe this moderation action should be reconsidered."
-        className="mt-2 w-full rounded-lg border border-[#cfc8bc] bg-[#fffdf8] p-3 text-sm outline-none focus:border-[#c85b45]"
+        className="mt-2 w-full rounded-md border border-(--border) bg-(--surface) p-3 text-sm outline-none focus:border-(--brand-primary) focus:ring-2 focus:ring-(--brand-primary)/15"
       />
       <div className="mt-3 flex items-center justify-between gap-3">
-        <span className="text-xs text-[#777168]">10–5,000 characters</span>
+        <span className="text-xs text-(--muted)">10–5,000 characters</span>
         <button
           type="button"
           onClick={submit}
           disabled={reason.trim().length < 10 || state === "submitting" || state === "success"}
-          className="rounded-lg bg-[#171717] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-md bg-(--brand-primary) px-4 py-2 text-sm font-semibold text-white transition hover:bg-(--brand-primary-dark) disabled:cursor-not-allowed disabled:opacity-40"
         >
           {state === "submitting" ? "Submitting…" : state === "success" ? "Submitted" : "Submit appeal"}
         </button>
       </div>
       {message && (
-        <p className={`mt-3 text-sm ${state === "error" ? "text-[#8f3d2d]" : "text-[#42634d]"}`}>
+        <p className={`mt-3 text-sm ${state === "error" ? "text-red-700" : "text-emerald-700"}`}>
           {message}
         </p>
       )}

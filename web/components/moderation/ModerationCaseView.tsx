@@ -72,43 +72,43 @@ export default function ModerationCaseView({ initialCase }: { initialCase: CaseD
 
   return (
     <div className="space-y-6">
-      <Link href="/moderation" className="text-sm font-semibold text-slate-600 hover:text-slate-950">← Back to queue</Link>
-      <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <Link href="/moderation" className="text-sm font-semibold text-(--text-secondary) hover:text-(--foreground)">← Back to queue</Link>
+      <header className="rounded-lg border border-(--border) bg-(--surface) p-6 shadow-sm">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="font-mono text-xs font-semibold text-slate-500">{caseData.case_number}</p>
-            <h1 className="mt-1 text-2xl font-bold text-slate-950">{caseData.target_type} case</h1>
-            <p className="mt-1 break-all font-mono text-xs text-slate-500">{caseData.target_id}</p>
+            <p className="font-mono text-xs font-semibold text-(--muted)">{caseData.case_number}</p>
+            <h1 className="mt-1 text-2xl font-bold text-(--foreground)">{caseData.target_type} case</h1>
+            <p className="mt-1 break-all font-mono text-xs text-(--muted)">{caseData.target_id}</p>
           </div>
-          <div className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700">{caseData.status.replaceAll("_", " ")}</div>
+          <div className="rounded-sm bg-(--surface-secondary) px-3 py-1.5 text-xs font-semibold text-(--text-secondary)">{caseData.status.replaceAll("_", " ")}</div>
         </div>
       </header>
 
       {error ? <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-950">Evidence</h2>
+      <section className="rounded-lg border border-(--border) bg-(--surface) p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-(--foreground)">Evidence</h2>
         <div className="mt-4 space-y-3">
-          {caseData.evidence.length === 0 ? <p className="text-sm text-slate-500">No evidence recorded.</p> : caseData.evidence.map((item) => (
-            <div key={item.id} className="rounded-xl bg-slate-50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{item.evidence_type.replaceAll("_", " ")}</p>
-              {item.metadata?.reason ? <p className="mt-2 text-sm font-semibold text-slate-900">Reason: {item.metadata.reason.replaceAll("_", " ")}</p> : null}
-              {item.metadata?.description ? <p className="mt-1 whitespace-pre-wrap text-sm text-slate-700">{item.metadata.description}</p> : null}
+          {caseData.evidence.length === 0 ? <p className="text-sm text-(--muted)">No evidence recorded.</p> : caseData.evidence.map((item) => (
+            <div key={item.id} className="rounded-md bg-(--surface-secondary) p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-(--muted)">{item.evidence_type.replaceAll("_", " ")}</p>
+              {item.metadata?.reason ? <p className="mt-2 text-sm font-semibold text-(--foreground)">Reason: {item.metadata.reason.replaceAll("_", " ")}</p> : null}
+              {item.metadata?.description ? <p className="mt-1 whitespace-pre-wrap text-sm text-(--text-secondary)">{item.metadata.description}</p> : null}
             </div>
           ))}
         </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-950">Moderator action</h2>
-        <p className="mt-1 text-sm text-slate-500">Actions are server-authorized and permanently audited.</p>
+      <section className="rounded-lg border border-(--border) bg-(--surface) p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-(--foreground)">Moderator action</h2>
+        <p className="mt-1 text-sm text-(--text-secondary)">Actions are server-authorized and permanently audited.</p>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <label className="text-sm font-medium text-slate-700">Action<select value={action} onChange={(e) => setAction(e.target.value as typeof action)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2">{actionOptions.map((value) => <option key={value}>{value.replaceAll("_", " ")}</option>)}</select></label>
-          <label className="text-sm font-medium text-slate-700">Severity<select value={severity} onChange={(e) => setSeverity(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"><option>LOW</option><option>MEDIUM</option><option>HIGH</option><option>CRITICAL</option></select></label>
-          <label className="text-sm font-medium text-slate-700 sm:col-span-2">Reason<textarea value={reason} onChange={(e) => setReason(e.target.value)} maxLength={2000} rows={3} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" /></label>
-          <label className="text-sm font-medium text-slate-700">Duration (minutes, optional)<input type="number" min={1} max={525600} value={duration} onChange={(e) => setDuration(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" /></label>
+          <label className="text-sm font-medium text-(--foreground)">Action<select value={action} onChange={(e) => setAction(e.target.value as typeof action)} className="mt-1 w-full rounded-md border border-(--border) bg-(--surface) px-3 py-2 focus:border-(--brand-primary)">{actionOptions.map((value) => <option key={value}>{value.replaceAll("_", " ")}</option>)}</select></label>
+          <label className="text-sm font-medium text-(--foreground)">Severity<select value={severity} onChange={(e) => setSeverity(e.target.value)} className="mt-1 w-full rounded-md border border-(--border) bg-(--surface) px-3 py-2 focus:border-(--brand-primary)"><option>LOW</option><option>MEDIUM</option><option>HIGH</option><option>CRITICAL</option></select></label>
+          <label className="text-sm font-medium text-(--foreground) sm:col-span-2">Reason<textarea value={reason} onChange={(e) => setReason(e.target.value)} maxLength={2000} rows={3} className="mt-1 w-full rounded-md border border-(--border) bg-(--surface) px-3 py-2 focus:border-(--brand-primary)" /></label>
+          <label className="text-sm font-medium text-(--foreground)">Duration (minutes, optional)<input type="number" min={1} max={525600} value={duration} onChange={(e) => setDuration(e.target.value)} className="mt-1 w-full rounded-md border border-(--border) bg-(--surface) px-3 py-2 focus:border-(--brand-primary)" /></label>
         </div>
-        <button type="button" onClick={executeAction} disabled={busy || caseData.status === "RESOLVED" || caseData.status === "CLOSED"} className="mt-4 rounded-lg bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">{busy ? "Processing…" : "Execute moderation action"}</button>
+        <button type="button" onClick={executeAction} disabled={busy || caseData.status === "RESOLVED" || caseData.status === "CLOSED"} className="mt-4 rounded-md bg-(--brand-primary) px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-(--brand-primary-dark) disabled:cursor-not-allowed disabled:opacity-50">{busy ? "Processing…" : "Execute moderation action"}</button>
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
