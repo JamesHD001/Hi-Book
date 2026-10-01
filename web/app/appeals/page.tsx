@@ -27,40 +27,40 @@ export default async function AppealsPage() {
   });
 
   return (
-    <main className="min-h-screen bg-[#f6f2ea] px-4 py-8 text-[#171717] sm:px-6 lg:px-8"><div className="mx-auto max-w-4xl">
+    <main className="min-h-screen bg-[var(--background)] px-4 py-8 text-[var(--foreground)] sm:px-6 lg:px-8"><div className="mx-auto max-w-4xl">
       <header className="mb-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#777168]">Safety</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#171717]">Your moderation actions</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-[#68645d]">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--brand-primary-dark)]">Safety</p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-[var(--foreground)]">Your moderation actions</h1>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--text-secondary)]">
           If you believe an active moderation action was applied incorrectly, you can submit one appeal for review.
         </p>
       </header>
 
       {error ? (
-        <div className="rounded-2xl border border-[#e6c9bf] bg-[#fbebe6] p-6 text-sm text-[#8f3d2d]">
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-6 text-sm text-[var(--foreground)]">
           We could not load your active moderation actions right now.
         </div>
       ) : (data ?? []).length === 0 ? (
-        <div className="rounded-2xl border border-[#d8d2c6] bg-[#fffdf8] p-8 text-center ">
-          <h2 className="text-lg font-semibold text-[#171717]">No active moderation actions</h2>
-          <p className="mt-2 text-sm text-[#68645d]">There is nothing currently available to appeal.</p>
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-8 text-center">
+          <h2 className="text-lg font-semibold text-[var(--foreground)]">No active moderation actions</h2>
+          <p className="mt-2 text-sm text-[var(--text-secondary)]">There is nothing currently available to appeal.</p>
         </div>
       ) : (
         <div className="space-y-5">
           {(data as ActiveAction[]).map((action) => (
-            <article key={action.action_id} className="rounded-2xl border border-[#d8d2c6] bg-[#fffdf8] p-6 ">
+            <article key={action.action_id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h2 className="font-semibold text-[#171717]">{action.action_type.replaceAll("_", " ")}</h2>
-                  <p className="mt-1 text-sm text-[#777168]">Severity: {action.severity}</p>
+                  <h2 className="font-semibold text-[var(--foreground)]">{action.action_type.replaceAll("_", " ")}</h2>
+                  <p className="mt-1 text-sm text-[var(--text-secondary)]">Severity: {action.severity}</p>
                 </div>
                 {action.expires_at && (
-                  <span className="rounded-full bg-[#f6e5df] px-3 py-1 text-xs font-medium text-[#8f3d2d]">
+                  <span className="rounded-full bg-[var(--brand-primary-soft)] px-3 py-1 text-xs font-medium text-[var(--brand-primary-dark)]">
                     Expires {new Date(action.expires_at).toLocaleString()}
                   </span>
                 )}
               </div>
-              {action.reason && <p className="mt-4 text-sm leading-6 text-slate-700">{action.reason}</p>}
+              {action.reason && <p className="mt-4 text-sm leading-6 text-[var(--text-secondary)]">{action.reason}</p>}
               {action.appealable && <AppealForm actionId={action.action_id} />}
             </article>
           ))}

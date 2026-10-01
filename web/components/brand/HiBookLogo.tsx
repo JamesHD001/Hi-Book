@@ -1,6 +1,6 @@
 import Image, { type ImageProps } from "next/image";
-import appIcon from "../../icons/hibook-app-icon.png";
-import completeLogo from "../../icons/hibook-complete-logo.png";
+import appIcon from "../../icons/hibook-web-icon.svg";
+import completeLogo from "../../icons/hibook-logo.svg";
 
 type HiBookLogoProps = Omit<ImageProps, "alt" | "src"> & {
   compact?: boolean;

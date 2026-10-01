@@ -62,24 +62,24 @@ export default function AccountDeletionPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#171717] px-4 py-8 text-[#171717] sm:px-6 sm:py-12">
+    <main className="min-h-screen bg-[var(--background)] px-4 py-8 text-[var(--foreground)] sm:px-6 sm:py-12">
       <div className="mx-auto max-w-4xl">
-        <section className="overflow-hidden rounded-[2rem] border border-[#d8d2c6] bg-[#fffdf8] ">
-          <div className="relative overflow-hidden bg-[#171717] px-6 py-8 text-white sm:px-10 sm:py-10">
-            <div className="absolute -right-24 -top-28 h-64 w-64 rounded-full bg-[#c85b45]/10 blur-3xl" aria-hidden="true" />
-            <div className="absolute -bottom-32 left-1/3 h-72 w-72 rounded-full bg-[#c85b45]/10 blur-3xl" aria-hidden="true" />
+        <section className="overflow-hidden rounded-[2rem] border border-[var(--border)] bg-[var(--surface)]">
+          <div className="relative overflow-hidden bg-[var(--surface-inverse)] px-6 py-8 text-[var(--on-inverse)] sm:px-10 sm:py-10">
+            <div className="absolute -right-24 -top-28 h-64 w-64 rounded-full bg-[var(--brand-primary)]/10 blur-3xl" aria-hidden="true" />
+            <div className="absolute -bottom-32 left-1/3 h-72 w-72 rounded-full bg-[var(--brand-primary)]/10 blur-3xl" aria-hidden="true" />
             <div className="relative">
               <button
                 type="button"
                 onClick={() => router.push("/profile")}
-                className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/15 bg-[#fffdf8]/5 px-4 py-2 text-sm font-semibold text-white/80 transition hover:bg-[#fffdf8]/10 focus:outline-none focus:ring-2 focus:ring-amber-300/70"
+                className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-semibold text-[var(--on-inverse)] transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/70"
               >
                 <span aria-hidden="true">←</span>
                 Back to profile
               </button>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#c85b45]">Account lifecycle</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--brand-primary)]">Account lifecycle</p>
               <h1 className="mt-3 max-w-2xl text-3xl font-semibold tracking-tight sm:text-4xl">Your account, on your terms.</h1>
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-white/65 sm:text-base">
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--text-secondary)] sm:text-base">
                 Manage a scheduled deletion request during its grace period. Cancelling the request keeps your Hi!Book account active.
               </p>
             </div>
@@ -88,12 +88,12 @@ export default function AccountDeletionPage() {
           <div className="grid gap-8 p-6 sm:p-10 lg:grid-cols-[1fr_0.72fr]">
             <div>
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#171717] text-sm font-bold text-[#c85b45]" aria-hidden="true">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--surface-inverse)] text-sm font-bold text-[var(--brand-primary)]" aria-hidden="true">
                   H!
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-[#171717]">Deletion status</p>
-                  <p className="text-xs text-[#777168]">Only an active scheduled request is shown here.</p>
+                  <p className="text-sm font-semibold text-[var(--foreground)]">Deletion status</p>
+                  <p className="text-xs text-[var(--text-secondary)]">Only an active scheduled request is shown here.</p>
                 </div>
               </div>
 
@@ -126,21 +126,21 @@ export default function AccountDeletionPage() {
                     type="button"
                     onClick={() => void cancelDeletion()}
                     disabled={busy}
-                    className="mt-6 inline-flex min-h-12 items-center justify-center rounded-xl bg-[#171717] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#2a2a2a] focus:outline-none focus:ring-2 focus:ring-[#c85b45] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="mt-6 inline-flex min-h-12 items-center justify-center rounded-xl bg-[var(--surface-inverse)] px-6 py-3 text-sm font-semibold text-[var(--on-inverse)] transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {busy ? "Cancelling…" : "Cancel deletion request"}
                   </button>
                 </div>
               ) : (
-                <div className="mt-8 rounded-2xl border border-[#cbd8cf] bg-[#eef5f0] p-5">
-                  <p className="font-semibold text-[#234a32]">Your account is active</p>
-                  <p className="mt-1 text-sm leading-6 text-[#42634d]">
+                <div className="mt-8 rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-5">
+                  <p className="font-semibold text-[var(--foreground)]">Your account is active</p>
+                  <p className="mt-1 text-sm leading-6 text-[var(--text-secondary)]">
                     There is no active deletion request for this account.
                   </p>
                   <button
                     type="button"
                     onClick={() => router.push("/profile")}
-                    className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl border border-[#b9cabe] bg-[#fffdf8] px-5 py-2.5 text-sm font-semibold text-[#234a32] transition hover:bg-[#e5f0e8] focus:outline-none focus:ring-2 focus:ring-[#5f8a6b] focus:ring-offset-2"
+                    className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] px-5 py-2.5 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--surface-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] focus:ring-offset-2"
                   >
                     Return to profile
                   </button>
@@ -159,28 +159,28 @@ export default function AccountDeletionPage() {
               )}
             </div>
 
-            <aside className="rounded-2xl border border-[#d8d2c6] bg-[#f6f2ea] p-5 sm:p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#777168]">What happens next</p>
+            <aside className="rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-5 sm:p-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">What happens next</p>
               <div className="mt-5 space-y-5">
                 <div className="flex gap-3">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#171717] text-xs font-bold text-white">1</span>
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--surface-inverse)] text-xs font-bold text-[var(--on-inverse)]">1</span>
                   <div>
-                    <p className="text-sm font-semibold text-[#171717]">Grace period</p>
-                    <p className="mt-1 text-sm leading-6 text-[#68645d]">Your scheduled request remains reversible until the deletion date.</p>
+                    <p className="text-sm font-semibold text-[var(--foreground)]">Grace period</p>
+                    <p className="mt-1 text-sm leading-6 text-[var(--text-secondary)]">Your scheduled request remains reversible until the deletion date.</p>
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#171717] text-xs font-bold text-white">2</span>
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--surface-inverse)] text-xs font-bold text-[var(--on-inverse)]">2</span>
                   <div>
-                    <p className="text-sm font-semibold text-[#171717]">Cancel if you change your mind</p>
-                    <p className="mt-1 text-sm leading-6 text-[#68645d]">Use the cancellation control while the request is still scheduled.</p>
+                    <p className="text-sm font-semibold text-[var(--foreground)]">Cancel if you change your mind</p>
+                    <p className="mt-1 text-sm leading-6 text-[var(--text-secondary)]">Use the cancellation control while the request is still scheduled.</p>
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#171717] text-xs font-bold text-white">3</span>
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--surface-inverse)] text-xs font-bold text-[var(--on-inverse)]">3</span>
                   <div>
-                    <p className="text-sm font-semibold text-[#171717]">Need help?</p>
-                    <p className="mt-1 text-sm leading-6 text-[#68645d]">Return to your profile to review your account and privacy settings.</p>
+                    <p className="text-sm font-semibold text-[var(--foreground)]">Need help?</p>
+                    <p className="mt-1 text-sm leading-6 text-[var(--text-secondary)]">Return to your profile to review your account and privacy settings.</p>
                   </div>
                 </div>
               </div>

@@ -22,12 +22,12 @@ export default async function SettingsPage() {
   ]);
 
   return (
-    <main className="min-h-screen bg-[#f6f2ea] pb-20">
-      <section className="border-b border-[#d8d2c6] bg-[#fffdf8]">
+    <main className="min-h-screen bg-[var(--background)] pb-20">
+      <section className="border-b border-[var(--border)] bg-[var(--surface)]">
         <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#c85b45]">Account</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[#171717] sm:text-4xl">Settings</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-[#68645d] sm:text-base">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--brand-primary-dark)]">Account</p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[var(--foreground)] sm:text-4xl">Settings</h1>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--text-secondary)] sm:text-base">
             Manage your Hi!Book preferences, notifications, account access, and privacy controls from one place.
           </p>
         </div>

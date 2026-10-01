@@ -55,3 +55,9 @@
 - [ ] Test duplicate-email and invalid-credential messaging (requires a live auth test account)
 - [ ] End-to-end test sign-in, registration, confirmation, and recovery (requires live email delivery)
 - [ ] Review authentication accessibility on desktop and mobile
+
+## Current implementation status
+
+- [x] Apply theme tokens across remaining moderation and messaging route shells
+- [x] Verify the Next.js production build succeeds after the final design-system pass
+- [x] Keep the app aligned to the Connected Social design direction without regressing core routes

@@ -32,9 +32,9 @@ export default async function ModerationPage() {
   if (error) {
     return (
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="rounded-2xl border border-[#e6c9bf] bg-[#fbebe6] p-6">
-          <p className="text-sm font-semibold text-[#8f3d2d]">Moderation access unavailable</p>
-          <p className="mt-1 text-sm text-[#8f3d2d]">
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-6">
+          <p className="text-sm font-semibold text-[var(--foreground)]">Moderation access unavailable</p>
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">
             You do not have permission to view the moderation queue, or the moderation service is temporarily unavailable.
           </p>
         </div>
@@ -45,13 +45,13 @@ export default async function ModerationPage() {
   return (
     <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
       <header className="mb-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#777168]">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--brand-primary-dark)]">
           Safety & Moderation
         </p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#171717]">
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-[var(--foreground)]">
           Moderation queue
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-[#68645d]">
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--text-secondary)]">
           Review safety reports through server-authorized moderation cases. Reports are signals for human review, not automatic proof of wrongdoing.
         </p>
       </header>
