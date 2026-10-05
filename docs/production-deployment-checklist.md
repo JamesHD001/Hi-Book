@@ -22,6 +22,12 @@ This checklist is the release gate for deploying Hi!Book to a real hosting and S
 - [ ] Confirm Storage policies and bucket configuration match the migration-defined access model.
 - [ ] Confirm Realtime is enabled only for the required tables/channels.
 - [ ] Confirm Auth provider configuration, redirect URLs, email settings, and rate limits.
+- [ ] For Google, configure the OAuth Web client ID and secret in Supabase Auth; register the Supabase Auth callback URI with Google and add each app origin/callback to Supabase's redirect URL allow list.
+- [ ] For Apple, configure the Services ID and generated client secret in Supabase Auth; register the Supabase Auth callback URI with Apple and configure the app's email relay domain. Rotate Apple's client secret every six months.
+- [ ] Enable Supabase manual identity linking so the callback can undo a newly auto-linked provider identity on a same-email/password-account collision.
+- [ ] Confirm Supabase OAuth callback redirects include each deployed Hi!Book `/auth/callback` URL. The browser returns to this route; provider secrets remain in Supabase, never in web environment variables.
+- [ ] Exercise Google, Apple (including Hide My Email), cancellation, callback expiry, same-email collision, and mobile browser flows using disposable accounts.
+- Set `NEXT_PUBLIC_SITE_URL` to the canonical app origin in each environment; it is used only to construct OAuth redirect URLs. If unset, the current request origin is used.
 - [ ] Confirm production service-role credentials are stored only as protected server-side secrets where required.
 
 ## 3. Hosting/deployment gate

@@ -3,6 +3,7 @@ import { CheckCircle2, ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import HiBookLogo from "@/components/brand/HiBookLogo";
 import HBButton from "@/components/ui/HBButton";
+import SocialRegistrationForm from "@/components/auth/SocialRegistrationForm";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,42 @@ export default async function OnboardingPage({
     .maybeSingle();
 
   if (profile?.account_status === "ACTIVE") redirect("/community");
+
+  const providers = user.app_metadata.providers;
+  const isSocialUser = Array.isArray(providers) && providers.some((provider) => provider === "google" || provider === "apple");
+  if (!profile && isSocialUser) {
+    const metadata = user.user_metadata;
+    const fullName = String(metadata.full_name ?? metadata.name ?? "").trim().split(/\s+/);
+    const firstName = String(metadata.given_name ?? metadata.first_name ?? fullName[0] ?? "");
+    const lastName = String(metadata.family_name ?? metadata.last_name ?? fullName.slice(1).join(" ") ?? "");
+
+    return (
+      <main className="min-h-screen bg-[var(--background)] px-5 py-10 text-[var(--foreground)] sm:px-6 sm:py-14">
+        <div className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-2xl items-center justify-center">
+          <section className="w-full overflow-hidden rounded-[var(--radius-2xl)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-lg)]">
+            <div className="bg-[var(--brand-primary-dark)] px-6 py-6 text-white sm:px-8">
+              <div className="flex items-center gap-3">
+                <HiBookLogo className="h-10 w-10 text-white" compact aria-hidden="true" />
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/60">Hi!Book</p>
+                  <p className="mt-0.5 text-sm font-semibold text-white/90">Complete your registration</p>
+                </div>
+              </div>
+            </div>
+            <div className="px-6 py-8 sm:px-8 sm:py-10">
+              <h1 className="text-3xl font-black sm:text-4xl">A few details, then you’re in.</h1>
+              <p className="mt-4 text-sm leading-7 text-[var(--text-secondary)]">
+                Add the required account information and accept the current Terms of Use and Privacy Policy to finish creating your Hi!Book profile.
+              </p>
+              <SocialRegistrationForm initialFirstName={firstName} initialLastName={lastName} />
+            </div>
+          </section>
+        </div>
+      </main>
+    );
+  }
+
+  if (!profile) redirect("/login?auth_error=session");
 
   return (
     <main className="min-h-screen bg-[var(--background)] px-5 py-10 text-[var(--foreground)] sm:px-6 sm:py-14">

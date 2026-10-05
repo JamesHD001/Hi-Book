@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import HBButton from "@/components/ui/HBButton";
 import HBInput from "@/components/ui/HBInput";
+import AuthProviderButtons from "@/components/auth/AuthProviderButtons";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -110,6 +111,8 @@ export default function LoginForm() {
         {loading ? "Signing in…" : "Sign in to Hi!Book"}
         {!loading && <span aria-hidden="true">→</span>}
       </HBButton>
+
+      <AuthProviderButtons source="login" />
 
       <div className="flex items-center gap-3 py-1" aria-hidden="true">
         <div className="h-px flex-1 bg-[var(--divider)]" />

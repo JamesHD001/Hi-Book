@@ -49,6 +49,16 @@
 - [x] Notifications repository/UI audit.
 - [x] Settings/account repository/UI audit.
 
+## Authentication — Google and Apple
+
+- [x] Add Google and Apple OAuth through Supabase Auth PKCE with secure callback state and cookie-backed sessions.
+- [x] Preserve provider identities as the account key; reject and undo newly auto-linked provider identities when the matching Hi!Book account already exists.
+- [x] Route new social identities through required age, country/region, gender, name, and legal-acceptance onboarding before account activation.
+- [x] Handle provider cancellation, OAuth/callback/session errors, loading/disabled controls, and responsive accessible provider buttons.
+- [x] Keep email/password registration, sign-in, session restoration, protected routes, and logout on their existing Supabase Auth paths.
+- [ ] Configure Google and Apple credentials, redirect allow lists, Apple relay settings, and Supabase manual identity linking in each environment.
+- [ ] Run live Google/Apple journeys with disposable provider accounts; local Supabase integration tests require Docker or Podman.
+
 ## MVP domains implemented
 - [x] Authentication and account lifecycle foundation
 - [x] Profiles and privacy settings

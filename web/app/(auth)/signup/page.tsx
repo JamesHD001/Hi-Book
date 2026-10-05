@@ -10,15 +10,17 @@ export default function SignupPage() {
     <main className="auth-page auth-page--entry">
       <div className="auth-shell auth-shell--signup">
         <section className="auth-visual auth-visual--signup">
-          <Image
-            src="/media/hibook-community-01.jpg"
-            alt="Friends sitting together and sharing a moment"
-            fill
-            priority
-            sizes="(max-width: 1023px) 100vw, 44vw"
-            className="auth-visual__image"
-          />
-          <div className="auth-visual__shade" aria-hidden="true" />
+          <div className="auth-visual__image-frame" aria-hidden="true">
+            <Image
+              src="/media/hibook-community-01.jpg"
+              alt="Friends sitting together and sharing a moment"
+              fill
+              priority
+              sizes="(max-width: 1023px) 100vw, 44vw"
+              className="auth-visual__image"
+            />
+            <div className="auth-visual__shade" />
+          </div>
 
           <header className="auth-visual__header">
             <Link href="/" className="group inline-flex items-center gap-3" aria-label="Hi!Book home">

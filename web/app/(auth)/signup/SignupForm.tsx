@@ -5,6 +5,7 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import HBInput from "@/components/ui/HBInput";
+import AuthProviderButtons from "@/components/auth/AuthProviderButtons";
 
 const GENDERS = [
   { value: "MALE", label: "Male" },
@@ -89,6 +90,8 @@ export default function SignupForm() {
 
   return (
     <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+      <AuthProviderButtons source="signup" />
+      <div className="auth-divider" aria-hidden="true"><span>or use email</span></div>
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">About you</p>
         <div className="mt-3 grid gap-5 sm:grid-cols-2">

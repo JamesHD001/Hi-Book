@@ -2725,6 +2725,13 @@ blockquote {
   background: #174b43;
 }
 
+.auth-page--entry .auth-visual__image-frame {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
 .auth-page--entry .auth-visual__image {
   z-index: 0;
   object-fit: cover;

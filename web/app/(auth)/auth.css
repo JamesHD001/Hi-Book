@@ -202,6 +202,71 @@
   flex: 1;
 }
 
+.auth-divider span {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.auth-provider-group {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.auth-provider-button {
+  display: flex;
+  min-height: 3.25rem;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--foreground);
+  font-size: 0.875rem;
+  font-weight: 700;
+  transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
+}
+
+.auth-provider-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: var(--brand-primary);
+  background: var(--surface-secondary);
+}
+
+.auth-provider-button:focus-visible {
+  outline: 3px solid var(--brand-primary);
+  outline-offset: 3px;
+}
+
+.auth-provider-button:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+
+.auth-provider-button__mark {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: 0 0 1.25rem;
+}
+
+.auth-provider-button__mark--apple {
+  fill: currentColor;
+}
+
+.auth-provider-error {
+  border: 1px solid color-mix(in srgb, var(--error) 20%, transparent);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--error) 10%, transparent);
+  padding: 0.75rem 1rem;
+  color: var(--error);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
 .auth-link-row {
   margin-top: 1.5rem;
   text-align: center;
@@ -245,5 +310,15 @@
   .auth-form-panel {
     min-height: 100vh;
     padding: 1.5rem 1.25rem 2rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-provider-button {
+    transition: none;
+  }
+
+  .auth-provider-button:hover:not(:disabled) {
+    transform: none;
   }
 }
