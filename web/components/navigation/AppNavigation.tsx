@@ -55,13 +55,6 @@ export default function AppNavigation() {
 
           <div className="ml-auto flex items-center gap-2 md:ml-2">
             <Link
-              href="/profile"
-              className="hb-app-icon-button grid h-10 w-10 place-items-center rounded-[var(--radius-lg)] border border-[var(--border)] transition"
-              aria-label="Open your profile"
-            >
-              <UserRound size={17} aria-hidden="true" />
-            </Link>
-            <Link
               href="/settings"
               className="hb-app-icon-button grid h-10 w-10 place-items-center rounded-[var(--radius-lg)] border border-[var(--border)] transition md:hidden"
               aria-label="Open settings"

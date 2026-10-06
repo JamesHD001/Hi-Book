@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap;
 
-select plan(12);
+select plan(18);
 
 select ok(exists (
   select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
@@ -23,6 +23,18 @@ select is((select attnotnull from pg_attribute where attrelid = 'public.users'::
   'country remains database-required for every initialized user');
 select is(has_table_privilege('authenticated', 'public.users', 'SELECT'), true,
   'authenticated can query users through row-level security');
+select is(has_table_privilege('authenticated', 'public.profiles', 'SELECT'), true,
+  'authenticated can read profiles through row-level security');
+select is(has_table_privilege('authenticated', 'public.user_privacy_settings', 'SELECT'), true,
+  'authenticated can read their privacy settings');
+select is(has_table_privilege('authenticated', 'public.user_language', 'SELECT'), true,
+  'authenticated can read their language selections');
+select is(has_table_privilege('authenticated', 'public.user_interest', 'SELECT'), true,
+  'authenticated can read their interest selections');
+select is(has_table_privilege('authenticated', 'public.language', 'SELECT'), true,
+  'authenticated can read language options');
+select is(has_table_privilege('authenticated', 'public.interest', 'SELECT'), true,
+  'authenticated can read interest options');
 select ok(exists (select 1 from pg_trigger where tgname = 'on_auth_user_created'), 'auth-user bootstrap trigger remains installed');
 select ok((select prosecdef from pg_proc p join pg_namespace n on n.oid = p.pronamespace
   where n.nspname = 'public' and p.proname = 'handle_auth_user_created'), 'auth-user bootstrap remains SECURITY DEFINER');

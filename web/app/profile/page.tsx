@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export default async function ProfilePage() {
   const { supabase, user } = await requireActiveUser();
 
-  const [{ data: profile }, { data: account }, { data: privacy }, { data: languages }, { data: interests }, { data: userLanguages }, { data: userInterests }] = await Promise.all([
+  const profileData = await Promise.all([
     supabase
       .from("profiles")
       .select("display_name, username, bio, avatar_path")
@@ -24,6 +24,10 @@ export default async function ProfilePage() {
     supabase.from("user_language").select("language_id").eq("user_id", user.id),
     supabase.from("user_interest").select("interest_id").eq("user_id", user.id),
   ]);
+  const profileQueryError = profileData.find(({ error }) => error)?.error;
+  if (profileQueryError) throw profileQueryError;
+
+  const [{ data: profile }, { data: account }, { data: privacy }, { data: languages }, { data: interests }, { data: userLanguages }, { data: userInterests }] = profileData;
 
   let avatarUrl: string | null = null;
   if (profile?.avatar_path) {

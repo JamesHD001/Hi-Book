@@ -1517,7 +1517,6 @@ blockquote {
 }
 
 .hb-app-icon-button {
-  display: inline-grid;
   width: 40px;
   height: 40px;
   place-items: center;
