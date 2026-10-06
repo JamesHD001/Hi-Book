@@ -11,8 +11,8 @@ export default function SettingsLoading() {
         </div>
       </section>
       <section className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
-        {sections.map((height) => (
-          <section key={height} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        {sections.map((height, index) => (
+          <section key={`${height}-${index}`} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
             <div className="h-6 w-40 animate-pulse rounded-xl bg-slate-200" />
             <div className="mt-6 h-10 animate-pulse rounded-xl bg-slate-100" />
             <div className="mt-3 h-10 animate-pulse rounded-xl bg-slate-100" />
