@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap;
 
-select plan(11);
+select plan(12);
 
 select ok(exists (
   select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
@@ -21,6 +21,8 @@ select ok((select has_function_privilege('authenticated', p.oid, 'EXECUTE') from
 
 select is((select attnotnull from pg_attribute where attrelid = 'public.users'::regclass and attname = 'country_code'), true,
   'country remains database-required for every initialized user');
+select is(has_table_privilege('authenticated', 'public.users', 'SELECT'), true,
+  'authenticated can query users through row-level security');
 select ok(exists (select 1 from pg_trigger where tgname = 'on_auth_user_created'), 'auth-user bootstrap trigger remains installed');
 select ok((select prosecdef from pg_proc p join pg_namespace n on n.oid = p.pronamespace
   where n.nspname = 'public' and p.proname = 'handle_auth_user_created'), 'auth-user bootstrap remains SECURITY DEFINER');
