@@ -1,6 +1,7 @@
 # Hi!Book 2.0 — Current TODO
 
 ## Current gate — Production readiness
+
 - [x] Database migrations and pgTAP security suite green in CI.
 - [x] Audit remaining web data-access paths for N+1 patterns.
 - [x] Batch signed avatar/media URL generation on feed, messaging inbox, notifications, discovery, and social-list paths.
@@ -39,7 +40,21 @@
 - [x] Fix the current CI migration blocker caused by revoking a non-existent `rls_auto_enable()` function in the portable migration chain.
 - [x] Prepare a controlled production deployment checklist.
 
+## UI/UX Architecture & Wireframe Reset — active gate
+
+- [x] Pause additional screen-level UI implementation pending a reviewed blueprint.
+- [x] Inventory current product docs and route structure.
+- [ ] Review and approve the information architecture and canonical application shell.
+- [ ] Review and approve low-fidelity desktop wireframes for MVP experiences.
+- [ ] Review and approve responsive tablet/mobile wireframes.
+- [ ] Resolve edit-profile photo, save, cancel, and failure interaction decisions.
+- [ ] Reconcile the design system and shared primitives with approved wireframes.
+- [ ] Approve high-fidelity mockups before resuming UI implementation.
+
+No individual page redesign should proceed until this gate is approved. The following authenticated UI sequence records prior implementation work and is not authorization to continue visual patching.
+
 ## Authenticated UI sequence
+
 - [x] Application shell/navigation wired into the protected layout.
 - [x] Community/feed repository audit completed.
 - [x] Community/feed responsive controls refined without replacing the existing feed architecture.
@@ -60,6 +75,7 @@
 - [ ] Run live Google/Apple journeys with disposable provider accounts; local Supabase integration tests require Docker or Podman.
 
 ## MVP domains implemented
+
 - [x] Authentication and account lifecycle foundation
 - [x] Profiles and privacy settings
 - [x] Follow / block / report
@@ -71,6 +87,7 @@
 - [x] Moderation queue, enforcement, and appeals
 
 ## Important launch blockers
+
 - [x] Atomic profile update workflow
 - [ ] Production-grade integration/e2e test coverage
 - [ ] Minor-safety requirements for ages 13–17 finalized before public production launch
@@ -79,7 +96,8 @@
 - [ ] Production observability and recovery procedures verified
 - [x] Responsive/accessibility audit completed
 
-## UI/UX refinement — current pass
+## UI/UX refinement — prior pass (paused pending reset)
+
 - [x] Confirm existing visual hierarchy as the baseline rather than replacing the established design.
 - [x] Tighten landing-page typography, spacing, CTA hierarchy, and interaction treatment.
 - [x] Make the landing-page header persistent/sticky with consistent spacing and backdrop treatment.
@@ -97,6 +115,7 @@
 - [ ] Complete a final accessibility/interaction-state pass for the refined navigation and landing header.
 
 ## Deferred / post-MVP
+
 - [ ] HBC purchases and creator economy
 - [ ] Gifts
 - [ ] Payouts
@@ -108,4 +127,5 @@
 - [ ] Additional media types
 
 ## Next major gate
+
 Verify the production scheduler/worker for due-account-deletion processing and exercise post-expiry browser behavior against the deployed environment. The scheduler invocation and production liveness/security-header checks are verified; the disposable E2E gate still needs a fresh green run after the selector fixes. In parallel, use `docs/production-deployment-checklist.md` to collect evidence from the real hosting/Supabase environments for deployment-boundary abuse controls, observability, backups, restore procedures, and deployment configuration. The repository now has an optional manual/hourly production smoke check, but the operational gate remains open until the real production URL is configured and the external controls are actually verified.
