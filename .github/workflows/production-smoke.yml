@@ -5,6 +5,9 @@ on:
   schedule:
     - cron: "17 * * * *"
 
+permissions:
+  contents: none
+
 jobs:
   smoke:
     runs-on: ubuntu-latest
@@ -26,19 +29,30 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          url="${PRODUCTION_BASE_URL%/}/api/health"
+          base_url="${PRODUCTION_BASE_URL%/}"
+          url="$base_url/api/health"
           headers="$(mktemp)"
+          final_headers="$(mktemp)"
           body="$(mktemp)"
-          trap 'rm -f "$headers" "$body"' EXIT
+          trap 'rm -f "$headers" "$final_headers" "$body"' EXIT
 
           status="$(curl --fail-with-body --silent --show-error --location \
+            --proto '=https' --proto-redir '=https' --max-redirs 5 --max-time 20 \
             --dump-header "$headers" --output "$body" --write-out '%{http_code}' "$url")"
 
           test "$status" = "200"
-          grep -q '"status":"ok"' "$body"
-          grep -qi '^cache-control:.*no-store' "$headers"
-          grep -qi '^strict-transport-security:' "$headers"
-          grep -qi '^x-content-type-options:.*nosniff' "$headers"
-          grep -qi '^x-frame-options:.*DENY' "$headers"
-          grep -qi '^referrer-policy:' "$headers"
-          grep -qi '^permissions-policy:' "$headers"
+          jq -e '.status == "ok" and .service == "hibook-web" and ((.timestamp | fromdateiso8601) > (now - 300))' "$body" > /dev/null
+          awk 'BEGIN { IGNORECASE = 1 } /^HTTP\// { block = "" } { block = block $0 ORS } END { printf "%s", block }' "$headers" > "$final_headers"
+          grep -qi '^cache-control:.*no-store' "$final_headers"
+          grep -qi '^strict-transport-security:' "$final_headers"
+          grep -qi '^x-content-type-options:.*nosniff' "$final_headers"
+          grep -qi '^x-frame-options:.*DENY' "$final_headers"
+          grep -qi '^referrer-policy:' "$final_headers"
+          grep -qi '^permissions-policy:' "$final_headers"
+
+          for path in /login /signup; do
+            page_status="$(curl --fail-with-body --silent --show-error --location \
+              --proto '=https' --proto-redir '=https' --max-redirs 5 --max-time 20 \
+              --output /dev/null --write-out '%{http_code}' "$base_url$path")"
+            test "$page_status" = "200"
+          done

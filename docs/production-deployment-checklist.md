@@ -36,7 +36,7 @@ This checklist is the release gate for deploying Hi!Book to a real hosting and S
 - [ ] Configure all required environment variables in the hosting platform; do not place secrets in client-exposed variables.
 - [ ] Confirm the production domain uses HTTPS and valid TLS.
 - [x] Repository config supplies the application's required security headers, including HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, and `Permissions-Policy`.
-- [x] Repository includes an optional production smoke workflow that checks HTTPS, liveness, cache control, and the required security headers once `PRODUCTION_BASE_URL` is configured as a protected GitHub Actions secret.
+- [x] Repository includes an optional production smoke workflow that checks HTTPS, fresh liveness, cache control, effective security headers on the final response, and public sign-in/sign-up page availability once `PRODUCTION_BASE_URL` is configured as a protected GitHub Actions secret.
 - [ ] Confirm the deployment platform/reverse proxy provides IP-level throttling or an equivalent edge abuse-control mechanism.
 - [ ] Confirm deployment protection, preview access controls, and branch-to-environment mapping.
 - [ ] Confirm the deployment can be rolled back to the previous known-good release.
@@ -88,6 +88,6 @@ Database-level authenticated mutation limits are already covered by the reposito
 
 The repository can verify application behavior, migrations, database security, web lint/build, browser journeys, liveness behavior, and configured application security headers. It cannot verify the actual production Supabase backup/restore state, hosting-provider configuration, external monitoring, IP throttling, authentication-provider limits, or production rollback until those systems are connected and inspected.
 
-The repository now also provides a production smoke workflow, but it remains an evidence-producing control rather than proof of production health until a real production URL is configured and the workflow succeeds against it.
+The repository now also provides a production smoke workflow, but it remains an evidence-producing control rather than proof of production health until a real production URL is configured and the workflow succeeds against it. The workflow deliberately does not stress production authentication or rate-limit endpoints; those must be exercised against a controlled non-production environment or verified from provider configuration to avoid locking out users or creating production load.
 
 **Do not mark the operational-readiness gate complete without production evidence for those external controls.**

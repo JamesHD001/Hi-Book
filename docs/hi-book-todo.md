@@ -23,20 +23,24 @@
 - [x] Verify valid post media upload and realtime message delivery through independent browser sessions.
 - [x] Verify moderator-role browser workflow, moderation action execution, and user appeal submission.
 - [x] Verify account-deletion scheduling and cancellation during the grace period.
+- [ ] Verify expiry-driven account deletion restricts protected browser routes using the local worker in E2E (implemented; execution requires Docker/Podman).
 - [x] Verify profile-image upload persistence and private signed-URL delivery through independent browser sessions.
+- [x] Add avatar cropping with zoom, drag-to-reposition, keyboard positioning controls, and optimized square WebP upload.
+- [ ] Run the cropped-avatar upload E2E checks in local-Supabase CI.
 - [x] Add explicit unread/read-state E2E assertions.
 - [x] Verify that a scheduled deletion places the account into the restricted/deactivated application state and that cancellation restores active access.
 - [x] Add a server-only due-deletion completion RPC and database security coverage proving expired schedules transition to `COMPLETED` / `DELETED` with `deleted_at` recorded.
+- [x] Add pgTAP checks for the installed deletion cron schedule, worker command, and execution grants.
 - [x] Verify the production scheduler/worker actually invokes due-deletion completion in the production Supabase project.
 - [ ] Prove post-expiry browser behavior against the deployed environment with a controlled test account.
 - [x] Verify the current production deployment serves `/api/health` with HTTP 200, `status: "ok"`, `Cache-Control: no-store`, and the configured security headers; Vercel reported no runtime error clusters in the preceding 24 hours.
 - [x] Verify responsive/mobile behavior across core MVP surfaces.
 - [x] Verify accessibility across core MVP surfaces.
 - [x] Audit authenticated mutation rate limiting and abuse controls at the database boundary.
-- [x] Add a manual/scheduled production smoke workflow for `/api/health`, HTTPS, cache control, and application security headers.
+- [x] Add a manual/scheduled production smoke workflow for HTTPS, fresh `/api/health`, final-response security headers, and public sign-in/sign-up availability.
 - [ ] Verify deployment-boundary/IP/auth-provider abuse controls and production observability, error reporting, backups, and deployment configuration.
 - [x] Remediate confirmed production Supabase RLS/search_path/trigger-RPC exposure findings and remove confirmed duplicate indexes.
-- [ ] Re-run the full production-readiness CI matrix after the remaining production-readiness fixes. The latest E2E attempt exposed a shared Playwright password-field selector regression; the affected journey specs have now been normalized to the deterministic `autocomplete="current-password"` selector. Web lint/build remained green.
+- [ ] Re-run the full production-readiness CI matrix after the latest verification changes. Local E2E and pgTAP execution requires Docker/Podman; this workspace currently has neither.
 - [x] Fix the current CI migration blocker caused by revoking a non-existent `rls_auto_enable()` function in the portable migration chain.
 - [x] Prepare a controlled production deployment checklist.
 

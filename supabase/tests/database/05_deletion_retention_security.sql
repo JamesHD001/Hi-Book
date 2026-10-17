@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap;
-select plan(27);
+select plan(33);
 
 -- Deterministic deletion fixtures. Registration creates the identity/profile/privacy
 -- rows; trusted setup promotes these test accounts to ACTIVE.
@@ -59,6 +59,14 @@ select is(public.process_due_account_deletions(),1,'trusted worker processes one
 select is((select status from public.account_deletion_request where user_id='50000000-0000-0000-0000-000000000011' and scheduled_for <= now() and status = 'COMPLETED' order by requested_at desc, id desc limit 1),'COMPLETED'::deletion_status,'expired deletion request is completed');
 select is((select account_status from public.users where id='50000000-0000-0000-0000-000000000011'),'DELETED'::account_status,'expired account becomes deleted');
 select ok((select deleted_at is not null from public.users where id='50000000-0000-0000-0000-000000000011'),'deleted account records deletion timestamp');
+
+-- 28-33: operational worker scheduling and privilege boundaries are present.
+select is((select count(*) from cron.job where jobname='hibook-account-deletion-completion'),1::bigint,'exactly one deletion completion cron job is installed');
+select is((select schedule from cron.job where jobname='hibook-account-deletion-completion'),'*/15 * * * *','deletion worker is scheduled every 15 minutes');
+select is((select command from cron.job where jobname='hibook-account-deletion-completion'),'select public.process_due_account_deletions();','cron invokes the trusted deletion worker');
+select is(has_function_privilege('service_role'::name,'public.process_due_account_deletions()'::text,'EXECUTE'),true,'service role can invoke the deletion worker');
+select is(has_function_privilege('authenticated'::name,'public.process_due_account_deletions()'::text,'EXECUTE'),false,'authenticated clients cannot invoke the deletion worker');
+select is(has_function_privilege('anon'::name,'public.process_due_account_deletions()'::text,'EXECUTE'),false,'anonymous clients cannot invoke the deletion worker');
 
 select * from finish();
 rollback;

@@ -35,6 +35,20 @@ const users: TestUser[] = [
 type FixtureUser = TestUser & { id: string; username: string };
 
 async function resetUserState(api: Awaited<ReturnType<typeof request.newContext>>, url: string, accessToken: string, userId: string, testUser: TestUser) {
+  const adminKey = process.env.E2E_ADMIN_KEY;
+  if (!adminKey) throw new Error("E2E fixture reset requires its local admin key.");
+  const resetAccount = await api.patch(`${url}/rest/v1/users?id=eq.${userId}`, {
+    headers: {
+      apikey: adminKey,
+      Authorization: `Bearer ${adminKey}`,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal",
+    },
+    data: { account_status: "ACTIVE", deleted_at: null },
+  });
+  if (!resetAccount.ok()) {
+    throw new Error(`Could not restore the E2E account for ${testUser.email}: ${resetAccount.status()} ${await resetAccount.text()}`);
+  }
   const headers = { Authorization: `Bearer ${accessToken}` };
   const operations = [
     api.delete(`${url}/rest/v1/follows?follower_id=eq.${userId}`, { headers }),

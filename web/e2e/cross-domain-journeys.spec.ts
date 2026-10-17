@@ -46,6 +46,13 @@ test.describe("security-critical authenticated journeys", () => {
         '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" fill="black"/><circle cx="32" cy="32" r="20" fill="white"/></svg>',
       ),
     });
+    await expect(page.getByLabel(/Avatar crop preview/)).toBeVisible();
+    const zoom = page.getByRole("slider", { name: "Avatar zoom" });
+    await expect(zoom).toBeVisible();
+    await zoom.focus();
+    await zoom.press("ArrowRight");
+    await page.getByRole("button", { name: "Move photo left" }).click();
+    await page.getByRole("button", { name: "Use cropped photo" }).click();
     await expect(page.getByAltText("Your profile preview")).toBeVisible();
 
     await page.getByRole("button", { name: "Save changes" }).click();

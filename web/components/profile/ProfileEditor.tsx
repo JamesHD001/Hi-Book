@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, PointerEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -26,47 +26,61 @@ type ProfileEditorProps = {
   interests: Option[];
 };
 
-function resizeToWebp(file: File): Promise<Blob> {
+type CropOffset = { x: number; y: number };
+
+function drawAvatarCrop(
+  context: CanvasRenderingContext2D,
+  image: HTMLImageElement,
+  size: number,
+  zoom: number,
+  offset: CropOffset,
+) {
+  const scale = Math.max(size / image.naturalWidth, size / image.naturalHeight) * zoom;
+  const width = image.naturalWidth * scale;
+  const height = image.naturalHeight * scale;
+  const maxOffsetX = Math.max(0, (width - size) / 2);
+  const maxOffsetY = Math.max(0, (height - size) / 2);
+  const x = (size - width) / 2 + offset.x * maxOffsetX;
+  const y = (size - height) / 2 + offset.y * maxOffsetY;
+
+  context.clearRect(0, 0, size, size);
+  context.drawImage(image, x, y, width, height);
+}
+
+function cropToWebp(
+  image: HTMLImageElement,
+  zoom: number,
+  offset: CropOffset,
+): Promise<Blob> {
+  const canvas = document.createElement("canvas");
+  const size = 512;
+  canvas.width = size;
+  canvas.height = size;
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    return Promise.reject(new Error("Your browser could not prepare the image."));
+  }
+
+  context.imageSmoothingEnabled = true;
+  context.imageSmoothingQuality = "high";
+  drawAvatarCrop(context, image, size, zoom, offset);
   return new Promise((resolve, reject) => {
-    const image = new Image();
-    const objectUrl = URL.createObjectURL(file);
-
-    image.onload = () => {
-      URL.revokeObjectURL(objectUrl);
-      const canvas = document.createElement("canvas");
-      const size = 512;
-      const scale = Math.min(size / image.width, size / image.height, 1);
-      const width = Math.max(1, Math.round(image.width * scale));
-      const height = Math.max(1, Math.round(image.height * scale));
-      canvas.width = width;
-      canvas.height = height;
-      const context = canvas.getContext("2d");
-
-      if (!context) {
-        reject(new Error("Your browser could not prepare the image."));
-        return;
-      }
-
-      context.drawImage(image, 0, 0, width, height);
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) {
-            reject(new Error("Your browser could not convert the image."));
-            return;
-          }
-          resolve(blob);
-        },
-        "image/webp",
-        0.86,
-      );
-    };
-
-    image.onerror = () => {
-      URL.revokeObjectURL(objectUrl);
-      reject(new Error("That image could not be read."));
-    };
-
-    image.src = objectUrl;
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          reject(new Error("Your browser could not convert the image."));
+          return;
+        }
+        if (blob.type !== "image/webp") {
+          reject(new Error("Your browser does not support optimized WebP photos."));
+          return;
+        }
+        resolve(blob);
+      },
+      "image/webp",
+      0.86,
+    );
   });
 }
 
@@ -86,17 +100,66 @@ export default function ProfileEditor({
   const [discoverable, setDiscoverable] = useState(initial.discoverable);
   const [languageIds, setLanguageIds] = useState(initial.languageIds);
   const [interestIds, setInterestIds] = useState(initial.interestIds);
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [cropDraft, setCropDraft] = useState<{ url: string } | null>(null);
+  const [cropImage, setCropImage] = useState<HTMLImageElement | null>(null);
+  const [cropZoom, setCropZoom] = useState(1);
+  const [cropOffset, setCropOffset] = useState<CropOffset>({ x: 0, y: 0 });
+  const [avatarToUpload, setAvatarToUpload] = useState<Blob | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(initial.avatarUrl);
+  const cropCanvasRef = useRef<HTMLCanvasElement>(null);
+  const dragRef = useRef<{ pointerId: number; x: number; y: number } | null>(null);
   const [saving, setSaving] = useState(false);
+  const [cropping, setCropping] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
-    return () => {
-      if (avatarPreview?.startsWith("blob:")) URL.revokeObjectURL(avatarPreview);
-    };
+    if (avatarPreview?.startsWith("blob:")) {
+      return () => URL.revokeObjectURL(avatarPreview);
+    }
   }, [avatarPreview]);
+
+  useEffect(() => {
+    if (!cropDraft) return;
+    const image = new Image();
+    image.onload = () => {
+      if (image.naturalWidth > 8192 || image.naturalHeight > 8192 || image.naturalWidth * image.naturalHeight > 40_000_000) {
+        setError("That photo is too large to edit. Choose an image under 40 megapixels.");
+        setCropDraft(null);
+        return;
+      }
+      setCropImage(image);
+      setCropZoom(1);
+      setCropOffset({ x: 0, y: 0 });
+    };
+    image.onerror = () => {
+      setError("That image could not be read. Try another photo.");
+      setCropDraft(null);
+    };
+    image.src = cropDraft.url;
+
+    return () => {
+      image.onload = null;
+      image.onerror = null;
+    };
+  }, [cropDraft]);
+
+  useEffect(() => {
+    if (cropDraft) return () => URL.revokeObjectURL(cropDraft.url);
+  }, [cropDraft]);
+
+  useEffect(() => {
+    const canvas = cropCanvasRef.current;
+    const context = canvas?.getContext("2d");
+    if (!canvas || !context || !cropImage) return;
+
+    const previewSize = 320;
+    canvas.width = previewSize;
+    canvas.height = previewSize;
+    context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = "high";
+    drawAvatarCrop(context, cropImage, previewSize, cropZoom, cropOffset);
+  }, [cropImage, cropOffset, cropZoom]);
 
   const languageMap = useMemo(
     () => new Map(languages.map((language) => [language.id, language])),
@@ -123,9 +186,10 @@ export default function ProfileEditor({
 
   function handleAvatarChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
+    event.target.value = "";
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      setError("Please choose an image file.");
+      setError("Please choose a JPEG, PNG, WebP, or other supported image.");
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
@@ -134,9 +198,64 @@ export default function ProfileEditor({
     }
 
     setError(null);
-    setAvatarFile(file);
-    if (avatarPreview?.startsWith("blob:")) URL.revokeObjectURL(avatarPreview);
-    setAvatarPreview(URL.createObjectURL(file));
+    setCropImage(null);
+    setCropDraft({ url: URL.createObjectURL(file) });
+    setSuccess(null);
+  }
+
+  function handleCropPointerDown(event: PointerEvent<HTMLCanvasElement>) {
+    if (!cropImage) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    dragRef.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY };
+  }
+
+  function handleCropPointerMove(event: PointerEvent<HTMLCanvasElement>) {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId || !cropImage) return;
+
+    const canvas = cropCanvasRef.current;
+    const size = canvas?.width ?? 320;
+    const displayScale = size / (canvas?.getBoundingClientRect().width ?? size);
+    const scale = Math.max(size / cropImage.naturalWidth, size / cropImage.naturalHeight) * cropZoom;
+    const maxOffsetX = Math.max(0, (cropImage.naturalWidth * scale - size) / 2);
+    const maxOffsetY = Math.max(0, (cropImage.naturalHeight * scale - size) / 2);
+    const deltaX = (event.clientX - drag.x) * displayScale;
+    const deltaY = (event.clientY - drag.y) * displayScale;
+    dragRef.current = { ...drag, x: event.clientX, y: event.clientY };
+
+    setCropOffset((current) => ({
+      x: maxOffsetX ? Math.max(-1, Math.min(1, current.x + deltaX / maxOffsetX)) : current.x,
+      y: maxOffsetY ? Math.max(-1, Math.min(1, current.y + deltaY / maxOffsetY)) : current.y,
+    }));
+  }
+
+  function handleCropPointerUp(event: PointerEvent<HTMLCanvasElement>) {
+    if (dragRef.current?.pointerId === event.pointerId) dragRef.current = null;
+  }
+
+  function nudgeCrop(x: number, y: number) {
+    setCropOffset((current) => ({
+      x: Math.max(-1, Math.min(1, current.x + x)),
+      y: Math.max(-1, Math.min(1, current.y + y)),
+    }));
+  }
+
+  async function applyAvatarCrop() {
+    if (!cropImage || !cropDraft) return;
+
+    setCropping(true);
+    setError(null);
+    try {
+      const cropped = await cropToWebp(cropImage, cropZoom, cropOffset);
+      setAvatarToUpload(cropped);
+      setAvatarPreview(URL.createObjectURL(cropped));
+      setCropDraft(null);
+      setCropImage(null);
+    } catch (cropError) {
+      setError(cropError instanceof Error ? cropError.message : "We could not crop that photo.");
+    } finally {
+      setCropping(false);
+    }
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -166,12 +285,11 @@ export default function ProfileEditor({
     let uploadedAvatarPath: string | null = null;
 
     try {
-      if (avatarFile) {
-        const webp = await resizeToWebp(avatarFile);
+      if (avatarToUpload) {
         uploadedAvatarPath = `${userId}/profile-${crypto.randomUUID()}.webp`;
         const { error: uploadError } = await supabase.storage
           .from("avatars")
-          .upload(uploadedAvatarPath, webp, {
+          .upload(uploadedAvatarPath, avatarToUpload, {
             contentType: "image/webp",
             upsert: false,
             cacheControl: "3600",
@@ -199,7 +317,7 @@ export default function ProfileEditor({
           .from("avatars")
           .createSignedUrl(uploadedAvatarPath, 600);
         if (data?.signedUrl) setAvatarPreview(data.signedUrl);
-        setAvatarFile(null);
+        setAvatarToUpload(null);
       }
 
       setCountryCode(normalizedCountry);
@@ -235,13 +353,76 @@ export default function ProfileEditor({
           </div>
           <div>
             <h2 className="text-lg font-semibold">Profile photo</h2>
-            <p className="mt-1 text-sm leading-6 text-slate-600">Use a clear image. Hi!Book stores a private optimized copy.</p>
+            <p className="mt-1 text-sm leading-6 text-slate-600">Choose a photo, then position and zoom it to frame your avatar. Hi!Book stores a private optimized copy.</p>
             <label className="mt-3 inline-flex cursor-pointer rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50">
-              Upload photo
+              {avatarPreview ? "Change photo" : "Choose photo"}
               <input type="file" accept="image/*" onChange={handleAvatarChange} className="sr-only" />
             </label>
           </div>
         </div>
+        {cropDraft && (
+          <div className="mt-8 grid gap-6 border-t border-(--border) pt-6 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] sm:items-center">
+            <div className="flex flex-col items-center gap-3">
+              <canvas
+                ref={cropCanvasRef}
+                aria-label="Avatar crop preview. Drag to reposition the photo."
+                className="h-64 w-64 touch-none cursor-grab rounded-full bg-slate-100 shadow-inner active:cursor-grabbing"
+                onPointerDown={handleCropPointerDown}
+                onPointerMove={handleCropPointerMove}
+                onPointerUp={handleCropPointerUp}
+                onPointerCancel={handleCropPointerUp}
+              />
+              <p className="text-center text-xs text-(--text-secondary)">Drag the photo to reposition it. The circular frame shows how your avatar will appear.</p>
+            </div>
+            <div className="space-y-5">
+              <label className="block">
+                <span className="flex items-center justify-between text-sm font-semibold text-(--foreground)">
+                  <span>Zoom</span>
+                  <span>{cropZoom.toFixed(1)}×</span>
+                </span>
+                <input
+                  aria-label="Avatar zoom"
+                  type="range"
+                  min="1"
+                  max="3"
+                  step="0.1"
+                  value={cropZoom}
+                  onChange={(event) => setCropZoom(Number(event.target.value))}
+                  disabled={!cropImage}
+                  className="mt-3 w-full accent-(--brand-primary)"
+                />
+              </label>
+              <div className="flex flex-wrap items-center gap-2" aria-label="Keyboard crop controls">
+                <span className="w-full text-sm font-semibold text-(--foreground)">Fine-tune position</span>
+                <button type="button" aria-label="Move photo left" onClick={() => nudgeCrop(-0.12, 0)} className="rounded-lg border border-(--border) px-3 py-2 text-sm font-semibold hover:bg-(--surface-secondary)">Left</button>
+                <button type="button" aria-label="Move photo up" onClick={() => nudgeCrop(0, -0.12)} className="rounded-lg border border-(--border) px-3 py-2 text-sm font-semibold hover:bg-(--surface-secondary)">Up</button>
+                <button type="button" aria-label="Move photo down" onClick={() => nudgeCrop(0, 0.12)} className="rounded-lg border border-(--border) px-3 py-2 text-sm font-semibold hover:bg-(--surface-secondary)">Down</button>
+                <button type="button" aria-label="Move photo right" onClick={() => nudgeCrop(0.12, 0)} className="rounded-lg border border-(--border) px-3 py-2 text-sm font-semibold hover:bg-(--surface-secondary)">Right</button>
+              </div>
+              <div className="flex flex-col gap-3 pt-1 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCropDraft(null);
+                    setCropImage(null);
+                    setError(null);
+                  }}
+                  className="rounded-xl border border-(--border) px-4 py-2.5 text-sm font-semibold text-(--foreground) hover:bg-(--surface-secondary)"
+                >
+                  Cancel crop
+                </button>
+                <button
+                  type="button"
+                  onClick={applyAvatarCrop}
+                  disabled={!cropImage || cropping}
+                  className="rounded-xl bg-(--brand-primary) px-4 py-2.5 text-sm font-semibold text-white hover:bg-(--brand-primary-dark) disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {cropping ? "Preparing photo…" : "Use cropped photo"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
@@ -350,7 +531,7 @@ export default function ProfileEditor({
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         <button type="button" onClick={() => router.push("/profile")} className="rounded-md border border-(--border) px-5 py-3 text-sm font-semibold text-(--foreground) hover:bg-(--surface-secondary)">Cancel</button>
-        <button type="submit" disabled={saving} className="rounded-md bg-(--brand-primary) px-5 py-3 text-sm font-semibold text-white hover:bg-(--brand-primary-dark) disabled:cursor-not-allowed disabled:opacity-60">{saving ? "Saving…" : "Save changes"}</button>
+        <button type="submit" disabled={saving || Boolean(cropDraft) || cropping} className="rounded-md bg-(--brand-primary) px-5 py-3 text-sm font-semibold text-white hover:bg-(--brand-primary-dark) disabled:cursor-not-allowed disabled:opacity-60">{saving ? "Saving…" : cropDraft ? "Apply or cancel photo crop first" : "Save changes"}</button>
       </div>
     </form>
   );
