@@ -150,6 +150,10 @@ begin
    where id = v_user_id
    for update;
 
+  if not found then
+    raise exception 'Account not found';
+  end if;
+
   select last_sign_in_at
     into v_last_sign_in_at
     from auth.users
@@ -158,10 +162,6 @@ begin
   if v_state in ('PAUSED', 'PENDING_DELETION')
      and (v_last_sign_in_at is null or v_required_login_at is null or v_last_sign_in_at < v_required_login_at) then
     raise exception 'Fresh sign-in required to recover this account' using errcode = '42501';
-  end if;
-
-  if not found then
-    raise exception 'Account not found';
   end if;
 
   if v_state = 'PAUSED' then
