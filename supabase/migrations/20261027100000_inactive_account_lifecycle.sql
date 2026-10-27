@@ -56,6 +56,13 @@ begin
 end;
 $$;
 
+-- Attach the lifecycle-field guard to the users table. Defining/revoking the
+-- trigger function alone does not enforce it.
+drop trigger if exists prevent_client_account_status_mutation on public.users;
+create trigger prevent_client_account_status_mutation
+before update on public.users
+for each row execute function public.prevent_client_account_status_mutation();
+
 create or replace function public.process_inactive_account_lifecycle()
 returns integer
 language plpgsql
