@@ -13,6 +13,7 @@ test.describe("critical public and authentication journeys", () => {
 
   test("registration validates minimum age, country code, password, and consent", async ({ page }) => {
     await page.goto("/signup");
+    await expect(page.locator('form[data-hydrated="true"]')).toBeVisible();
 
     await page.getByLabel("First name").fill("E2E");
     await page.getByLabel("Last name").fill("Tester");
@@ -30,6 +31,7 @@ test.describe("critical public and authentication journeys", () => {
 
   test("login rejects invalid credentials without leaving the login page", async ({ page }) => {
     await page.goto("/login");
+    await expect(page.locator('form[data-hydrated="true"]')).toBeVisible();
     await page.getByLabel("Email").fill("not-a-real-user@example.test");
     await page.locator('input[autocomplete="current-password"]').fill("wrong-password");
     await page.getByRole("button", { name: "Sign in" }).click();
@@ -42,6 +44,7 @@ test.describe("critical public and authentication journeys", () => {
     test.skip(!email || !password, "E2E test credentials are not configured.");
 
     await page.goto("/login");
+    await expect(page.locator('form[data-hydrated="true"]')).toBeVisible();
     await page.getByLabel("Email").fill(email);
     await page.locator('input[autocomplete="current-password"]').fill(password);
     await page.getByRole("button", { name: "Sign in" }).click();
