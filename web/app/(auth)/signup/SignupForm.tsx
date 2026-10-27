@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import HBInput from "@/components/ui/HBInput";
@@ -23,10 +23,13 @@ function calculateAge(date: string) {
 
 export default function SignupForm() {
   const router = useRouter();
+  const [hydrated, setHydrated] = useState(false);
   const [form, setForm] = useState({ firstName: "", middleName: "", lastName: "", dateOfBirth: "", gender: "", countryCode: "", email: "", password: "", acceptTerms: false, acceptPrivacy: false });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => setHydrated(true), []);
 
   function update(name: keyof typeof form, value: string | boolean) {
     setForm((current) => ({ ...current, [name]: value }));
@@ -89,7 +92,7 @@ export default function SignupForm() {
   const labelClass = "text-sm font-semibold text-[var(--foreground)]";
 
   return (
-    <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+    <form onSubmit={handleSubmit} data-hydrated={hydrated ? "true" : "false"} className="mt-8 space-y-6">
       <AuthProviderButtons source="signup" />
       <div className="auth-divider" aria-hidden="true"><span>or use email</span></div>
       <div>
