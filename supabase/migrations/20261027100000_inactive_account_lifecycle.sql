@@ -401,7 +401,7 @@ create policy posts_insert_own on storage.objects
     and (storage.foldername(name))[2] = auth.uid()::text
     and array_length(storage.foldername(name), 1) >= 3
     and ((storage.foldername(name))[3])::uuid is not null
-    and storage.filename(name) ~ '^[0-9a-fA-F-]{36}[.]webp
+    and storage.filename(name) ~ '^[0-9a-fA-F-]{36}[.]webp$'
     and split_part(storage.filename(name), '.', 1)::uuid is not null
     and exists (select 1 from public.users u where u.id = auth.uid() and u.lifecycle_state = 'ACTIVE' and u.account_status = 'ACTIVE')
   );
