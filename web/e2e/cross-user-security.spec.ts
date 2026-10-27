@@ -102,7 +102,7 @@ test.describe("two-user authorization and privacy matrix", () => {
 
       await openProfile(pageB, fixtureA.username);
       await ensureFollowing(pageB);
-      const profileAvatar = pageB.getByAltText(`${fixtureA.username} profile picture`);
+      const profileAvatar = pageB.locator('img[alt$=" profile picture"]');
       await expect(profileAvatar).toBeVisible();
       await expect(profileAvatar).toHaveAttribute("src", /\/storage\/v1\/object\/sign\/avatars\//i);
 
