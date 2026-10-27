@@ -119,8 +119,9 @@ Verify the production scheduler/worker for due-account-deletion processing and e
 - [x] Route password/OAuth sign-ins for paused and deletion-pending accounts through recovery.
 - [x] Add initial pgTAP lifecycle transition coverage.
 - [ ] Complete paused-state read-only enforcement across profile, preferences, social activity, messaging, and media upload.
-- [ ] Resolve the purge policy for restrictive financial, moderation, reports, and audit references.
-- [ ] Implement and verify irreversible deletion of eligible database rows, Supabase Auth identity, and Storage objects.
+- [x] Approve Option B: delete personal data/content and anonymize only legally or operationally required records.
+- [ ] Inventory and classify every restrictive financial, moderation, report, legal-acceptance, and audit reference.
+- [ ] Implement a transactional, idempotent purge for personal database rows, Supabase Auth identity, and all owned Storage objects; anonymize approved retained records.
 - [ ] Configure the trusted purge worker and deployment secrets/schedule.
 - [ ] Run full database tests, web lint/build, and browser E2E lifecycle scenarios.
 - [ ] Test pause → recovery, pause → hidden deletion-pending, recovery before deadline, and irreversible deletion after deadline using disposable accounts.
