@@ -218,6 +218,7 @@ begin
   v_actor_id := case tg_table_name
     when 'users' then nullif(v_record ->> 'id', '')::uuid
     when 'follows' then nullif(v_record ->> 'follower_id', '')::uuid
+    when 'blocks' then nullif(v_record ->> 'blocker_id', '')::uuid
     when 'messages' then nullif(v_record ->> 'sender_id', '')::uuid
     when 'notifications' then nullif(v_record ->> 'actor_id', '')::uuid
     else nullif(v_record ->> 'user_id', '')::uuid
@@ -241,6 +242,10 @@ begin
     select p.user_id into v_actor_id
       from public.posts p
      where p.id = nullif(v_record ->> 'post_id', '')::uuid;
+  elsif tg_table_name = 'message_media' then
+    select m.sender_id into v_actor_id
+      from public.messages m
+     where m.id = nullif(v_record ->> 'message_id', '')::uuid;
   end if;
 
   if v_actor_id is null or v_actor_id <> auth.uid() then
@@ -272,8 +277,9 @@ begin
     'users','profiles','user_privacy_settings','user_preferences',
     'notification_preferences','discovery_preferences','discovery_country_preference',
     'discovery_country_preferences','user_interest','user_language',
-    'follows','posts','post_media','post_likes','comments','comment_likes',
-    'post_shares','mentions','post_tags','messages'
+    'follows','blocks','posts','post_media','post_likes','comments','comment_likes',
+    'post_shares','mentions','post_tags','messages','message_media',
+    'conversation_participants','notifications'
   ] loop
     execute format('drop trigger if exists enforce_paused_account_mutation on public.%I', t);
     execute format(
@@ -297,5 +303,116 @@ begin
   );
 end;
 $$;
+
+
+-- Storage RLS must enforce the same read-only pause state as database writes.
+-- Service-role purge operations bypass these client-facing policies.
+drop policy if exists avatars_insert_own on storage.objects;
+create policy avatars_insert_own on storage.objects
+  for insert to authenticated
+  with check (
+    bucket_id = 'avatars'
+    and (storage.foldername(name))[1] = auth.uid()::text
+    and exists (select 1 from public.users u where u.id = auth.uid() and u.lifecycle_state = 'ACTIVE' and u.account_status = 'ACTIVE')
+  );
+
+drop policy if exists avatars_update_own on storage.objects;
+create policy avatars_update_own on storage.objects
+  for update to authenticated
+  using (
+    bucket_id = 'avatars'
+    and (storage.foldername(name))[1] = auth.uid()::text
+    and exists (select 1 from public.users u where u.id = auth.uid() and u.lifecycle_state = 'ACTIVE' and u.account_status = 'ACTIVE')
+  )
+  with check (
+    bucket_id = 'avatars'
+    and (storage.foldername(name))[1] = auth.uid()::text
+    and exists (select 1 from public.users u where u.id = auth.uid() and u.lifecycle_state = 'ACTIVE' and u.account_status = 'ACTIVE')
+  );
+
+drop policy if exists avatars_delete_own on storage.objects;
+create policy avatars_delete_own on storage.objects
+  for delete to authenticated
+  using (
+    bucket_id = 'avatars'
+    and (storage.foldername(name))[1] = auth.uid()::text
+    and exists (select 1 from public.users u where u.id = auth.uid() and u.lifecycle_state = 'ACTIVE' and u.account_status = 'ACTIVE')
+  );
+
+drop policy if exists messages_insert_own on storage.objects;
+create policy messages_insert_own on storage.objects
+  for insert to authenticated
+  with check (
+    bucket_id = 'messages'
+    and (storage.foldername(name))[1] = auth.uid()::text
+    and array_length(storage.foldername(name), 1) >= 4
+    and ((storage.foldername(name))[2])::uuid is not null
+    and ((storage.foldername(name))[3])::uuid is not null
+    and ((storage.foldername(name))[4])::uuid is not null
+    and exists (select 1 from public.users u where u.id = auth.uid() and u.lifecycle_state = 'ACTIVE' and u.account_status = 'ACTIVE')
+  );
+
+drop policy if exists messages_update_own on storage.objects;
+create policy messages_update_own on storage.objects
+  for update to authenticated
+  using (
+    bucket_id = 'messages'
+    and (storage.foldername(name))[1] = auth.uid()::text
+    and exists (select 1 from public.users u where u.id = auth.uid() and u.lifecycle_state = 'ACTIVE' and u.account_status = 'ACTIVE')
+  )
+  with check (
+    bucket_id = 'messages'
+    and (storage.foldername(name))[1] = auth.uid()::text
+    and exists (select 1 from public.users u where u.id = auth.uid() and u.lifecycle_state = 'ACTIVE' and u.account_status = 'ACTIVE')
+  );
+
+drop policy if exists messages_delete_own on storage.objects;
+create policy messages_delete_own on storage.objects
+  for delete to authenticated
+  using (
+    bucket_id = 'messages'
+    and (storage.foldername(name))[1] = auth.uid()::text
+    and exists (select 1 from public.users u where u.id = auth.uid() and u.lifecycle_state = 'ACTIVE' and u.account_status = 'ACTIVE')
+  );
+
+drop policy if exists posts_insert_own on storage.objects;
+create policy posts_insert_own on storage.objects
+  for insert to authenticated
+  with check (
+    bucket_id = 'posts'
+    and (storage.foldername(name))[1] = 'posts'
+    and (storage.foldername(name))[2] = auth.uid()::text
+    and array_length(storage.foldername(name), 1) >= 3
+    and ((storage.foldername(name))[3])::uuid is not null
+    and storage.filename(name) ~ '^[0-9a-fA-F-]{36}[.]webp
+    and split_part(storage.filename(name), '.', 1)::uuid is not null
+    and exists (select 1 from public.users u where u.id = auth.uid() and u.lifecycle_state = 'ACTIVE' and u.account_status = 'ACTIVE')
+  );
+
+drop policy if exists posts_update_own on storage.objects;
+create policy posts_update_own on storage.objects
+  for update to authenticated
+  using (
+    bucket_id = 'posts'
+    and (storage.foldername(name))[1] = 'posts'
+    and (storage.foldername(name))[2] = auth.uid()::text
+    and exists (select 1 from public.users u where u.id = auth.uid() and u.lifecycle_state = 'ACTIVE' and u.account_status = 'ACTIVE')
+  )
+  with check (
+    bucket_id = 'posts'
+    and (storage.foldername(name))[1] = 'posts'
+    and (storage.foldername(name))[2] = auth.uid()::text
+    and exists (select 1 from public.users u where u.id = auth.uid() and u.lifecycle_state = 'ACTIVE' and u.account_status = 'ACTIVE')
+  );
+
+drop policy if exists posts_delete_own on storage.objects;
+create policy posts_delete_own on storage.objects
+  for delete to authenticated
+  using (
+    bucket_id = 'posts'
+    and (storage.foldername(name))[1] = 'posts'
+    and (storage.foldername(name))[2] = auth.uid()::text
+    and exists (select 1 from public.users u where u.id = auth.uid() and u.lifecycle_state = 'ACTIVE' and u.account_status = 'ACTIVE')
+  );
 
 commit;
