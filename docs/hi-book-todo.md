@@ -124,5 +124,6 @@ Verify the production scheduler/worker for due-account-deletion processing and e
 - [ ] Confirm retention durations, legal holds, open financial obligations, and administrator-role handling with the product/legal owner before finalizing the purge rules.
 - [ ] Implement a transactional, idempotent purge for personal database rows, Supabase Auth identity, and all owned Storage objects; anonymize approved retained records.
 - [ ] Configure the trusted purge worker and deployment secrets/schedule.
-- [ ] Run full database tests and browser E2E lifecycle scenarios to green; web lint/build passes on the latest branch commit. The first DB/E2E attempt exposed a malformed Storage filename predicate, now corrected and rerunning.
+- [x] Run database migrations and pgTAP suite in the disposable CI Supabase environment; the latest database run passed. Web lint/build also passes.
+- [ ] Finish browser E2E lifecycle scenarios; the current Playwright run is still in progress.
 - [ ] Test pause → recovery, pause → hidden deletion-pending, recovery before deadline, and irreversible deletion after deadline using disposable accounts.
