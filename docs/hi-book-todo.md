@@ -125,6 +125,6 @@ Verify the production scheduler/worker for due-account-deletion processing and e
 - [ ] Implement a transactional, idempotent purge for personal database rows, Supabase Auth identity, and all owned Storage objects; anonymize approved retained records.
 - [ ] Configure the trusted purge worker and deployment secrets/schedule.
 - [x] Run database migrations and pgTAP suite in the disposable CI Supabase environment; the latest database run passed. Web lint/build also passes.
-- [ ] Resolve E2E auth journey failures: the latest run completed but 15 tests failed because the browser remained on `/login?` after sign-in; investigate session persistence/redirect before treating authenticated flows as validated.
-- [ ] Fix stale signup E2E password selector (`current-password` versus the form's `new-password`); selector corrected in the latest test change.
+- [ ] Re-run browser E2E after adding an explicit hydration-ready marker to login/signup forms and waiting for it before form interactions. The previous traces showed a native form submission to `/login?` without any Supabase auth request, consistent with tests interacting before React hydration completed.
+- [x] Correct the stale signup E2E password selector (`current-password` versus the form's `new-password`).
 - [ ] Test pause → recovery, pause → hidden deletion-pending, recovery before deadline, and irreversible deletion after deadline using disposable accounts.
