@@ -120,7 +120,8 @@ Verify the production scheduler/worker for due-account-deletion processing and e
 - [x] Add initial pgTAP lifecycle transition coverage.
 - [ ] Complete paused-state read-only enforcement across profile, preferences, social activity, messaging, and media upload.
 - [x] Approve Option B: delete personal data/content and anonymize only legally or operationally required records.
-- [ ] Inventory and classify every restrictive financial, moderation, report, legal-acceptance, and audit reference.
+- [x] Inventory restrictive foreign-key references and draft proposed delete/anonymize/retain/hold dispositions in `docs/inactive-account-retention-inventory.md`.
+- [ ] Confirm retention durations, legal holds, open financial obligations, and administrator-role handling with the product/legal owner before finalizing the purge rules.
 - [ ] Implement a transactional, idempotent purge for personal database rows, Supabase Auth identity, and all owned Storage objects; anonymize approved retained records.
 - [ ] Configure the trusted purge worker and deployment secrets/schedule.
 - [ ] Run full database tests, web lint/build, and browser E2E lifecycle scenarios.
