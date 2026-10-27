@@ -260,7 +260,7 @@ begin
   if tg_op = 'DELETE' then return old; end if;
   return new;
 end;
-$;
+$$;
 
 revoke all on function public.prevent_paused_account_mutation() from public, anon, authenticated;
 
