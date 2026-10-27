@@ -119,7 +119,7 @@ Verify the production scheduler/worker for due-account-deletion processing and e
 - [x] Add owner recovery RPC and recovery page.
 - [x] Route password/OAuth sign-ins for paused and deletion-pending accounts through recovery.
 - [x] Add initial pgTAP lifecycle transition coverage.
-- [ ] Complete paused-state read-only enforcement across profile, preferences, social activity, messaging, and media upload.
+- [ ] Complete paused-state read-only enforcement across profile, preferences, social activity, messaging, and media upload. A pgTAP test now attempts a paused user's privacy-settings write and expects the trigger's 42501 rejection; its CI result is pending.
 - [x] Approve Option B: delete personal data/content and anonymize only legally or operationally required records.
 - [x] Inventory restrictive foreign-key references and draft proposed delete/anonymize/retain/hold dispositions in `docs/inactive-account-retention-inventory.md`.
 - [ ] Confirm retention durations, legal holds, open financial obligations, and administrator-role handling with the product/legal owner before finalizing the purge rules.
