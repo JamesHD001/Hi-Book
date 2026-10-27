@@ -11,9 +11,13 @@ export async function requireActiveUser() {
 
   const { data: account, error } = await supabase
     .from("users")
-    .select("account_status")
+    .select("account_status, lifecycle_state, deletion_recovery_deadline_at")
     .eq("id", user.id)
     .maybeSingle();
+
+  if (!error && account?.lifecycle_state === "PENDING_DELETION") {
+    redirect("/account-recovery");
+  }
 
   if (error || !account || account.account_status !== "ACTIVE") {
     redirect("/onboarding");
