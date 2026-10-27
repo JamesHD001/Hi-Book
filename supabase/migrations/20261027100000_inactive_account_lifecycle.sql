@@ -208,13 +208,15 @@ declare
   v_actor_id uuid;
   v_lifecycle_state text;
 begin
-  if auth.uid() is null then
+  if auth.uid() is null
+     or coalesce(current_setting('hibook.system_operation', true), 'false') = 'true' then
     if tg_op = 'DELETE' then return old; end if;
     return new;
   end if;
 
   v_record := case when tg_op = 'DELETE' then to_jsonb(old) else to_jsonb(new) end;
   v_actor_id := case tg_table_name
+    when 'users' then nullif(v_record ->> 'id', '')::uuid
     when 'follows' then nullif(v_record ->> 'follower_id', '')::uuid
     when 'messages' then nullif(v_record ->> 'sender_id', '')::uuid
     when 'notifications' then nullif(v_record ->> 'actor_id', '')::uuid
@@ -267,6 +269,9 @@ declare
   t text;
 begin
   foreach t in array array[
+    'users','profiles','user_privacy_settings','user_preferences',
+    'notification_preferences','discovery_preferences','discovery_country_preference',
+    'discovery_country_preferences','user_interest','user_language',
     'follows','posts','post_media','post_likes','comments','comment_likes',
     'post_shares','mentions','post_tags','messages'
   ] loop
