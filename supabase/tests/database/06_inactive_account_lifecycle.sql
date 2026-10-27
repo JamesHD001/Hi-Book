@@ -83,8 +83,8 @@ select throws_ok(
 select throws_ok(
   $paused_write$ update public.users set updated_at = now() where id = '60000000-0000-0000-0000-000000000011' $paused_write$,
   '42501',
-  'This account is paused and cannot perform this action until it is reactivated',
-  'a deletion-pending account cannot mutate its own database row'
+  'permission denied for table users',
+  'authenticated clients cannot directly update lifecycle rows because table privileges deny it'
 );
 
 set local role postgres;
