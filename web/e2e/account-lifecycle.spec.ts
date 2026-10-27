@@ -9,6 +9,7 @@ test.describe("account lifecycle", () => {
     test.setTimeout(30_000);
 
     await page.goto("/login");
+    await expect(page.locator('form[data-hydrated="true"]')).toBeVisible();
     await page.getByLabel("Email").fill(userA.email);
     await page.locator('input[autocomplete="current-password"]').fill(userA.password);
     await page.getByRole("button", { name: "Sign in" }).click();
