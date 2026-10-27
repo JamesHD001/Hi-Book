@@ -11,6 +11,7 @@ const fixtureB = fixture.users.find((user) => user.email === userB.email)!;
 
 async function signIn(page: Page, email: string, password: string) {
   await page.goto("/login");
+    await expect(page.locator('form[data-hydrated="true"]')).toBeVisible();
   await page.getByLabel("Email").fill(email);
   await page.locator('input[autocomplete="current-password"]').fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
