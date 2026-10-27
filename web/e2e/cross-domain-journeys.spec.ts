@@ -8,6 +8,7 @@ const fixture = JSON.parse(readFileSync(resolve(process.cwd(), "e2e/.fixture.jso
 
 async function signIn(page: Page) {
   await page.goto("/login");
+    await expect(page.locator('form[data-hydrated="true"]')).toBeVisible();
   await page.getByLabel("Email").fill(email);
   await page.locator('input[autocomplete="current-password"]').fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
