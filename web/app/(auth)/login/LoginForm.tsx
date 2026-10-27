@@ -38,7 +38,26 @@ export default function LoginForm() {
       return;
     }
 
-    router.replace("/community");
+    const { data: account, error: accountError } = await supabase
+      .from("users")
+      .select("account_status, lifecycle_state")
+      .eq("id", (await supabase.auth.getUser()).data.user?.id ?? "")
+      .maybeSingle();
+
+    if (accountError) {
+      setError("You're signed in, but we couldn't verify your account status. Refresh the page or try again.");
+      setLoading(false);
+      return;
+    }
+
+    if (account?.lifecycle_state === "PAUSED" || account?.lifecycle_state === "PENDING_DELETION") {
+      router.replace("/account-recovery");
+    } else if (!account || account.account_status !== "ACTIVE") {
+      router.replace("/onboarding");
+    } else {
+      const next = searchParams.get("next");
+      router.replace(next && next.startsWith("/") && !next.startsWith("//") ? next : "/community");
+    }
     router.refresh();
   }
 
