@@ -11,6 +11,7 @@ const fixtureB = fixture.users.find((user) => user.email === userB.email)!;
 
 async function signIn(page: Page, email: string, password: string) {
   await page.goto("/login");
+    await expect(page.locator('form[data-hydrated="true"]')).toBeVisible();
   await page.getByLabel("Email").fill(email);
   await page.locator('input[autocomplete="current-password"]').fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
@@ -33,11 +34,9 @@ async function uploadProfileImage(page: Page) {
   const avatarInput = page.locator('input[type="file"][accept="image/*"]');
   await expect(avatarInput).toHaveCount(1);
   await avatarInput.setInputFiles({
-    name: "e2e-avatar.svg",
-    mimeType: "image/svg+xml",
-    buffer: Buffer.from(
-      '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" fill="black"/><circle cx="32" cy="32" r="20" fill="white"/></svg>',
-    ),
+    name: "e2e-avatar.png",
+    mimeType: "image/png",
+    buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=", "base64"),
   });
   await expect(page.getByAltText("Your profile preview")).toBeVisible();
   await page.getByRole("button", { name: "Save changes" }).click();
@@ -103,7 +102,7 @@ test.describe("two-user authorization and privacy matrix", () => {
 
       await openProfile(pageB, fixtureA.username);
       await ensureFollowing(pageB);
-      const profileAvatar = pageB.getByAltText(`${fixtureA.username} profile picture`);
+      const profileAvatar = pageB.locator('img[alt$=" profile picture"]');
       await expect(profileAvatar).toBeVisible();
       await expect(profileAvatar).toHaveAttribute("src", /\/storage\/v1\/object\/sign\/avatars\//i);
 

@@ -35,7 +35,7 @@
 - [x] Add a manual/scheduled production smoke workflow for `/api/health`, HTTPS, cache control, and application security headers.
 - [ ] Verify deployment-boundary/IP/auth-provider abuse controls and production observability, error reporting, backups, and deployment configuration.
 - [x] Remediate confirmed production Supabase RLS/search_path/trigger-RPC exposure findings and remove confirmed duplicate indexes.
-- [ ] Re-run the full production-readiness CI matrix after the remaining production-readiness fixes. The latest E2E attempt exposed a shared Playwright password-field selector regression; the affected journey specs have now been normalized to the deterministic `autocomplete="current-password"` selector. Web lint/build remained green.
+- [ ] Re-run the full production-readiness CI matrix after the remaining production-readiness fixes. Latest run: web lint/build and database migrations/pgTAP passed; E2E reached 18 passing tests and 2 failures. The login hydration/HMR blocker appears resolved. The accessibility assertion now accepts explicitly hidden decorative images. Both avatar-upload E2E fixtures used SVG input, while the product converts uploaded images through browser image decoding/canvas; changed those fixtures to PNG to test the supported upload path. Confirm this resolves preview and cross-user avatar failures in CI before treating the issue as fixed.
 - [x] Fix the current CI migration blocker caused by revoking a non-existent `rls_auto_enable()` function in the portable migration chain.
 - [x] Prepare a controlled production deployment checklist.
 
@@ -109,3 +109,23 @@
 
 ## Next major gate
 Verify the production scheduler/worker for due-account-deletion processing and exercise post-expiry browser behavior against the deployed environment. The scheduler invocation and production liveness/security-header checks are verified; the disposable E2E gate still needs a fresh green run after the selector fixes. In parallel, use `docs/production-deployment-checklist.md` to collect evidence from the real hosting/Supabase environments for deployment-boundary abuse controls, observability, backups, restore procedures, and deployment configuration. The repository now has an optional manual/hourly production smoke check, but the operational gate remains open until the real production URL is configured and the external controls are actually verified.
+
+
+## Inactive account lifecycle — implementation in progress
+- [x] Define the 180-day inactivity pause, 90-day deletion-pending period, and 30-day recovery window.
+- [x] Add server-controlled lifecycle state and timestamps.
+- [x] Attach the client account-status/lifecycle mutation guard to `public.users`; add a pgTAP assertion that the guard trigger is enabled. This was missing from the lifecycle migration even though the trigger function existed.
+- [x] Add a scheduled database transition worker for pause and deletion scheduling.
+- [x] Add owner recovery RPC and recovery page.
+- [x] Route password/OAuth sign-ins for paused and deletion-pending accounts through recovery.
+- [x] Add initial pgTAP lifecycle transition coverage.
+- [ ] Complete paused-state read-only enforcement across profile, preferences, social activity, messaging, and media upload. A pgTAP test now attempts a paused user's privacy-settings write and expects the trigger's 42501 rejection; its CI result is pending.
+- [x] Approve Option B: delete personal data/content and anonymize only legally or operationally required records.
+- [x] Inventory restrictive foreign-key references and draft proposed delete/anonymize/retain/hold dispositions in `docs/inactive-account-retention-inventory.md`.
+- [ ] Confirm retention durations, legal holds, open financial obligations, and administrator-role handling with the product/legal owner before finalizing the purge rules.
+- [ ] Implement a transactional, idempotent purge for personal database rows, Supabase Auth identity, and all owned Storage objects; anonymize approved retained records.
+- [ ] Configure the trusted purge worker and deployment secrets/schedule.
+- [x] Run database migrations and pgTAP suite in the disposable CI Supabase environment; the latest database run passed. Web lint/build also passes.
+- [ ] Confirm a green browser E2E run against the production server. Latest run reached 18 passing tests; the remaining avatar failures appear connected to SVG test fixtures and are now switched to PNG fixtures in both avatar-upload journeys. Await the next CI run to verify. The HMR/hydration blocker no longer appears among the reported failures.
+- [x] Correct the stale signup E2E password selector (`current-password` versus the form's `new-password`).
+- [ ] Test pause → recovery, pause → hidden deletion-pending, recovery before deadline, and irreversible deletion after deadline using disposable accounts.

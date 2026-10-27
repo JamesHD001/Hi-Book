@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import HBButton from "@/components/ui/HBButton";
@@ -12,11 +12,14 @@ import AuthProviderButtons from "@/components/auth/AuthProviderButtons";
 export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [hydrated, setHydrated] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => setHydrated(true), []);
 
   const confirmationError = searchParams.get("error") === "confirmation";
   const resetSuccess = searchParams.get("reset") === "success";
@@ -38,12 +41,31 @@ export default function LoginForm() {
       return;
     }
 
-    router.replace("/community");
+    const { data: account, error: accountError } = await supabase
+      .from("users")
+      .select("account_status, lifecycle_state")
+      .eq("id", (await supabase.auth.getUser()).data.user?.id ?? "")
+      .maybeSingle();
+
+    if (accountError) {
+      setError("You're signed in, but we couldn't verify your account status. Refresh the page or try again.");
+      setLoading(false);
+      return;
+    }
+
+    if (account?.lifecycle_state === "PAUSED" || account?.lifecycle_state === "PENDING_DELETION") {
+      router.replace("/account-recovery");
+    } else if (!account || account.account_status !== "ACTIVE") {
+      router.replace("/onboarding");
+    } else {
+      const next = searchParams.get("next");
+      router.replace(next && next.startsWith("/") && !next.startsWith("//") ? next : "/community");
+    }
     router.refresh();
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+    <form onSubmit={handleSubmit} data-hydrated={hydrated ? "true" : "false"} className="mt-8 space-y-6">
       {confirmationError && (
         <p role="alert" className="rounded-[var(--radius-lg)] border border-[var(--error)]/20 bg-[var(--error)]/10 px-4 py-3 text-sm leading-6 text-[var(--error)]">
           That confirmation link is invalid or has expired. Request a new one or sign in again.

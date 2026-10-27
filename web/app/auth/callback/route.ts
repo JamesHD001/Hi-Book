@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
 
     const { data: account, error: accountError } = await supabase
       .from("users")
-      .select("id, account_status")
+      .select("id, account_status, lifecycle_state")
       .eq("id", data.user.id)
       .maybeSingle();
 
@@ -130,7 +130,12 @@ export async function GET(request: NextRequest) {
     if (!account) {
       return NextResponse.redirect(new URL("/onboarding", request.url));
     }
-    return NextResponse.redirect(new URL(account.account_status === "ACTIVE" ? "/community" : "/onboarding", request.url));
+    const destination = account.lifecycle_state === "PAUSED" || account.lifecycle_state === "PENDING_DELETION"
+      ? "/account-recovery"
+      : account.account_status === "ACTIVE"
+        ? "/community"
+        : "/onboarding";
+    return NextResponse.redirect(new URL(destination, request.url));
   }
 
   const next = params.get("next") || "/onboarding";
