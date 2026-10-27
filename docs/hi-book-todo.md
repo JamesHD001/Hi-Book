@@ -35,7 +35,7 @@
 - [x] Add a manual/scheduled production smoke workflow for `/api/health`, HTTPS, cache control, and application security headers.
 - [ ] Verify deployment-boundary/IP/auth-provider abuse controls and production observability, error reporting, backups, and deployment configuration.
 - [x] Remediate confirmed production Supabase RLS/search_path/trigger-RPC exposure findings and remove confirmed duplicate indexes.
-- [ ] Re-run the full production-readiness CI matrix after the remaining production-readiness fixes. The latest E2E attempt exposed a shared Playwright password-field selector regression; the affected journey specs have now been normalized to the deterministic `autocomplete="current-password"` selector. Web lint/build remained green.
+- [ ] Re-run the full production-readiness CI matrix after the remaining production-readiness fixes. E2E setup now waits for the login/signup hydration marker, uses `autocomplete="new-password"` for signup and `autocomplete="current-password"` for login, and aligns the country field locator with the signup form's accessible `Country / region` label. Web lint/build remained green.
 - [x] Fix the current CI migration blocker caused by revoking a non-existent `rls_auto_enable()` function in the portable migration chain.
 - [x] Prepare a controlled production deployment checklist.
 
@@ -125,6 +125,6 @@ Verify the production scheduler/worker for due-account-deletion processing and e
 - [ ] Implement a transactional, idempotent purge for personal database rows, Supabase Auth identity, and all owned Storage objects; anonymize approved retained records.
 - [ ] Configure the trusted purge worker and deployment secrets/schedule.
 - [x] Run database migrations and pgTAP suite in the disposable CI Supabase environment; the latest database run passed. Web lint/build also passes.
-- [ ] Re-run browser E2E after adding an explicit hydration-ready marker to login/signup forms and waiting for it before form interactions. The previous traces showed a native form submission to `/login?` without any Supabase auth request, consistent with tests interacting before React hydration completed.
+- [ ] Confirm the current browser E2E run after hydration-ready waits and the signup country-label locator fix. The previous traces showed a native form submission to `/login?` without any Supabase auth request, consistent with tests interacting before React hydration completed.
 - [x] Correct the stale signup E2E password selector (`current-password` versus the form's `new-password`).
 - [ ] Test pause → recovery, pause → hidden deletion-pending, recovery before deadline, and irreversible deletion after deadline using disposable accounts.
