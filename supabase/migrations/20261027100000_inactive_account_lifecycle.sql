@@ -209,7 +209,8 @@ declare
   v_lifecycle_state text;
 begin
   if auth.uid() is null then
-    return coalesce(new, old);
+    if tg_op = 'DELETE' then return old; end if;
+    return new;
   end if;
 
   v_record := case when tg_op = 'DELETE' then to_jsonb(old) else to_jsonb(new) end;
@@ -220,8 +221,29 @@ begin
     else nullif(v_record ->> 'user_id', '')::uuid
   end;
 
+  if tg_table_name = 'post_media' then
+    select p.user_id into v_actor_id
+      from public.posts p
+     where p.id = nullif(v_record ->> 'post_id', '')::uuid;
+  elsif tg_table_name = 'mentions' then
+    if nullif(v_record ->> 'post_id', '') is not null then
+      select p.user_id into v_actor_id
+        from public.posts p
+       where p.id = nullif(v_record ->> 'post_id', '')::uuid;
+    elsif nullif(v_record ->> 'comment_id', '') is not null then
+      select c.user_id into v_actor_id
+        from public.comments c
+       where c.id = nullif(v_record ->> 'comment_id', '')::uuid;
+    end if;
+  elsif tg_table_name = 'post_tags' then
+    select p.user_id into v_actor_id
+      from public.posts p
+     where p.id = nullif(v_record ->> 'post_id', '')::uuid;
+  end if;
+
   if v_actor_id is null or v_actor_id <> auth.uid() then
-    return coalesce(new, old);
+    if tg_op = 'DELETE' then return old; end if;
+    return new;
   end if;
 
   select lifecycle_state into v_lifecycle_state
@@ -233,9 +255,10 @@ begin
       using errcode = '42501';
   end if;
 
-  return coalesce(new, old);
+  if tg_op = 'DELETE' then return old; end if;
+  return new;
 end;
-$$;
+$;
 
 revoke all on function public.prevent_paused_account_mutation() from public, anon, authenticated;
 
