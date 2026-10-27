@@ -20,7 +20,7 @@ test.describe("critical public and authentication journeys", () => {
     await page.getByLabel("Country code").fill("NG");
     await page.getByLabel("Gender").selectOption("UNDISCLOSED");
     await page.getByLabel("Email").fill(`invalid-${Date.now()}@example.test`);
-    await page.locator('input[autocomplete="current-password"]').fill("password123");
+    await page.locator('input[autocomplete="new-password"]').fill("password123");
     await page.getByRole("checkbox", { name: /Terms of Use/ }).check();
     await page.getByRole("checkbox", { name: /Privacy Policy/ }).check();
     await page.getByRole("button", { name: "Create account" }).click();
