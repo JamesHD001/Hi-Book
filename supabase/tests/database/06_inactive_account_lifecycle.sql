@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap;
-select plan(15);
+select plan(16);
 
 insert into auth.users (
   id, aud, role, email, encrypted_password, raw_user_meta_data,
@@ -19,6 +19,9 @@ insert into auth.users (
 );
 
 set local role postgres;
+insert into public.user_privacy_settings (user_id)
+values ('60000000-0000-0000-0000-000000000011')
+on conflict (user_id) do nothing;
 select set_config('hibook.system_operation','true',true);
 update public.users
    set account_status = 'ACTIVE',
@@ -45,6 +48,17 @@ select is(
   'paused account remains eligible for existing visibility rules'
 );
 
+set local role authenticated;
+select set_config('request.jwt.claim.sub','60000000-0000-0000-0000-000000000011',true);
+select set_config('request.jwt.claim.role','authenticated',true);
+select throws_ok(
+  $paused_settings$ update public.user_privacy_settings set discoverable = false where user_id = '60000000-0000-0000-0000-000000000011' $paused_settings$,
+  '42501',
+  'This account is paused and cannot perform this action until it is reactivated',
+  'paused account cannot mutate privacy settings'
+);
+
+set local role postgres;
 update public.users
    set paused_at = now() - interval '91 days'
  where id = '60000000-0000-0000-0000-000000000011';
