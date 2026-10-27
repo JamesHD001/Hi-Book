@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap;
-select plan(14);
+select plan(15);
 
 insert into auth.users (
   id, aud, role, email, encrypted_password, raw_user_meta_data,
@@ -68,6 +68,21 @@ select is(
   (select lifecycle_source from public.account_deletion_request where user_id='60000000-0000-0000-0000-000000000011' order by requested_at desc limit 1),
   'INACTIVITY',
   'automatic deletion schedule is distinguishable from a manual request'
+);
+
+select ok(
+  exists (
+    select 1
+      from pg_trigger tr
+      join pg_class c on c.oid = tr.tgrelid
+      join pg_namespace n on n.oid = c.relnamespace
+     where n.nspname = 'public'
+       and c.relname = 'users'
+       and tr.tgname = 'prevent_client_account_status_mutation'
+       and not tr.tgisinternal
+       and tr.tgenabled <> 'D'
+  ),
+  'users table has an enabled trigger guarding client lifecycle-field updates'
 );
 
 set local role authenticated;
