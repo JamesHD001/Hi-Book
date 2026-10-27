@@ -7,6 +7,7 @@ const password = process.env.E2E_TEST_PASSWORD!;
 
 async function signIn(page: Page) {
   await page.goto("/login");
+    await expect(page.locator('form[data-hydrated="true"]')).toBeVisible();
   await page.getByLabel("Email").fill(email);
   await page.locator('input[autocomplete="current-password"]').fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
