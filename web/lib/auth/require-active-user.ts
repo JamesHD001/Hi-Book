@@ -15,7 +15,10 @@ export async function requireActiveUser() {
     .eq("id", user.id)
     .maybeSingle();
 
-  if (!error && account?.lifecycle_state === "PENDING_DELETION") {
+  if (
+    !error &&
+    (account?.lifecycle_state === "PAUSED" || account?.lifecycle_state === "PENDING_DELETION")
+  ) {
     redirect("/account-recovery");
   }
 
