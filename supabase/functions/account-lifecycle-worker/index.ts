@@ -27,12 +27,12 @@ async function removeUserFiles(
   bucket: (typeof BUCKETS)[number],
   prefix: string,
 ): Promise<void> {
-  let offset = 0;
-
   while (true) {
+    // Always fetch from offset zero because successfully removed objects shift
+    // later entries forward. Offset pagination here could skip files permanently.
     const { data, error } = await admin.storage.from(bucket).list(prefix, {
       limit: PAGE_SIZE,
-      offset,
+      offset: 0,
       sortBy: { column: "name", order: "asc" },
     });
     if (error) throw new Error(`Unable to list ${bucket}/${prefix}: ${error.message}`);
@@ -59,8 +59,15 @@ async function removeUserFiles(
       await removeUserFiles(admin, bucket, `${prefix}/${folder}`);
     }
 
-    if (entries.length < PAGE_SIZE) return;
-    offset += PAGE_SIZE;
+    if (entries.length < PAGE_SIZE) {
+      const { data: remaining, error: remainingError } = await admin.storage.from(bucket).list(prefix, {
+        limit: PAGE_SIZE,
+        offset: 0,
+        sortBy: { column: "name", order: "asc" },
+      });
+      if (remainingError) throw new Error(`Unable to verify ${bucket}/${prefix}: ${remainingError.message}`);
+      if (!remaining || remaining.length === 0) return;
+    }
   }
 }
 
