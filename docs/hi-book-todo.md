@@ -114,6 +114,7 @@ Verify the production scheduler/worker for due-account-deletion processing and e
 ## Inactive account lifecycle — implementation in progress
 - [x] Define the 180-day inactivity pause, 90-day deletion-pending period, and 30-day recovery window.
 - [x] Add server-controlled lifecycle state and timestamps.
+- [x] Attach the client account-status/lifecycle mutation guard to `public.users`; add a pgTAP assertion that the guard trigger is enabled. This was missing from the lifecycle migration even though the trigger function existed.
 - [x] Add a scheduled database transition worker for pause and deletion scheduling.
 - [x] Add owner recovery RPC and recovery page.
 - [x] Route password/OAuth sign-ins for paused and deletion-pending accounts through recovery.
