@@ -64,6 +64,13 @@ export default function AccountRecoveryPage() {
     const supabase = createClient();
     const { error: recoveryError } = await supabase.rpc("recover_inactive_account");
     if (recoveryError) {
+      if (recoveryError.message.toLowerCase().includes("fresh sign-in required")) {
+        await supabase.auth.signOut();
+        router.replace("/login?next=%2Faccount-recovery");
+        router.refresh();
+        return;
+      }
+
       setError(
         recoveryError.message.includes("recovery window has expired")
           ? "The 30-day recovery window has expired. This account can no longer be recovered through self-service."
