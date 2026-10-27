@@ -132,16 +132,33 @@ declare
   v_user_id uuid := auth.uid();
   v_state text;
   v_deadline timestamptz;
+  v_required_login_at timestamptz;
+  v_last_sign_in_at timestamptz;
 begin
   if v_user_id is null or coalesce(auth.role(), '') <> 'authenticated' then
     raise exception 'Authentication required' using errcode = '42501';
   end if;
 
-  select lifecycle_state, deletion_recovery_deadline_at
-    into v_state, v_deadline
+  select lifecycle_state, deletion_recovery_deadline_at,
+         case
+           when lifecycle_state = 'PAUSED' then paused_at
+           when lifecycle_state = 'PENDING_DELETION' then deletion_scheduled_at
+           else null
+         end
+    into v_state, v_deadline, v_required_login_at
     from public.users
    where id = v_user_id
    for update;
+
+  select last_sign_in_at
+    into v_last_sign_in_at
+    from auth.users
+   where id = v_user_id;
+
+  if v_state in ('PAUSED', 'PENDING_DELETION')
+     and (v_last_sign_in_at is null or v_required_login_at is null or v_last_sign_in_at < v_required_login_at) then
+    raise exception 'Fresh sign-in required to recover this account' using errcode = '42501';
+  end if;
 
   if not found then
     raise exception 'Account not found';
