@@ -51,3 +51,16 @@ This inventory is based on the live Supabase schema inspected on 2026-10-27. It 
 - [ ] Keep the account in a private, non-recoverable purge-pending state if any required phase fails; never mark it permanently deleted before verification succeeds.
 
 This is a technical inventory, not a legal determination. No account data is deleted or anonymized by this document.
+
+## Second-pass indirect-content review
+
+A schema-only review of text and JSON-capable columns found additional fields that need content-level minimization review before purge is implemented:
+
+- `payment_webhook_events.payload`: provider webhook payload may contain transaction or payer identifiers. Retain only fields required for reconciliation, subject to provider/statutory requirements; do not assume a raw payload is safe to retain.
+- `admin_audit_logs.metadata`, `moderation_audit_logs.metadata`, and `moderation_evidence.metadata`: inspect for embedded names, email/phone, IP addresses, user IDs, URLs, and raw user content before retaining or pseudonymizing.
+- `analytics_events.properties`, `analytics_events.context`, and `telemetry_events.metadata`: remove or aggregate user-identifying properties where retention is not necessary; nulling `user_id` alone is insufficient.
+- `posts.content`, `comments.content`, and `messages.content`: delete as user-generated content unless a specifically approved legal/safety hold requires a minimized/redacted copy.
+- `appeals.reason`, `appeals.resolution`, `moderation_notes.content`, `reports.description`, and `refunds.reason`: these may contain free-text personal information; apply the approved retention/hold decision and redact unnecessary personal details.
+- `financial_ledger_entries.description`, `payment_webhook_events.provider_reference`, and `refunds.provider_reference`: verify that references do not embed direct identifiers; preserve only required reconciliation keys.
+
+This review inspects schema names and types only; it does not read or change user payloads. Content-level rules and retention periods remain release blockers.
