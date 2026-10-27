@@ -18,7 +18,7 @@ test.describe("critical public and authentication journeys", () => {
     await page.getByLabel("First name").fill("E2E");
     await page.getByLabel("Last name").fill("Tester");
     await page.getByLabel("Date of birth").fill("2018-01-01");
-    await page.getByLabel("Country code").fill("NG");
+    await page.getByLabel(/Country \/ region/).fill("NG");
     await page.getByLabel("Gender").selectOption("UNDISCLOSED");
     await page.getByLabel("Email").fill(`invalid-${Date.now()}@example.test`);
     await page.locator('input[autocomplete="new-password"]').fill("password123");
