@@ -1,0 +1,28 @@
+name: Inactive account lifecycle worker
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 * * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Invoke the secured Supabase lifecycle worker
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          ACCOUNT_LIFECYCLE_WORKER_SECRET: ${{ secrets.ACCOUNT_LIFECYCLE_WORKER_SECRET }}
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_URL"
+          test -n "$ACCOUNT_LIFECYCLE_WORKER_SECRET"
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header "Authorization: Bearer $ACCOUNT_LIFECYCLE_WORKER_SECRET" \
+            --header "Content-Type: application/json" \
+            "$SUPABASE_URL/functions/v1/account-lifecycle-worker"
