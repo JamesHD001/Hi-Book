@@ -35,7 +35,7 @@
 - [x] Add a manual/scheduled production smoke workflow for `/api/health`, HTTPS, cache control, and application security headers.
 - [ ] Verify deployment-boundary/IP/auth-provider abuse controls and production observability, error reporting, backups, and deployment configuration.
 - [x] Remediate confirmed production Supabase RLS/search_path/trigger-RPC exposure findings and remove confirmed duplicate indexes.
-- [ ] Re-run the full production-readiness CI matrix after the remaining production-readiness fixes. E2E setup waits for the login/signup hydration marker, uses the correct password autocomplete values and country label, and now runs against the production server in CI. Trace review also found Next.js HMR WebSocket handshakes being intercepted by the auth middleware; the matcher now excludes both HMR endpoints.
+- [ ] Re-run the full production-readiness CI matrix after the remaining production-readiness fixes. Latest run: web lint/build and database migrations/pgTAP passed; E2E reached 18 passing tests and 2 failures. The login hydration/HMR blocker appears resolved. Remaining failures: cross-user profile avatar assertion and accessibility audit treating an explicitly decorative `alt="" aria-hidden="true"` logo as unnamed. The accessibility assertion has been corrected to accept explicitly hidden decorative images; confirm with the next CI run. Investigate whether the cross-user avatar failure is a product bug or a brittle test before changing the assertion.
 - [x] Fix the current CI migration blocker caused by revoking a non-existent `rls_auto_enable()` function in the portable migration chain.
 - [x] Prepare a controlled production deployment checklist.
 
@@ -125,6 +125,6 @@ Verify the production scheduler/worker for due-account-deletion processing and e
 - [ ] Implement a transactional, idempotent purge for personal database rows, Supabase Auth identity, and all owned Storage objects; anonymize approved retained records.
 - [ ] Configure the trusted purge worker and deployment secrets/schedule.
 - [x] Run database migrations and pgTAP suite in the disposable CI Supabase environment; the latest database run passed. Web lint/build also passes.
-- [ ] Confirm the next browser E2E run after switching CI to the production server and excluding Next.js HMR endpoints from middleware. Traces showed the hydration marker remained false and repeated HMR WebSocket handshakes failed with `ERR_INVALID_HTTP_RESPONSE`; the previous native form submission issue remains unverified until the new run passes.
+- [ ] Confirm a green browser E2E run against the production server. Latest run reached 18 passing tests; the remaining cross-user avatar assertion needs investigation. The HMR/hydration blocker no longer appears among the reported failures.
 - [x] Correct the stale signup E2E password selector (`current-password` versus the form's `new-password`).
 - [ ] Test pause → recovery, pause → hidden deletion-pending, recovery before deadline, and irreversible deletion after deadline using disposable accounts.
