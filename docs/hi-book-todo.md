@@ -109,3 +109,18 @@
 
 ## Next major gate
 Verify the production scheduler/worker for due-account-deletion processing and exercise post-expiry browser behavior against the deployed environment. The scheduler invocation and production liveness/security-header checks are verified; the disposable E2E gate still needs a fresh green run after the selector fixes. In parallel, use `docs/production-deployment-checklist.md` to collect evidence from the real hosting/Supabase environments for deployment-boundary abuse controls, observability, backups, restore procedures, and deployment configuration. The repository now has an optional manual/hourly production smoke check, but the operational gate remains open until the real production URL is configured and the external controls are actually verified.
+
+
+## Inactive account lifecycle — implementation in progress
+- [x] Define the 180-day inactivity pause, 90-day deletion-pending period, and 30-day recovery window.
+- [x] Add server-controlled lifecycle state and timestamps.
+- [x] Add a scheduled database transition worker for pause and deletion scheduling.
+- [x] Add owner recovery RPC and recovery page.
+- [x] Route password/OAuth sign-ins for paused and deletion-pending accounts through recovery.
+- [x] Add initial pgTAP lifecycle transition coverage.
+- [ ] Complete paused-state read-only enforcement across profile, preferences, social activity, messaging, and media upload.
+- [ ] Resolve the purge policy for restrictive financial, moderation, reports, and audit references.
+- [ ] Implement and verify irreversible deletion of eligible database rows, Supabase Auth identity, and Storage objects.
+- [ ] Configure the trusted purge worker and deployment secrets/schedule.
+- [ ] Run full database tests, web lint/build, and browser E2E lifecycle scenarios.
+- [ ] Test pause → recovery, pause → hidden deletion-pending, recovery before deadline, and irreversible deletion after deadline using disposable accounts.
