@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap;
-select plan(13);
+select plan(14);
 
 insert into auth.users (
   id, aud, role, email, encrypted_password, raw_user_meta_data,
@@ -78,6 +78,13 @@ select throws_ok(
   '42501',
   null,
   'recovery requires a sign-in after the account entered the restricted lifecycle state'
+);
+
+select throws_ok(
+  $paused_write$ update public.users set updated_at = now() where id = '60000000-0000-0000-0000-000000000011' $paused_write$,
+  '42501',
+  'This account is paused and cannot perform this action until it is reactivated',
+  'a deletion-pending account cannot mutate its own database row'
 );
 
 set local role postgres;
