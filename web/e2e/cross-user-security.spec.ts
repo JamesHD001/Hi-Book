@@ -34,11 +34,9 @@ async function uploadProfileImage(page: Page) {
   const avatarInput = page.locator('input[type="file"][accept="image/*"]');
   await expect(avatarInput).toHaveCount(1);
   await avatarInput.setInputFiles({
-    name: "e2e-avatar.svg",
-    mimeType: "image/svg+xml",
-    buffer: Buffer.from(
-      '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" fill="black"/><circle cx="32" cy="32" r="20" fill="white"/></svg>',
-    ),
+    name: "e2e-avatar.png",
+    mimeType: "image/png",
+    buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=", "base64"),
   });
   await expect(page.getByAltText("Your profile preview")).toBeVisible();
   await page.getByRole("button", { name: "Save changes" }).click();
