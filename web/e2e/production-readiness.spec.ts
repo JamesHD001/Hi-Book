@@ -88,7 +88,7 @@ test.describe("production readiness: responsive and accessibility", () => {
 
       const unnamedImages = await page.locator("img").evaluateAll((images) =>
         images
-          .filter((image) => !image.getAttribute("alt"))
+          .filter((image) => !image.hasAttribute("alt") || (!image.getAttribute("alt")?.trim() && image.getAttribute("aria-hidden") !== "true"))
           .map((image) => image.outerHTML.slice(0, 240)),
       );
       expect(unnamedImages, `Images without alt text found on ${path}`).toEqual([]);
