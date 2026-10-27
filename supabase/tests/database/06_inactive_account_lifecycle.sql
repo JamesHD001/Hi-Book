@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap;
-select plan(12);
+select plan(13);
 
 insert into auth.users (
   id, aud, role, email, encrypted_password, raw_user_meta_data,
@@ -73,9 +73,22 @@ select is(
 set local role authenticated;
 select set_config('request.jwt.claim.sub','60000000-0000-0000-0000-000000000011',true);
 select set_config('request.jwt.claim.role','authenticated',true);
+select throws_ok(
+  $stale_login$ select public.recover_inactive_account() $stale_login$,
+  '42501',
+  null,
+  'recovery requires a sign-in after the account entered the restricted lifecycle state'
+);
+
+set local role postgres;
+update auth.users
+   set last_sign_in_at = now()
+ where id = '60000000-0000-0000-0000-000000000011';
+set local role authenticated;
+
 select lives_ok(
   $q$ select public.recover_inactive_account() $q$,
-  'authenticated owner can recover during the recovery window'
+  'authenticated owner with a fresh sign-in can recover during the recovery window'
 );
 select is(
   (select lifecycle_state from public.users where id='60000000-0000-0000-0000-000000000011'),
