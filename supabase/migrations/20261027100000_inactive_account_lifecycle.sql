@@ -234,10 +234,18 @@ begin
   v_record := case when tg_op = 'DELETE' then to_jsonb(old) else to_jsonb(new) end;
   v_actor_id := case tg_table_name
     when 'users' then nullif(v_record ->> 'id', '')::uuid
-    when 'follows' then nullif(v_record ->> 'follower_id', '')::uuid
+    when 'follows' then case
+      when tg_op <> 'INSERT'
+       and nullif(v_record ->> 'following_id', '')::uuid = auth.uid()
+      then auth.uid()
+      else nullif(v_record ->> 'follower_id', '')::uuid
+    end
     when 'blocks' then nullif(v_record ->> 'blocker_id', '')::uuid
     when 'messages' then nullif(v_record ->> 'sender_id', '')::uuid
-    when 'notifications' then nullif(v_record ->> 'actor_id', '')::uuid
+    when 'notifications' then case
+      when tg_op = 'INSERT' then nullif(v_record ->> 'actor_id', '')::uuid
+      else nullif(v_record ->> 'recipient_id', '')::uuid
+    end
     else nullif(v_record ->> 'user_id', '')::uuid
   end;
 
