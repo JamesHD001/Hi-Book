@@ -114,7 +114,7 @@ export default function AccountRecoveryPage() {
       <main className="mx-auto flex min-h-[70vh] max-w-xl flex-col justify-center px-4 py-12">
         <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm sm:p-8">
           <h1 className="text-2xl font-semibold text-[var(--foreground)]">Your account is active</h1>
-          <p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">There's nothing to recover. You can return to your community.</p>
+          <p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">There is nothing to recover. You can return to your community.</p>
           <Link href="/community" className="mt-6 inline-flex rounded-xl bg-[var(--brand-primary)] px-4 py-3 text-sm font-semibold text-white">Go to Hi!Book</Link>
         </section>
       </main>
